@@ -1,14 +1,18 @@
 /**
- * Seletor de alimento com quantidade — usado no diário e no editor de receitas.
- * No diário também oferece as **receitas** (prontas e da pessoa), que entram
+ * Seletor de alimento com quantidade — usado no cardápio e no editor de receitas.
+ * No cardápio também oferece as **receitas** (prontas e da pessoa), que entram
  * na refeição como os ingredientes delas.
+ *
+ * Dois passos: buscar no catálogo (`foods`, o mesmo do resto do app) e, ao
+ * tocar num alimento, escolher a quantidade vendo os valores daquela porção.
+ * Valor nutricional ausente no catálogo aparece como "—", nunca como zero.
  *
  * O diálogo é uma coluna flexível com rolagem só vertical: nomes longos da
  * TACO ("Carne, bovina, capa de contra-filé, sem gordura, grelhada") quebram
  * em duas linhas em vez de alargar o diálogo e criar rolagem horizontal.
  */
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { ArrowLeft, ChevronRight, Clock, Loader2, Minus, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { queryKeys } from "@/data/query-keys";
@@ -40,6 +44,7 @@ import {
   SearchField,
 } from "@/components/pickers/search-dialog";
 import { ErrorState } from "@/components/query-boundary";
+import { CATEGORY_EMOJI } from "@/lib/food-emoji";
 import { cn, searchWords } from "@/lib/utils";
 
 export type PickedFood = {
@@ -50,17 +55,36 @@ export type PickedFood = {
   kcal: number;
 };
 
+/** O alimento como o seletor o mostra: macros `null` quando o catálogo não tem o dado. */
+type FoodOption = PickedFood & {
+  proteinG: number | null;
+  carbsG: number | null;
+  fatG: number | null;
+  imageUrl: string | null;
+  category: string | null;
+  /** Medida caseira ("fatia", "colher de sopa") e quanto ela pesa. */
+  measure: string | null;
+  measureG: number | null;
+};
+
 /** Quantidades comuns — evitam digitação no celular durante a refeição. */
 const QUICK_GRAMS = [50, 100, 150, 200, 300];
 const PORCOES = [0.5, 1, 1.5, 2, 3];
+const LIMITE_RESULTADOS = 50;
 
 const kcalFmt = (n: number) => Math.round(n).toLocaleString("pt-BR");
+const gFmt = (n: number) => n.toLocaleString("pt-BR", { maximumFractionDigits: n < 10 ? 1 : 0 });
 const porcaoFmt = (n: number) => (n === 0.5 ? "½" : n.toLocaleString("pt-BR"));
+/** Número do catálogo, ou `null` quando ausente — dado que falta não vira zero. */
+const opcional = (v: unknown) => {
+  const n = num(v, Number.NaN);
+  return Number.isNaN(n) ? null : n;
+};
 
 export function FoodPicker({
   trigger,
   title = "Adicionar alimento",
-  confirmLabel = "Adicionar",
+  confirmLabel = "Adicionar alimento",
   defaultGrams = 100,
   onPick,
   onPickRecipe,
@@ -79,7 +103,7 @@ export function FoodPicker({
   const [open, setOpen] = useState(false);
   const [aba, setAba] = useState<"alimentos" | "receitas">("alimentos");
   const [term, setTerm] = useState("");
-  const [selected, setSelected] = useState<PickedFood | null>(null);
+  const [selected, setSelected] = useState<FoodOption | null>(null);
   const [grams, setGrams] = useState(String(defaultGrams));
   const [receita, setReceita] = useState<RecipeSummary | null>(null);
   const [porcoes, setPorcoes] = useState(1);
@@ -106,15 +130,32 @@ export function FoodPicker({
   const foods = useQuery({
     queryKey: queryKeys.foods.search(debouncedTerm),
     enabled: open && aba === "alimentos" && !selected,
+    // Enquanto a nova busca carrega, a lista anterior fica (esmaecida) em vez de piscar.
+    placeholderData: keepPreviousData,
     queryFn: async () => {
       let query = supabase
         .from("foods")
-        .select("id, name, brand, serving_size_g, kcal, protein_g")
+        .select(
+          "id, name, brand, serving_size_g, kcal, protein_g, carbs_g, fat_g, image_url, category, household_measure, household_grams",
+        )
         .is("deleted_at", null)
         .order("name")
-        .limit(50);
+        .limit(LIMITE_RESULTADOS);
       for (const w of searchWords(debouncedTerm)) query = query.ilike("name", `%${w}%`);
-      return unwrapList("buscar alimentos", await query);
+      return unwrapList("buscar alimentos", await query).map((f): FoodOption => ({
+        id: f.id,
+        name: f.name,
+        brand: f.brand,
+        servingSizeG: num(f.serving_size_g, 100),
+        kcal: num(f.kcal),
+        proteinG: opcional(f.protein_g),
+        carbsG: opcional(f.carbs_g),
+        fatG: opcional(f.fat_g),
+        imageUrl: f.image_url,
+        category: f.category,
+        measure: f.household_measure,
+        measureG: opcional(f.household_grams) || null,
+      }));
     },
   });
 
@@ -136,24 +177,35 @@ export function FoodPicker({
   const gramsValue = Number(grams);
   const gramsInvalid = !Number.isFinite(gramsValue) || gramsValue <= 0 || gramsValue > 10_000;
 
-  const confirm = async () => {
-    if (!selected || gramsInvalid) return;
-    await onPick(selected, gramsValue);
-    setOpen(false);
-  };
-
-  const confirmarReceita = async () => {
-    if (!receita || !onPickRecipe) return;
+  /**
+   * Grava e fecha. `salvando` trava o botão já no primeiro toque — o duplo toque
+   * não adiciona o alimento duas vezes. Se falhar, o diálogo fica aberto (quem
+   * chamou mostra o erro) e a pessoa tenta de novo sem refazer a busca.
+   */
+  const gravar = async (acao: () => void | Promise<void>) => {
+    if (salvando) return;
     setSalvando(true);
     try {
-      await onPickRecipe(receita, porcoes);
+      await acao();
       setOpen(false);
+    } catch {
+      // O erro já foi exibido por quem chamou.
     } finally {
       setSalvando(false);
     }
   };
 
-  const titulo = selected?.name ?? receita?.name ?? title;
+  const confirm = () => {
+    if (!selected || gramsInvalid) return;
+    void gravar(() => onPick(selected, gramsValue));
+  };
+
+  const confirmarReceita = () => {
+    if (!receita || !onPickRecipe) return;
+    void gravar(() => onPickRecipe(receita, porcoes));
+  };
+
+  const titulo = receita?.name ?? title;
   const lista = !selected && !receita;
 
   return (
@@ -161,6 +213,7 @@ export function FoodPicker({
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <SearchDialogContent
         title={titulo}
+        description={selected ? "Escolha a quantidade e confira os valores." : undefined}
         srDescription="Busque um alimento ou uma receita e escolha a quantidade."
         top={
           lista && (
@@ -187,7 +240,7 @@ export function FoodPicker({
               <SearchField
                 value={term}
                 onChange={setTerm}
-                placeholder={aba === "alimentos" ? "Buscar alimento…" : "Buscar receita…"}
+                placeholder={aba === "alimentos" ? "Buscar alimento pelo nome…" : "Buscar receita…"}
                 loading={foods.isFetching || receitas.isFetching}
               />
               {aba === "receitas" && (
@@ -226,9 +279,9 @@ export function FoodPicker({
             setGrams={setGrams}
             invalid={gramsInvalid}
             onBack={() => setSelected(null)}
-            onConfirm={() => void confirm()}
+            onConfirm={confirm}
             confirmLabel={confirmLabel}
-            isPending={isPending}
+            isPending={salvando || isPending}
           />
         ) : receita ? (
           <EscolherPorcoes
@@ -236,37 +289,68 @@ export function FoodPicker({
             porcoes={porcoes}
             setPorcoes={setPorcoes}
             onBack={() => setReceita(null)}
-            onConfirm={() => void confirmarReceita()}
+            onConfirm={confirmarReceita}
             isPending={salvando}
           />
         ) : aba === "alimentos" ? (
-          foods.isPending ? (
+          // Lista vazia da busca anterior não serve de "nada encontrado" para a nova.
+          foods.isPending || (foods.isPlaceholderData && foods.data.length === 0) ? (
             <ResultsLoading />
           ) : foods.isError ? (
-            <ErrorState message="Falha ao buscar alimentos." onRetry={foods.refetch} compact />
+            <ErrorState
+              message="Não foi possível buscar os alimentos. Verifique a conexão e tente de novo."
+              onRetry={foods.refetch}
+              compact
+            />
           ) : foods.data.length === 0 ? (
-            <ResultsEmpty>Nenhum alimento encontrado para “{debouncedTerm}”.</ResultsEmpty>
+            <ResultsEmpty>
+              {debouncedTerm ? (
+                <>
+                  Nenhum alimento encontrado para “{debouncedTerm}”.
+                  <br />
+                  Tente outro nome ou uma palavra mais curta.
+                </>
+              ) : (
+                "Nenhum alimento no catálogo."
+              )}
+            </ResultsEmpty>
           ) : (
-            <ResultList>
-              {foods.data.map((f) => (
-                <li key={f.id}>
-                  <ResultRow
-                    title={f.name}
-                    detail={`${kcalFmt(num(f.kcal))} kcal · P ${Math.round(num(f.protein_g))} g · por ${num(f.serving_size_g, 100)} g${f.brand ? ` · ${f.brand}` : ""}`}
-                    aside={<ChevronRight className="size-5 text-muted-foreground" aria-hidden />}
-                    onClick={() =>
-                      setSelected({
-                        id: f.id,
-                        name: f.name,
-                        brand: f.brand,
-                        servingSizeG: num(f.serving_size_g, 100),
-                        kcal: num(f.kcal),
-                      })
-                    }
-                  />
-                </li>
-              ))}
-            </ResultList>
+            <div
+              className={cn(
+                "transition-opacity",
+                foods.isPlaceholderData && "pointer-events-none opacity-60",
+              )}
+            >
+              <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                {!debouncedTerm
+                  ? "Catálogo de alimentos"
+                  : foods.data.length >= LIMITE_RESULTADOS
+                    ? `Primeiros ${LIMITE_RESULTADOS} resultados — refine a busca`
+                    : `${foods.data.length} ${foods.data.length === 1 ? "resultado" : "resultados"}`}
+              </p>
+              <ResultList>
+                {foods.data.map((f) => (
+                  <li key={f.id}>
+                    <ResultRow
+                      thumb={<FoodThumb food={f} />}
+                      title={f.name}
+                      detail={
+                        <>
+                          <span className="font-semibold text-foreground">
+                            {kcalFmt(f.kcal)} kcal
+                          </span>{" "}
+                          em {gFmt(f.servingSizeG)} g{f.brand ? ` · ${f.brand}` : ""}
+                        </>
+                      }
+                      aside={<ChevronRight className="size-5 text-muted-foreground" aria-hidden />}
+                      onClick={() => setSelected(f)}
+                    >
+                      <MacrosLinha food={f} />
+                    </ResultRow>
+                  </li>
+                ))}
+              </ResultList>
+            </div>
           )
         ) : receitas.isPending ? (
           <ResultsLoading />
@@ -311,6 +395,56 @@ export function FoodPicker({
   );
 }
 
+/**
+ * Foto do alimento quando o catálogo tem uma; senão, o símbolo da categoria —
+ * um identificador neutro, que não finge ser foto do prato.
+ */
+function FoodThumb({ food, grande }: { food: FoodOption; grande?: boolean }) {
+  const [quebrada, setQuebrada] = useState(false);
+  const tamanho = grande ? "size-16 rounded-2xl text-3xl" : "size-12 rounded-xl text-xl";
+  if (food.imageUrl && !quebrada) {
+    return (
+      <img
+        src={food.imageUrl}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        onError={() => setQuebrada(true)}
+        className={cn("shrink-0 object-cover", tamanho)}
+      />
+    );
+  }
+  return (
+    <span aria-hidden className={cn("grid shrink-0 place-items-center bg-primary/10", tamanho)}>
+      {CATEGORY_EMOJI[food.category ?? "other"] ?? CATEGORY_EMOJI.other}
+    </span>
+  );
+}
+
+/** Proteína, carboidrato e gordura por porção do catálogo — só os que existem. */
+function MacrosLinha({ food }: { food: FoodOption }) {
+  const macros = (
+    [
+      ["P", food.proteinG],
+      ["C", food.carbsG],
+      ["G", food.fatG],
+    ] as const
+  ).filter((m): m is readonly ["P" | "C" | "G", number] => m[1] !== null);
+  if (macros.length === 0) return null;
+  return (
+    <span className="mt-1.5 flex flex-wrap gap-1">
+      {macros.map(([rotulo, v]) => (
+        <span
+          key={rotulo}
+          className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium tabular-nums text-muted-foreground"
+        >
+          {rotulo} {gFmt(v)} g
+        </span>
+      ))}
+    </span>
+  );
+}
+
 function EscolherGramas({
   food,
   grams,
@@ -321,7 +455,7 @@ function EscolherGramas({
   confirmLabel,
   isPending,
 }: {
-  food: PickedFood;
+  food: FoodOption;
   grams: string;
   setGrams: (g: string) => void;
   invalid: boolean;
@@ -331,66 +465,149 @@ function EscolherGramas({
   isPending?: boolean;
 }) {
   const valor = Number(grams);
+  const fator = invalid ? 0 : valor / (food.servingSizeG || 100);
+  const passo = (delta: number) =>
+    setGrams(String(Math.min(10_000, Math.max(1, (invalid ? 0 : valor) + delta))));
+  const atalhos = [
+    ...(food.measure && food.measureG
+      ? [{ g: food.measureG, rotulo: `1 ${food.measure} · ${gFmt(food.measureG)} g` }]
+      : []),
+    ...QUICK_GRAMS.map((g) => ({ g, rotulo: `${g} g` })),
+  ];
+  const valores: [string, number | null][] = [
+    ["Proteína", food.proteinG],
+    ["Carbo", food.carbsG],
+    ["Gordura", food.fatG],
+  ];
+
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-muted-foreground">
-        {Math.round(food.kcal)} kcal por {food.servingSizeG} g{food.brand ? ` · ${food.brand}` : ""}
-      </p>
-      <div className="space-y-2">
-        <Label htmlFor="food-grams">Quantidade (g)</Label>
-        <Input
-          id="food-grams"
-          type="number"
-          inputMode="decimal"
-          min={1}
-          max={10000}
-          value={grams}
-          onChange={(e) => setGrams(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") onConfirm();
-          }}
-          aria-invalid={invalid}
-          aria-describedby={invalid ? "food-grams-error" : undefined}
-          className="h-14 rounded-2xl text-2xl font-bold tabular-nums"
-          autoFocus
-        />
+    <div className="flex min-h-full flex-col gap-5">
+      {/* O alimento escolhido, em destaque. */}
+      <div className="flex items-center gap-3 rounded-2xl border border-primary/30 bg-primary/[0.06] p-3">
+        <FoodThumb food={food} grande />
+        <div className="min-w-0 flex-1">
+          <p className="break-words font-bold leading-snug">{food.name}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {kcalFmt(food.kcal)} kcal em {gFmt(food.servingSizeG)} g
+            {food.brand ? ` · ${food.brand}` : ""}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onBack}
+          className="shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/10"
+        >
+          Trocar
+        </button>
+      </div>
+
+      <div className="space-y-2.5">
+        <Label htmlFor="food-grams">Quantidade</Label>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => passo(-10)}
+            disabled={invalid || valor <= 1}
+            aria-label="Diminuir 10 g"
+            className="grid size-14 shrink-0 place-items-center rounded-2xl bg-card transition-colors hover:bg-elevated disabled:opacity-40"
+          >
+            <Minus className="size-5" aria-hidden />
+          </button>
+          <div className="relative min-w-0 flex-1">
+            <Input
+              id="food-grams"
+              type="number"
+              inputMode="decimal"
+              min={1}
+              max={10000}
+              value={grams}
+              onChange={(e) => setGrams(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") onConfirm();
+              }}
+              aria-invalid={invalid}
+              aria-describedby={invalid ? "food-grams-error" : undefined}
+              className="h-14 rounded-2xl pr-10 text-center text-2xl font-bold tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              autoFocus
+            />
+            <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">
+              g
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => passo(10)}
+            disabled={!invalid && valor >= 10_000}
+            aria-label="Aumentar 10 g"
+            className="grid size-14 shrink-0 place-items-center rounded-2xl bg-card transition-colors hover:bg-elevated disabled:opacity-40"
+          >
+            <Plus className="size-5" aria-hidden />
+          </button>
+        </div>
         {invalid && (
           <p id="food-grams-error" className="text-xs text-destructive">
             Informe um valor entre 1 e 10.000 g.
           </p>
         )}
-        <div className="flex flex-wrap gap-1.5 pt-1">
-          {QUICK_GRAMS.map((g) => (
+        <div className="flex flex-wrap gap-1.5">
+          {atalhos.map((a) => (
             <button
-              key={g}
+              key={a.rotulo}
               type="button"
-              onClick={() => setGrams(String(g))}
+              onClick={() => setGrams(String(a.g))}
+              aria-pressed={valor === a.g}
               className={cn(
                 "rounded-full px-3 py-1.5 text-sm font-medium tabular-nums transition-colors",
-                valor === g
+                valor === a.g
                   ? "bg-primary text-primary-foreground"
                   : "bg-card text-muted-foreground hover:text-foreground",
               )}
             >
-              {g} g
+              {a.rotulo}
             </button>
           ))}
         </div>
       </div>
 
-      {!invalid && (
-        <p className="rounded-2xl bg-primary/10 px-4 py-3 text-center font-semibold text-primary tabular-nums">
-          ≈ {kcalFmt((food.kcal * valor) / (food.servingSizeG || 100))} kcal
-        </p>
-      )}
+      {/* Os valores da quantidade escolhida. */}
+      <div className="rounded-2xl bg-card p-4" aria-live="polite">
+        <div className="flex items-baseline justify-between gap-3">
+          <span className="text-sm text-muted-foreground">Nesta quantidade</span>
+          <span className="text-2xl font-extrabold tabular-nums text-primary">
+            {invalid ? "—" : kcalFmt(food.kcal * fator)}
+            <span className="ml-1 text-sm font-semibold">kcal</span>
+          </span>
+        </div>
+        <dl className="mt-3 grid grid-cols-3 gap-2 text-center">
+          {valores.map(([rotulo, v]) => (
+            <div key={rotulo} className="rounded-xl bg-background/60 px-1 py-2">
+              <dt className="text-[11px] text-muted-foreground">{rotulo}</dt>
+              <dd className="font-bold tabular-nums">
+                {v === null || invalid ? "—" : `${gFmt(v * fator)} g`}
+              </dd>
+            </div>
+          ))}
+        </dl>
+        {valores.some(([, v]) => v === null) && (
+          <p className="mt-2 text-[11px] text-muted-foreground">— sem dado no catálogo</p>
+        )}
+      </div>
 
-      <div className="flex gap-2">
-        <Button variant="outline" className="h-12" onClick={onBack}>
-          <ArrowLeft className="mr-1 size-4" />
+      <div className="sticky bottom-0 -mx-5 -mb-6 mt-auto flex gap-2 border-t border-border/60 bg-background px-5 py-3">
+        <Button variant="outline" className="h-12 rounded-xl" onClick={onBack}>
+          <ArrowLeft className="mr-1 size-4" aria-hidden />
           Voltar
         </Button>
-        <Button className="h-12 flex-1" onClick={onConfirm} disabled={invalid || isPending}>
-          {isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
+        <Button
+          className="h-12 flex-1 rounded-xl text-base font-bold"
+          onClick={onConfirm}
+          disabled={invalid || isPending}
+        >
+          {isPending ? (
+            <Loader2 className="mr-2 size-4 animate-spin" aria-hidden />
+          ) : (
+            <Plus className="mr-1.5 size-4" aria-hidden />
+          )}
           {confirmLabel}
         </Button>
       </div>

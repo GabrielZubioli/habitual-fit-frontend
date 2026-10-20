@@ -341,7 +341,6 @@ function AbaMusculos({ porMusculo }: { porMusculo?: Map<string, number> }) {
               <Link
                 to="/exercises"
                 search={{ grupo: g.key }}
-                data-tour="exercicios-grupo"
                 className="flex h-full flex-col items-center rounded-[1.25rem] bg-card p-3 text-center transition-colors hover:bg-elevated active:scale-[0.98]"
               >
                 {/* A região do grupo, aproximada (costas da cintura para cima etc.). */}
@@ -737,7 +736,6 @@ function ExerciseListRow({
         params={{ id: exercise.id }}
         className="flex min-w-0 flex-1 items-center gap-3.5"
         aria-label={`Abrir ${exercise.name}`}
-        data-tour="exercicio-item"
       >
         <span className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-xl bg-white">
           {miniatura ? (

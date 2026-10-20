@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import {
   Check,
   ChevronDown,
-  Clock,
   CopyPlus,
   Loader2,
   Minus,
@@ -30,7 +29,7 @@ import {
   substituteEntry,
   type DayEntry,
 } from "@/data/diet-day";
-import { ensureActiveMealPlan, setMealLabel, setMealTime } from "@/data/meal-plans";
+import { ensureActiveMealPlan, setMealLabel } from "@/data/meal-plans";
 import {
   Dialog,
   DialogContent,
@@ -274,20 +273,6 @@ function DietPage() {
     onError: (e) => toast.error(errorMessage(e)),
   });
 
-  const mudarHorario = useMutation({
-    mutationFn: async ({ slot, hora }: { slot: MealValue; hora: string }) => {
-      if (!plan.data) throw new Error("O plano alimentar ainda está carregando.");
-      await setMealTime(
-        plan.data.id,
-        slot,
-        hora,
-        MEALS.findIndex((m) => m.key === slot),
-      );
-    },
-    onSuccess: () => void qc.invalidateQueries({ queryKey: queryKeys.diet.activePlan() }),
-    onError: (e) => toast.error(errorMessage(e)),
-  });
-
   return (
     <>
       <PageHeader
@@ -309,7 +294,6 @@ function DietPage() {
         <div
           role="tablist"
           aria-label="Seção da dieta"
-          data-tour="dieta-abas"
           className="mb-4 flex rounded-2xl bg-card p-1"
         >
           {(
@@ -322,7 +306,6 @@ function DietPage() {
               key={v}
               type="button"
               role="tab"
-              data-tour={`dieta-aba-${v}`}
               aria-selected={aba === v}
               onClick={() => setAba(v)}
               className={cn(
@@ -425,10 +408,8 @@ function DietPage() {
                     nome={nomeDe(slot)}
                     onRename={(nome, escopo) => renomear.mutateAsync({ slot, nome, escopo })}
                     diaHoje={date === hoje}
-                    onChangeTime={(hora) => mudarHorario.mutate({ slot, hora })}
                     date={date}
                     items={rows.filter((r) => r.slot === slot)}
-                    targetTime={plan.data?.meals.find((m) => m.slot === slot)?.targetTime ?? null}
                     isPending={entries.isPending}
                     userId={userId}
                     onRemove={(id) => remove.mutate(id)}
@@ -470,10 +451,8 @@ function MealCard({
   nome,
   onRename,
   diaHoje,
-  onChangeTime,
   date,
   items,
-  targetTime,
   isPending,
   userId,
   onRemove,
@@ -485,10 +464,8 @@ function MealCard({
   onRename: (nome: string, escopo: "semana" | "dia") => Promise<void>;
   /** O dia aberto é hoje: muda o texto da opção "somente hoje". */
   diaHoje: boolean;
-  onChangeTime: (hora: string) => void;
   date: string;
   items: DayEntry[];
-  targetTime: string | null;
   isPending: boolean;
   userId: string;
   onRemove: (id: string) => void;
@@ -605,23 +582,18 @@ function MealCard({
                 />
               )}
             </h3>
-            <p className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
-              <HorarioRefeicao
-                valor={targetTime?.slice(0, 5) ?? ""}
-                nome={nome}
-                onSalvar={onChangeTime}
-              />
-              {fechada && (
-                <span>
-                  {items.length} {items.length === 1 ? "alimento" : "alimentos"}
-                </span>
-              )}
-              {items.length > 0 && (
+            {items.length > 0 && (
+              <p className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                {fechada && (
+                  <span>
+                    {items.length} {items.length === 1 ? "alimento" : "alimentos"}
+                  </span>
+                )}
                 <span className="whitespace-nowrap rounded-full bg-primary/15 px-2 py-0.5 font-bold tabular-nums text-primary">
                   {Math.round(totals.kcal)} kcal · P {Math.round(totals.proteinG)} g
                 </span>
-              )}
-            </p>
+              </p>
+            )}
           </div>
 
           {todosConsumidos && (
@@ -980,7 +952,6 @@ function RenomearRefeicao({
         <button
           type="button"
           aria-label={`Renomear ${atual}`}
-          data-tour="renomear-refeicao"
           className="grid size-7 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-elevated hover:text-foreground"
         >
           <Pencil className="size-3.5" />
@@ -1118,38 +1089,5 @@ function MacroLinha({
         )}
       </p>
     </div>
-  );
-}
-
-/**
- * Horário da refeição, editável no lugar: tocar abre o seletor de hora do
- * próprio celular. Grava ao terminar de escolher (no blur), não a cada giro
- * da roleta do iPhone.
- */
-function HorarioRefeicao({
-  valor,
-  nome,
-  onSalvar,
-}: {
-  valor: string;
-  nome: string;
-  onSalvar: (hora: string) => void;
-}) {
-  const [hora, setHora] = useState(valor);
-  useEffect(() => setHora(valor), [valor]);
-  return (
-    <label className="inline-flex cursor-pointer items-center gap-1 rounded-full bg-muted/60 px-2 py-0.5 tabular-nums transition-colors hover:bg-muted">
-      <Clock className="size-3" aria-hidden />
-      <input
-        type="time"
-        value={hora}
-        onChange={(e) => setHora(e.target.value)}
-        onBlur={() => {
-          if (/^d{2}:d{2}$/.test(hora) && hora !== valor) onSalvar(hora);
-        }}
-        aria-label={`Horário de ${nome.toLowerCase()}`}
-        className="w-[3.4rem] cursor-pointer bg-transparent text-xs outline-none [&::-webkit-calendar-picker-indicator]:hidden"
-      />
-    </label>
   );
 }

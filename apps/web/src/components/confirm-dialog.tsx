@@ -40,9 +40,7 @@ export function ConfirmDialog({
           {description && <AlertDialogDescription>{description}</AlertDialogDescription>}
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel className="rounded-2xl" data-tour="confirmar-cancelar">
-            Cancelar
-          </AlertDialogCancel>
+          <AlertDialogCancel className="rounded-2xl">Cancelar</AlertDialogCancel>
           <AlertDialogAction
             className={cn(
               "rounded-2xl font-bold",

@@ -112,11 +112,7 @@ function StatsPage() {
       />
       <PageBody>
         {/* Herói: a semana atual contra a meta e as últimas 12 semanas. */}
-        <section
-          className="animate-in fade-in duration-500"
-          aria-label="Constância"
-          data-tour="stats-semana"
-        >
+        <section className="animate-in fade-in duration-500" aria-label="Constância">
           <div className="relative flex items-start justify-between gap-3">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-primary">
@@ -427,7 +423,7 @@ function Historico() {
   const maxVolume = Math.max(1, ...lista.map((s) => Number(s.total_volume_kg ?? 0)));
 
   return (
-    <section aria-labelledby="historico-titulo" data-tour="stats-treinos">
+    <section aria-labelledby="historico-titulo">
       <Titulo id="historico-titulo">Últimos treinos</Titulo>
       {historico.isPending ? (
         <Skeleton className="h-32 w-full rounded-[1.25rem]" />

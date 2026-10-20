@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
 import { toast } from "sonner";
@@ -11,11 +11,16 @@ import {
   Flag,
   Flame,
   Loader2,
+  Lock,
+  LogOut,
   Pencil,
   Ruler,
   Scale,
+  Share2,
   Target,
+  Trophy,
   User,
+  type LucideIcon,
 } from "lucide-react";
 import { yearsBetween } from "@forja/domain";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,8 +28,13 @@ import type { Tables, TablesUpdate } from "@/integrations/supabase/types";
 import { queryKeys } from "@/data/query-keys";
 import { assertOk, errorMessage, num, unwrapMaybe } from "@/data/supabase-helpers";
 import { fetchWeightEnds, fetchWorkoutCounts } from "@/data/body";
+import { fetchPersonalRecords } from "@/data/workouts";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { useStreak } from "@/hooks/use-streak";
 import { AvatarPicker } from "@/components/profile/avatar-picker";
+import { ShareProfileDialog } from "@/components/profile/share-profile-dialog";
+import { ActivityHeatmap } from "@/components/workouts/activity-heatmap";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { DatePicker } from "@/components/date-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,17 +48,19 @@ import {
 } from "@/components/ui/dialog";
 import { ErrorState } from "@/components/query-boundary";
 import { ACTIVITY_HINTS, ACTIVITY_LABELS, GOAL_LABELS, SEX_LABELS, label } from "@/lib/labels";
+import { EXPERIENCE_OPTIONS, FOCUS_OPTIONS, PLACE_OPTIONS } from "@/lib/onboarding/options";
 import { weightJourney } from "@/lib/weight-journey";
 import { formatDate, todayISO } from "@/lib/date";
 import { cn } from "@/lib/utils";
 
 /**
- * Perfil: quem a pessoa é — e onde ela muda isso.
+ * Perfil: a vitrine da pessoa no Habitual Fit — e onde ela muda os dados.
  *
- * Uma faixa no topo com a foto (toque para trocar), o nome e o objetivo; os
- * dados pessoais embaixo, em blocos. Cada bloco é editável ali mesmo: toque,
- * ajuste, salve. As metas nutricionais não são calculadas a partir daqui: são
- * manuais e opcionais, em Configurações.
+ * Em cima, a identidade (foto, nome, objetivo e o jeito de treinar), com
+ * compartilhar e sair no canto. Depois a evolução e os destaques, sempre a
+ * partir do que foi registrado de verdade: sem treino, um convite em vez de
+ * números zerados. Por último os dados pessoais, marcados como privados —
+ * editáveis ali mesmo. As metas nutricionais são manuais, em Configurações.
  */
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({
@@ -58,6 +70,8 @@ export const Route = createFileRoute("/_authenticated/profile")({
 });
 
 const fmt = (n: number) => n.toLocaleString("pt-BR", { maximumFractionDigits: 1 });
+const opcao = (opcoes: { value: string; label: string }[], v: string | null | undefined) =>
+  opcoes.find((o) => o.value === v)?.label ?? null;
 
 type Campo =
   | "display_name"
@@ -70,7 +84,11 @@ type Campo =
 
 function ProfilePage() {
   const user = useCurrentUser();
+  const qc = useQueryClient();
+  const navigate = useNavigate();
   const [editando, setEditando] = useState<Campo | null>(null);
+  const [confirmandoSaida, setConfirmandoSaida] = useState(false);
+  const [compartilhando, setCompartilhando] = useState(false);
 
   const profile = useQuery({
     queryKey: queryKeys.profile(),
@@ -85,6 +103,20 @@ function ProfilePage() {
     queryKey: [...queryKeys.workouts.all, "counts"],
     queryFn: fetchWorkoutCounts,
   });
+  // Mesma consulta da tela de Estatísticas (mesma chave): aqui só os três primeiros.
+  const recordes = useQuery({
+    queryKey: queryKeys.workouts.personalRecords(),
+    queryFn: () => fetchPersonalRecords(20),
+  });
+  const sequencia = useStreak();
+
+  /** O logout de sempre: para as consultas, limpa o cache e encerra a sessão. */
+  const sair = async () => {
+    await qc.cancelQueries();
+    qc.clear();
+    await supabase.auth.signOut();
+    void navigate({ to: "/auth", replace: true });
+  };
 
   if (profile.isError) {
     return (
@@ -105,24 +137,52 @@ function ProfilePage() {
     currentKg: peso,
     goalKg: meta,
   });
+  const totalTreinos = treinos.data?.total ?? null;
+  const destaques = (recordes.data ?? []).slice(0, 3);
+  const objetivo = p?.goal ? label(GOAL_LABELS, p.goal) : null;
+
+  /** O jeito de treinar, das respostas do questionário — só o que foi respondido. */
+  const estilo = [
+    opcao(EXPERIENCE_OPTIONS, p?.experience_level),
+    opcao(PLACE_OPTIONS, p?.training_place),
+    p?.days_per_week ? `${p.days_per_week}× por semana` : null,
+    p?.focus_area && p.focus_area !== "full_body"
+      ? `Foco em ${opcao(FOCUS_OPTIONS, p.focus_area)?.toLowerCase()}`
+      : null,
+  ].filter((s): s is string => Boolean(s));
 
   return (
     <div className="mx-auto w-full max-w-3xl pb-10">
-      {/* A faixa: cor da marca e o título. */}
+      {/* A faixa da marca, com compartilhar e sair no canto. */}
       <header
-        className="relative h-44 overflow-hidden md:mx-8 md:mt-8 md:rounded-[2rem]"
+        className="relative h-48 overflow-hidden md:mx-8 md:mt-8 md:rounded-[2rem]"
         style={{ background: "var(--gradient-primary)" }}
       >
         <div className="absolute -right-10 -top-16 size-56 rounded-full bg-white/10" aria-hidden />
         <div className="absolute -bottom-20 left-8 size-40 rounded-full bg-black/10" aria-hidden />
-        <h1 className="relative px-5 pt-6 text-[2rem] font-extrabold leading-none tracking-tight text-primary-foreground">
-          Perfil
-        </h1>
+        <div className="relative flex items-start justify-between gap-3 px-5 pt-6">
+          <h1 className="text-[2rem] font-extrabold leading-none tracking-tight text-primary-foreground">
+            Perfil
+          </h1>
+          <div className="flex gap-2">
+            <BotaoTopo
+              icon={Share2}
+              rotulo="Compartilhar perfil"
+              onClick={() => setCompartilhando(true)}
+              disabled={!p}
+            />
+            <BotaoTopo
+              icon={LogOut}
+              rotulo="Sair da conta"
+              onClick={() => setConfirmandoSaida(true)}
+            />
+          </div>
+        </div>
       </header>
 
       <div className="px-4 md:px-8">
-        {/* Foto sobre a faixa, nome e objetivo. */}
-        <section className="-mt-16 flex flex-col items-center text-center">
+        {/* Identidade: foto sobre a faixa, nome, objetivo e o jeito de treinar. */}
+        <section className="-mt-20 flex flex-col items-center text-center">
           {profile.isPending ? (
             <Skeleton className="size-32 rounded-full ring-4 ring-background" />
           ) : (
@@ -138,20 +198,163 @@ function ProfilePage() {
             <button
               type="button"
               onClick={() => setEditando("display_name")}
-              className="group mt-4 flex items-center gap-2 rounded-xl px-2 py-1 transition-colors hover:bg-card"
+              className="group mt-4 flex max-w-full items-center gap-2 rounded-xl px-2 py-1 transition-colors hover:bg-card"
               aria-label="Editar nome"
             >
-              <h2 className="text-3xl font-extrabold tracking-tight">
+              <h2 className="truncate text-3xl font-extrabold tracking-tight">
                 {p?.display_name?.trim() || "Seu nome"}
               </h2>
-              <Pencil className="size-4 text-muted-foreground group-hover:text-foreground" />
+              <Pencil className="size-4 shrink-0 text-muted-foreground group-hover:text-foreground" />
             </button>
           )}
-          <p className="mt-1 text-muted-foreground">{user.email}</p>
+          {p?.created_at && (
+            <p className="mt-1 text-sm text-muted-foreground">
+              No Habitual Fit desde {formatDate(p.created_at, "MMMM 'de' yyyy")}
+            </p>
+          )}
+
+          {(objetivo || estilo.length > 0) && (
+            <ul className="mt-4 flex flex-wrap justify-center gap-2" aria-label="Como você treina">
+              {objetivo && (
+                <li className="rounded-full bg-primary px-3 py-1 text-sm font-bold text-primary-foreground">
+                  {objetivo}
+                </li>
+              )}
+              {estilo.map((s) => (
+                <li
+                  key={s}
+                  className="rounded-full border border-border bg-card px-3 py-1 text-sm font-medium"
+                >
+                  {s}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <div className="mt-5 grid w-full max-w-sm grid-cols-2 gap-2">
+            <Button
+              variant="outline"
+              className="h-11 rounded-xl"
+              onClick={() =>
+                document.getElementById("dados")?.scrollIntoView({ behavior: "smooth" })
+              }
+            >
+              <Pencil className="mr-1.5 size-4" aria-hidden />
+              Editar perfil
+            </Button>
+            <Button
+              className="h-11 rounded-xl font-bold"
+              onClick={() => setCompartilhando(true)}
+              disabled={!p}
+            >
+              <Share2 className="mr-1.5 size-4" aria-hidden />
+              Compartilhar
+            </Button>
+          </div>
         </section>
 
-        {/* Os dados — cada bloco abre a edição. */}
-        <h3 className="mb-3 mt-8 px-1 text-lg text-muted-foreground">Dados pessoais</h3>
+        {/* Evolução: só números que existem. */}
+        <Titulo>Evolução</Titulo>
+        {treinos.isPending ? (
+          <Skeleton className="h-28 rounded-[1.25rem]" />
+        ) : totalTreinos === 0 ? (
+          <div className="rounded-[1.5rem] border border-dashed border-primary/40 bg-primary/5 p-5 text-center">
+            <Dumbbell className="mx-auto size-8 text-primary" aria-hidden />
+            <p className="mt-2 text-lg font-bold">Seu portfólio começa no primeiro treino</p>
+            <p className="mt-1 text-pretty text-sm text-muted-foreground">
+              Treinos, sequência e recordes aparecem aqui conforme você registra.
+            </p>
+            <Button asChild className="mt-4 h-11 rounded-xl">
+              <Link to="/train">Começar um treino</Link>
+            </Button>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-3 gap-3">
+              <Numero icon={Dumbbell} valor={totalTreinos} rotulo="Treinos" />
+              <Numero icon={CalendarHeart} valor={treinos.data?.month} rotulo="Neste mês" />
+              <Numero
+                icon={Flame}
+                valor={sequencia.isPending ? null : sequencia.dias}
+                rotulo={sequencia.dias === 1 ? "Dia seguido" : "Dias seguidos"}
+              />
+            </div>
+            <section
+              className="mt-3 rounded-[1.25rem] bg-card p-4"
+              aria-label="Constância no último ano"
+            >
+              <p className="mb-3 text-sm font-semibold text-muted-foreground">
+                Constância no último ano
+              </p>
+              <ActivityHeatmap />
+            </section>
+          </>
+        )}
+
+        {/* A jornada até a meta. */}
+        {jornada && (
+          <section className="mt-3 rounded-[1.25rem] bg-card p-5" aria-label="Jornada de peso">
+            <div className="flex items-center justify-between text-sm text-muted-foreground">
+              <span>Início {fmt(jornada.startKg)} kg</span>
+              <span className="flex items-center gap-1">
+                <Flag className="size-4 text-primary" aria-hidden />
+                Meta {fmt(jornada.goalKg)} kg
+              </span>
+            </div>
+            <div
+              className="mt-3 h-3 overflow-hidden rounded-full bg-elevated"
+              role="img"
+              aria-label={`${jornada.percent}% do caminho até a meta`}
+            >
+              <div
+                className="h-full rounded-full bg-primary"
+                style={{ width: `${Math.max(4, jornada.percent)}%` }}
+              />
+            </div>
+            <p className="mt-3 text-lg font-semibold">
+              {jornada.reached
+                ? "Você chegou à meta 🎉"
+                : `${jornada.percent}% do caminho · faltam ${fmt(jornada.remainingKg)} kg`}
+            </p>
+          </section>
+        )}
+
+        {/* Destaques: os recordes de verdade, nunca conquistas inventadas. */}
+        {destaques.length > 0 && (
+          <>
+            <Titulo>Destaques</Titulo>
+            <ul className="divide-y divide-border/60 overflow-hidden rounded-[1.25rem] bg-card">
+              {destaques.map((r) => (
+                <li key={r.exerciseId} className="flex items-center gap-3 p-4">
+                  <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
+                    <Trophy className="size-5" aria-hidden />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-semibold">{r.exerciseName}</span>
+                    <span className="block text-xs text-muted-foreground">
+                      Recorde em {formatDate(r.date, "d 'de' MMM")}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-right font-extrabold tabular-nums">
+                    {fmt(r.weightKg)} kg
+                    <span className="block text-xs font-medium text-muted-foreground">
+                      × {r.reps} {r.reps === 1 ? "repetição" : "repetições"}
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+
+        {/* Os dados — privados; cada bloco abre a edição. */}
+        <div id="dados" className="mb-3 mt-8 flex scroll-mt-6 items-center justify-between px-1">
+          <h3 className="text-lg text-muted-foreground">Dados pessoais</h3>
+          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Lock className="size-3.5" aria-hidden />
+            Só você vê
+          </span>
+        </div>
         {profile.isPending ? (
           <div className="grid grid-cols-2 gap-3">
             {Array.from({ length: 8 }, (_, i) => (
@@ -163,7 +366,7 @@ function ProfilePage() {
             <Dado
               icon={<Flame />}
               rotulo="Objetivo"
-              valor={p?.goal ? label(GOAL_LABELS, p.goal) : null}
+              valor={objetivo}
               onEdit={() => setEditando("goal")}
               pequeno
             />
@@ -215,14 +418,14 @@ function ProfilePage() {
               onEdit={() => setEditando("sex")}
               pequeno
             />
-            <div className="rounded-[1.25rem] bg-card p-4">
+            <Bloco>
               <ConteudoDado
                 icon={<Activity />}
                 rotulo="IMC"
                 valor={imc && fmt(imc)}
                 nota={imc ? faixaImc(imc) : "Precisa de peso e altura"}
               />
-            </div>
+            </Bloco>
           </div>
         )}
 
@@ -249,69 +452,98 @@ function ProfilePage() {
           </Link>
         )}
 
-        {/* A jornada até a meta. */}
-        {jornada && (
-          <section className="mt-3 rounded-[1.25rem] bg-card p-5" aria-label="Jornada de peso">
-            <div className="flex items-center justify-between text-sm text-muted-foreground">
-              <span>Início {fmt(jornada.startKg)} kg</span>
-              <span className="flex items-center gap-1">
-                <Flag className="size-4 text-primary" aria-hidden />
-                Meta {fmt(jornada.goalKg)} kg
-              </span>
-            </div>
-            <div
-              className="mt-3 h-3 overflow-hidden rounded-full bg-elevated"
-              role="img"
-              aria-label={`${jornada.percent}% do caminho até a meta`}
-            >
-              <div
-                className="h-full rounded-full bg-primary"
-                style={{ width: `${Math.max(4, jornada.percent)}%` }}
-              />
-            </div>
-            <p className="mt-3 text-lg font-semibold">
-              {jornada.reached
-                ? "Você chegou à meta 🎉"
-                : `${jornada.percent}% do caminho · faltam ${fmt(jornada.remainingKg)} kg`}
-            </p>
-          </section>
-        )}
-
-        {/* Atividade no app. */}
-        <h3 className="mb-3 mt-8 px-1 text-lg text-muted-foreground">No Habitual Fit</h3>
-        <div className="grid grid-cols-3 gap-3">
-          <div className="rounded-[1.25rem] bg-card p-4">
-            <ConteudoDado
-              pequeno
-              icon={<Dumbbell />}
-              rotulo="Treinos"
-              valor={treinos.data?.total ?? null}
-            />
-          </div>
-          <div className="rounded-[1.25rem] bg-card p-4">
-            <ConteudoDado
-              pequeno
-              icon={<CalendarHeart />}
-              rotulo="Este mês"
-              valor={treinos.data?.month ?? null}
-            />
-          </div>
-          <div className="rounded-[1.25rem] bg-card p-4">
-            <ConteudoDado
-              pequeno
-              icon={<Flag />}
-              rotulo="Desde"
-              valor={p?.created_at ? formatDate(p.created_at, "MMM/yy") : null}
-            />
-          </div>
-        </div>
+        <p className="mt-6 truncate px-1 text-center text-xs text-muted-foreground">
+          Conectado como {user.email}
+        </p>
       </div>
 
       {p && editando && (
         <EditarCampo key={editando} campo={editando} perfil={p} onClose={() => setEditando(null)} />
       )}
+
+      {p && (
+        <ShareProfileDialog
+          open={compartilhando}
+          onOpenChange={setCompartilhando}
+          avatarPath={p.avatar_url}
+          perfil={{
+            nome: p.display_name,
+            objetivo,
+            // Zero não vai para o cartão: a opção nem aparece.
+            treinos: totalTreinos || null,
+            sequencia: sequencia.isPending ? null : sequencia.dias || null,
+            recordes: destaques,
+            metaPercent: jornada ? jornada.percent : null,
+          }}
+        />
+      )}
+
+      <ConfirmDialog
+        open={confirmandoSaida}
+        onOpenChange={setConfirmandoSaida}
+        title="Sair da conta?"
+        description="Você vai precisar entrar de novo com seu e-mail e senha. Seus dados continuam salvos."
+        confirmLabel="Sair"
+        onConfirm={() => void sair()}
+        destructive
+      />
     </div>
   );
+}
+
+/** Ícone redondo no canto da faixa, com rótulo para leitor de tela e dica ao passar o mouse. */
+function BotaoTopo({
+  icon: Icone,
+  rotulo,
+  onClick,
+  disabled,
+}: {
+  icon: LucideIcon;
+  rotulo: string;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={rotulo}
+      title={rotulo}
+      className="grid size-11 place-items-center rounded-full bg-black/15 text-primary-foreground backdrop-blur-sm transition-colors hover:bg-black/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground disabled:opacity-50"
+    >
+      <Icone className="size-5" aria-hidden />
+    </button>
+  );
+}
+
+/** Um número da evolução: ícone, valor grande e a legenda embaixo. */
+function Numero({
+  icon: Icone,
+  valor,
+  rotulo,
+}: {
+  icon: LucideIcon;
+  valor: number | null | undefined;
+  rotulo: string;
+}) {
+  return (
+    <div className="min-w-0 rounded-[1.25rem] bg-card p-4">
+      <Icone className="size-5 text-primary" aria-hidden />
+      <div className="mt-2 text-2xl font-extrabold tabular-nums">
+        {valor ?? <Skeleton className="h-8 w-10" />}
+      </div>
+      <p className="text-xs text-muted-foreground">{rotulo}</p>
+    </div>
+  );
+}
+
+function Titulo({ children }: { children: ReactNode }) {
+  return <h3 className="mb-3 mt-8 px-1 text-lg text-muted-foreground">{children}</h3>;
+}
+
+function Bloco({ children }: { children: ReactNode }) {
+  return <div className="rounded-[1.25rem] bg-card p-4">{children}</div>;
 }
 
 // ─── Edição ──────────────────────────────────────────────────────────────────

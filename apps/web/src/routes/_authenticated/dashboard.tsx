@@ -50,7 +50,7 @@ import { LazyWeightChart } from "@/components/charts/lazy-chart";
 import { formatDate, formatLongDate, fromISODate, toISODate, todayISO } from "@/lib/date";
 import { cn } from "@/lib/utils";
 import { BrandLogo } from "@/components/brand-logo";
-import { diasSeguidos } from "@/lib/streak";
+import { useStreak } from "@/hooks/use-streak";
 
 /**
  * Início: a semana, o treino de hoje e o resto do dia.
@@ -109,23 +109,14 @@ function Home() {
 
       <div className="space-y-4">
         <SequenciaCard />
-        {/* `data-tour`: âncoras do tutorial de boas-vindas. */}
-        <div data-tour="home-semana">
-          <SemanaCard />
-        </div>
-        <div data-tour="home-prontidao">
-          <ReadinessCard />
-        </div>
-        <div data-tour="home-peso">
-          <PesoCard />
-        </div>
-        <div data-tour="home-dieta">
-          <DietaCard
-            kcalTarget={num(profile.data?.daily_kcal_target)}
-            proteinTarget={num(profile.data?.protein_g_target)}
-            loadingProfile={profile.isPending}
-          />
-        </div>
+        <SemanaCard />
+        <ReadinessCard />
+        <PesoCard />
+        <DietaCard
+          kcalTarget={num(profile.data?.daily_kcal_target)}
+          proteinTarget={num(profile.data?.protein_g_target)}
+          loadingProfile={profile.isPending}
+        />
         <WaterCard date={today} targetMl={num(profile.data?.water_ml_target, 2500)} />
         <Link
           to="/coach"
@@ -581,32 +572,7 @@ function PesoCard() {
 /** Semanas seguidas na meta, a semana atual e o total. */
 function SequenciaCard() {
   const today = todayISO();
-  const routine = useQuery({
-    queryKey: queryKeys.workouts.activeRoutine(),
-    queryFn: fetchActiveRoutine,
-  });
-  const recentes = useQuery({
-    queryKey: [...queryKeys.workouts.all, "completed-recent"],
-    queryFn: () => {
-      const inicio = startOfWeek(new Date(), { weekStartsOn: 1 });
-      return fetchCompletedWorkouts(
-        toISODate(addDays(inicio, -7 * 25)),
-        toISODate(addDays(inicio, 6)),
-      );
-    },
-  });
-  const r = routine.data;
-  const treinou = new Set((recentes.data ?? []).map((w) => w.date));
-  // Dias de treino do plano: na semana fixa, os dias das rotinas; na rotação,
-  // os dias escolhidos.
-  const diasDoPlano = new Set(
-    r
-      ? r.scheduleMode === "fixed"
-        ? r.templates.flatMap((t) => t.weekdays)
-        : r.trainingWeekdays
-      : [],
-  );
-  const dias = diasSeguidos(treinou, (wd) => diasDoPlano.has(wd), today);
+  const { dias, treinou } = useStreak();
   const aceso = dias > 0;
   const semana = Array.from({ length: 7 }, (_, i) =>
     toISODate(addDays(fromISODate(weekStart(today)), i)),

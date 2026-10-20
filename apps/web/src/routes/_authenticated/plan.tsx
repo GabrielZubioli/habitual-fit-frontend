@@ -22,7 +22,6 @@ import {
   createTemplate,
   deleteTemplate,
   saveSuggestedRoutine,
-  renameRoutine,
   renameTemplate,
   setTemplateIcon,
   setTemplateWeekdays,
@@ -87,9 +86,8 @@ function PlanPage() {
   const userId = useCurrentUserId();
   const [aba, setAba] = useState<"agenda" | "rotinas">("agenda");
   const [aberta, setAberta] = useState<string | null>(null);
-  /** Diálogo de nome aberto: renomear o plano, renomear uma rotina ou criar uma. */
+  /** Diálogo de nome aberto: renomear uma rotina ou criar uma. */
   const [nomeando, setNomeando] = useState<
-    | { tipo: "plano" }
     | { tipo: "rotina"; templateId: string; letter: string | null; atual: string }
     | { tipo: "nova" }
     | null
@@ -220,8 +218,7 @@ function PlanPage() {
 
   const salvarNome = async (nome: string) => {
     if (!nomeando) return;
-    if (nomeando.tipo === "plano") await renameRoutine(dados.routineId, nome);
-    else if (nomeando.tipo === "rotina")
+    if (nomeando.tipo === "rotina")
       await renameTemplate(nomeando.templateId, nomeando.letter, nome);
     else {
       const id = await createTemplate(userId, dados.routineId, dados.splits, nome);
@@ -274,7 +271,7 @@ function PlanPage() {
         )}
 
         {aba === "agenda" ? (
-          <section aria-label="Agenda da semana" className="mt-5" data-tour="plano-agenda">
+          <section aria-label="Agenda da semana" className="mt-5">
             <p className="px-1 text-sm text-muted-foreground">
               Cada rotina tem os seus dias. Dia sem rotina é descanso.
             </p>
@@ -358,7 +355,6 @@ function PlanPage() {
                         onClick={() => pedirInicio(split.templateId)}
                         disabled={abrir.isPending || split.exercises.length === 0}
                         aria-label={`Começar ${splitDisplayName(split.name)}`}
-                        data-tour="rotina-comecar"
                       >
                         <Play className="size-4 fill-current" aria-hidden />
                       </Button>
@@ -366,7 +362,6 @@ function PlanPage() {
                         type="button"
                         onClick={() => setAberta(expandida ? null : split.templateId)}
                         aria-label={expandida ? "Fechar rotina" : "Editar rotina"}
-                        data-tour="rotina-abrir"
                         className="grid size-9 place-items-center rounded-full text-muted-foreground hover:bg-elevated"
                       >
                         <ChevronDown
@@ -377,7 +372,7 @@ function PlanPage() {
 
                     {expandida && (
                       <div className="border-t border-border/60 p-3">
-                        <ul className="space-y-2.5" data-tour="rotina-exercicios">
+                        <ul className="space-y-2.5">
                           {split.exercises.map((exercise, i) => (
                             <RoutineExerciseRow
                               key={exercise.itemId}
@@ -446,15 +441,6 @@ function PlanPage() {
                   Dê um nome e escolha os exercícios
                 </span>
               </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setNomeando({ tipo: "plano" })}
-              className="mt-3 flex w-full items-center gap-2 px-1 py-2 text-muted-foreground hover:text-foreground"
-            >
-              <Pencil className="size-4" aria-hidden />
-              Renomear o plano “{dados.routineName}”
             </button>
 
             {!emBranco && (
@@ -564,20 +550,8 @@ function PlanPage() {
         key={nomeando ? JSON.stringify(nomeando) : "fechado"}
         open={nomeando !== null}
         onOpenChange={(o) => !o && setNomeando(null)}
-        titulo={
-          nomeando?.tipo === "plano"
-            ? "Nome do plano"
-            : nomeando?.tipo === "nova"
-              ? "Nova rotina"
-              : "Nome da rotina"
-        }
-        inicial={
-          nomeando?.tipo === "plano"
-            ? dados.routineName
-            : nomeando?.tipo === "rotina"
-              ? nomeando.atual
-              : ""
-        }
+        titulo={nomeando?.tipo === "nova" ? "Nova rotina" : "Nome da rotina"}
+        inicial={nomeando?.tipo === "rotina" ? nomeando.atual : ""}
         confirmar={nomeando?.tipo === "nova" ? "Criar" : "Salvar"}
         onSave={salvarNome}
       />
@@ -717,7 +691,7 @@ function DiaFixo({
   );
 }
 
-/** Diálogo com um campo de nome — renomear o plano, uma rotina, ou criar uma. */
+/** Diálogo com um campo de nome — renomear uma rotina ou criar uma. */
 function NomeDialog({
   open,
   onOpenChange,
@@ -797,7 +771,6 @@ function Segmented<T extends string>({
           role="radio"
           aria-checked={value === o.value}
           onClick={() => value !== o.value && onChange(o.value)}
-          data-tour={`segmento-${o.value}`}
           className={cn(
             "flex-1 rounded-xl font-medium transition-all duration-300",
             small ? "py-2 text-sm" : "py-3 text-base",

@@ -1,8 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState, type ComponentType, type SVGProps } from "react";
-import { BarChart3, BookOpen, ChevronRight, Compass, HeartPulse, List, LogOut } from "lucide-react";
-import { TUTORIAL_EVENT } from "@/components/tutorial";
+import { BarChart3, BookOpen, ChevronRight, HeartPulse, List } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { queryKeys } from "@/data/query-keys";
 import { unwrapMaybe } from "@/data/supabase-helpers";
@@ -31,7 +30,7 @@ type Icone = ComponentType<SVGProps<SVGSVGElement>>;
  */
 const DESTAQUES: { to: string; label: string; hint: string; icon: Icone }[] = [
   { to: "/stats", label: "Estatísticas", hint: "Sua evolução", icon: BarChart3 },
-  { to: "/body", label: "Corpo", hint: "Peso, medidas e fotos", icon: HeartPulse },
+  { to: "/body", label: "Corpo", hint: "Peso e medidas", icon: HeartPulse },
 ];
 
 type Item = { label: string; icon: Icone } & (
@@ -54,12 +53,10 @@ const ITENS: Item[] = [
 export function AppMenu({
   open,
   onOpenChange,
-  onSignOut,
   isActive,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
-  onSignOut: () => void;
   isActive: (to: string) => boolean;
 }) {
   const fechar = () => onOpenChange(false);
@@ -80,7 +77,6 @@ export function AppMenu({
                 <Link
                   to={d.to}
                   onClick={fechar}
-                  data-tour={`menu-${d.to.slice(1)}`}
                   aria-current={isActive(d.to) ? "page" : undefined}
                   className="flex h-full flex-col gap-3 rounded-[1.25rem] border border-border bg-card p-4 transition-colors hover:border-primary/40 active:scale-[0.98]"
                 >
@@ -101,7 +97,6 @@ export function AppMenu({
               <li key={it.label} className="border-b border-border/60 last:border-b-0">
                 <Link
                   to={it.to}
-                  data-tour={`menu-${it.to.slice(1)}`}
                   search={it.secao ? { secao: it.secao } : undefined}
                   onClick={fechar}
                   className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-elevated"
@@ -112,37 +107,10 @@ export function AppMenu({
                 </Link>
               </li>
             ))}
-            <li className="border-b border-border/60">
-              <button
-                type="button"
-                onClick={() => {
-                  fechar();
-                  // Depois de o painel fechar, para o tour medir a tela final.
-                  window.setTimeout(() => window.dispatchEvent(new Event(TUTORIAL_EVENT)), 350);
-                }}
-                className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-elevated"
-              >
-                <Compass className="size-5 shrink-0 text-muted-foreground" aria-hidden />
-                <span className="flex-1 font-medium">Ver tutorial</span>
-                <ChevronRight className="size-4 text-muted-foreground" aria-hidden />
-              </button>
-            </li>
             <li className="px-4 py-2.5">
               <ThemeSwitch />
             </li>
           </ul>
-
-          <button
-            type="button"
-            onClick={() => {
-              fechar();
-              onSignOut();
-            }}
-            className="mt-3 flex w-full items-center justify-center gap-2 rounded-[1.25rem] px-3 py-3 font-semibold text-destructive transition-colors hover:bg-destructive/10"
-          >
-            <LogOut className="size-5" aria-hidden />
-            Sair da conta
-          </button>
         </div>
       </DrawerContent>
     </Drawer>

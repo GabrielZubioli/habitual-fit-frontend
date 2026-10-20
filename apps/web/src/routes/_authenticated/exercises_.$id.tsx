@@ -226,7 +226,7 @@ function ExerciseDetail() {
       ) : (
         <>
           {/* A demonstração é o conteúdo principal: ocupa a largura e anima sozinha. */}
-          <div className="overflow-hidden rounded-[1.75rem] bg-white" data-tour="exercicio-demo">
+          <div className="overflow-hidden rounded-[1.75rem] bg-white">
             <ExerciseMediaView
               media={exerciseMedia({
                 name: ex.name,
@@ -347,9 +347,7 @@ function ExerciseDetail() {
                   </dl>
                 </div>
               </section>
-              <div data-tour="exercicio-passos">
-                <ExerciseHowTo exercise={ex} />
-              </div>
+              <ExerciseHowTo exercise={ex} />
               <a
                 href={isSafeUrl(ex.video_url) ? ex.video_url! : videoSearchUrl(ex.name)}
                 target="_blank"

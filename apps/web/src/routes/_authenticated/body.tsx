@@ -47,14 +47,20 @@ export const Route = createFileRoute("/_authenticated/body")({
 
 const HISTORY_DAYS = 180;
 
+/**
+ * Registro fotográfico: fica para uma versão futura. A implementação e as fotos
+ * já gravadas continuam aí — só a aba sai da tela enquanto isto for `false`.
+ */
+const FOTOS_LIBERADAS = false;
+
 /** Faixa plausível de peso corporal — evita erros de digitação virarem dados. */
 const WEIGHT_RANGE = { min: 20, max: 400 };
 
 /**
  * Progresso corporal.
  *
- * A aba "Resumo" vem primeiro e é a padrão porque as outras três mostram dados
- * brutos — peso, medidas, fotos — e nenhuma delas responde sozinha à pergunta
+ * A aba "Resumo" vem primeiro e é a padrão porque as outras mostram dados
+ * brutos — peso, medidas — e nenhuma delas responde sozinha à pergunta
  * que traz a pessoa aqui: "estou indo bem?". O resumo faz a leitura; as demais
  * ficam para quem quer o detalhe ou vem registrar.
  */
@@ -77,10 +83,12 @@ function BodyPage() {
               <Ruler className="mr-1.5 size-4" aria-hidden />
               Medidas
             </TabsTrigger>
-            <TabsTrigger value="photos">
-              <Camera className="mr-1.5 size-4" aria-hidden />
-              Fotos
-            </TabsTrigger>
+            {FOTOS_LIBERADAS && (
+              <TabsTrigger value="photos">
+                <Camera className="mr-1.5 size-4" aria-hidden />
+                Fotos
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="overview" className="mt-4">
@@ -92,9 +100,11 @@ function BodyPage() {
           <TabsContent value="measures" className="mt-4">
             <MeasurementsPanel />
           </TabsContent>
-          <TabsContent value="photos" className="mt-4">
-            <PhotosPanel />
-          </TabsContent>
+          {FOTOS_LIBERADAS && (
+            <TabsContent value="photos" className="mt-4">
+              <PhotosPanel />
+            </TabsContent>
+          )}
         </Tabs>
       </PageBody>
     </>
@@ -183,7 +193,10 @@ function WeightPanel() {
           */}
           {ultimo && (
             <div className="relative overflow-hidden rounded-2xl bg-[#01D798] p-4 text-[#020306]">
-              <span className="absolute -right-6 -top-8 size-24 rounded-full bg-white/20" aria-hidden />
+              <span
+                className="absolute -right-6 -top-8 size-24 rounded-full bg-white/20"
+                aria-hidden
+              />
               <p className="relative text-xs font-bold uppercase tracking-wider text-[#020306]/70">
                 Último registro
               </p>
