@@ -14,7 +14,6 @@ import {
   ProgressBar,
   Question,
   Stepper,
-  TimeField,
   WeekdayPicker,
 } from "@/components/onboarding/controls";
 import { answersSchema, type Answers } from "@/lib/onboarding/schema";
@@ -397,27 +396,10 @@ function OnboardingQuiz() {
             </Question>
           )}
 
-          {step.id === "workoutTime" && (
-            <Question
-              title="Que horas você costuma treinar?"
-              subtitle="Ajuda a organizar seu dia em torno do treino."
-            >
-              <TimeField
-                value={answers.workoutTime}
-                onChange={(v) => update({ workoutTime: v })}
-                label="Horário do treino"
-              />
-              <NextButton
-                onClick={next}
-                label={answers.workoutTime ? "Continuar" : "Não tenho horário fixo"}
-              />
-            </Question>
-          )}
-
           {step.id === "focus" && (
             <Question
               title="Alguma região que você quer priorizar?"
-              subtitle="O resto do corpo continua no plano — a escolhida só ganha volume extra."
+              subtitle="O resto do corpo continua no plano. A região escolhida ganha mais volume e, conforme os dias, mais sessões."
             >
               <ChoiceList
                 options={FOCUS_OPTIONS}
@@ -431,7 +413,7 @@ function OnboardingQuiz() {
           {step.id === "injuries" && (
             <Question
               title="Você tem alguma lesão ou dor?"
-              subtitle="Vamos evitar os exercícios que carregam essa articulação."
+              subtitle="Deixamos de fora os exercícios que carregam essa região."
             >
               <ChipGroup
                 options={INJURY_OPTIONS}
@@ -440,9 +422,9 @@ function OnboardingQuiz() {
               />
               {answers.injuries.length > 0 && (
                 <Feedback title="Importante">
-                  O app substitui os exercícios de risco por alternativas, mas não substitui
-                  avaliação profissional. Se a dor for recente ou intensa, procure um fisioterapeuta
-                  antes de voltar a treinar.
+                  A seleção automática é só uma referência geral: não é avaliação clínica e não
+                  garante que um exercício seja seguro para você. Antes de treinar com lesão ou dor,
+                  procure orientação de um profissional de saúde e de educação física.
                 </Feedback>
               )}
               <NextButton

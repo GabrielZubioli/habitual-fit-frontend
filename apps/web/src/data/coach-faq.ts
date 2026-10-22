@@ -122,7 +122,7 @@ export async function answerFaq(key: FaqKey): Promise<string> {
     case "peso": {
       const [pesos, p] = await Promise.all([fetchWeighIns(60), perfil()]);
       if (pesos.length === 0)
-        return "Você ainda não registrou nenhum peso. Registre em Corpo — com 2 ou mais pesagens eu te mostro a tendência.";
+        return "Você ainda não registrou nenhum peso. Registre em Progresso — com 2 ou mais pesagens eu te mostro a tendência.";
       const ultimo = pesos[pesos.length - 1]!;
       const linhas = [`Seu último registro: ${n(ultimo.kg, 1)} kg.`];
       if (pesos.length >= 2) {
@@ -149,7 +149,7 @@ export async function answerFaq(key: FaqKey): Promise<string> {
       const [p, kg] = await Promise.all([perfil(), ultimoPeso()]);
       const ml = p?.water_ml_target ?? (kg ? Math.round((kg * 35) / 250) * 250 : null);
       if (!ml)
-        return "Registre seu peso em Corpo e eu calculo sua meta de água (cerca de 35 ml por kg).";
+        return "Registre seu peso em Progresso e eu calculo sua meta de água (cerca de 35 ml por kg).";
       return `Sua meta é de ${n(ml / 1000, 2)} L por dia — uns ${Math.round(ml / 250)} copos de 250 ml.${p?.water_ml_target ? "" : ` Calculei pelo seu peso (${n(kg ?? 0, 1)} kg × 35 ml).`}\n\nNos dias de treino, some mais 500 ml a 1 L.`;
     }
     case "recordes": {

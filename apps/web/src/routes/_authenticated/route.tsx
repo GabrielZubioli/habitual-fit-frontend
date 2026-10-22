@@ -33,7 +33,6 @@ import { ThemeSwitch } from "@/components/theme-switch";
 import { AppMenu } from "@/components/app-menu";
 import { useSwipeNav } from "@/lib/swipe-nav";
 import { CommandPalette, CommandPaletteTrigger } from "@/components/command-palette";
-import { CoachIcon } from "@/components/coach/coach-icon";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -72,8 +71,7 @@ const NAV_ITEMS = [
 const SECONDARY_NAV = [
   { to: "/exercises", label: "Exercícios", icon: List },
   { to: "/stats", label: "Estatísticas", icon: BarChart3 },
-  { to: "/coach", label: "Treinador", icon: CoachIcon },
-  { to: "/body", label: "Corpo", icon: HeartPulse },
+  { to: "/body", label: "Progresso", icon: HeartPulse },
   { to: "/recipes", label: "Receitas", icon: BookOpen },
   { to: "/profile", label: "Perfil", icon: User },
 ] as const;

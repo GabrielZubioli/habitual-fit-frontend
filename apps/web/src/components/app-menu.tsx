@@ -14,7 +14,6 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { CoachIcon } from "@/components/coach/coach-icon";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { SETTINGS_SECTIONS } from "@/components/profile/settings-sections";
 
@@ -30,7 +29,7 @@ type Icone = ComponentType<SVGProps<SVGSVGElement>>;
  */
 const DESTAQUES: { to: string; label: string; hint: string; icon: Icone }[] = [
   { to: "/stats", label: "Estatísticas", hint: "Sua evolução", icon: BarChart3 },
-  { to: "/body", label: "Corpo", hint: "Peso e medidas", icon: HeartPulse },
+  { to: "/body", label: "Progresso", hint: "Peso e medidas", icon: HeartPulse },
 ];
 
 type Item = { label: string; icon: Icone } & (
@@ -40,7 +39,6 @@ type Item = { label: string; icon: Icone } & (
 
 const ITENS: Item[] = [
   { to: "/exercises", label: "Exercícios", icon: List },
-  { to: "/coach", label: "Treinador", icon: CoachIcon },
   { to: "/recipes", label: "Receitas", icon: BookOpen },
   ...SETTINGS_SECTIONS.map((s) => ({
     to: "/settings" as const,

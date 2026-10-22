@@ -54,7 +54,6 @@ export const STEPS = [
   { id: "daysPerWeek" },
   { id: "duration", autoAdvance: true },
   { id: "weekdays" },
-  { id: "workoutTime" },
   { id: "focus", autoAdvance: true },
   { id: "injuries" },
   { id: "mealsPerDay", autoAdvance: true },

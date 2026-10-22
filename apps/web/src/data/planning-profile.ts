@@ -177,6 +177,7 @@ export function trainingPlanInput(answers: Answers) {
     daysPerWeek: answers.daysPerWeek ?? 3,
     duration: (answers.duration ?? "average") as SessionDuration,
     focus: answers.focus ?? "full_body",
+    injuries: answers.injuries,
   } as const;
 }
 

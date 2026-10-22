@@ -26,6 +26,7 @@ export const PLACES = ["full_gym", "small_gym", "home_equipped", "home_bodyweigh
 export const DURATIONS = ["quick", "short", "average", "long"] as const;
 export const FOCUS_AREAS = [
   "full_body",
+  "upper",
   "chest",
   "back",
   "shoulders",

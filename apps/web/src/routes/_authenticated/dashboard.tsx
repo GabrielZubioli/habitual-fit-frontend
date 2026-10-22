@@ -40,10 +40,8 @@ import { ensureActiveMealPlan } from "@/data/meal-plans";
 import { fetchGoalWeight, fetchWeighIns } from "@/data/body";
 import { useCurrentUserId } from "@/hooks/use-current-user";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CoachIcon } from "@/components/coach/coach-icon";
 import { NoRoutineCard } from "@/components/home/today-workout-card";
 import { WaterCard } from "@/components/home/water-card";
-import { CoachTips } from "@/components/coach/coach-tips";
 import { ReadinessCard } from "@/components/home/readiness-card";
 import { CalorieRing, MACRO_COLORS } from "@/components/home/macro-rings";
 import { LazyWeightChart } from "@/components/charts/lazy-chart";
@@ -56,7 +54,7 @@ import { useStreak } from "@/hooks/use-streak";
  * Início: a semana, o treino de hoje e o resto do dia.
  *
  * Ordem: a sequência de semanas; a semana com o treino de hoje e o botão de
- * começar; o peso contra a meta; a dieta do dia; a água; o treinador.
+ * começar; o peso contra a meta; a dieta do dia; a água.
  * Gráficos longos e histórico vivem em Estatísticas.
  */
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -118,22 +116,6 @@ function Home() {
           loadingProfile={profile.isPending}
         />
         <WaterCard date={today} targetMl={num(profile.data?.water_ml_target, 2500)} />
-        <Link
-          to="/coach"
-          className="flex items-center gap-4 rounded-[1.5rem] border border-primary/40 bg-primary/10 p-4 transition-colors hover:bg-primary/15"
-        >
-          <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-primary text-primary-foreground">
-            <CoachIcon className="size-7" aria-hidden />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-xl font-bold">Treinador</span>
-            <span className="block text-sm text-muted-foreground">
-              Pergunte sobre seu treino, dieta e progresso
-            </span>
-          </span>
-          <ChevronRight className="size-5 shrink-0 text-primary" aria-hidden />
-        </Link>
-        <CoachTips limit={1} />
       </div>
     </div>
   );

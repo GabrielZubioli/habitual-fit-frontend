@@ -51,10 +51,9 @@ const NAV_ITEMS = [
   { to: "/plan", label: "Plano", icon: Dumbbell },
   { to: "/stats", label: "Estatísticas", icon: Dumbbell },
   { to: "/exercises", label: "Exercícios", icon: Dumbbell },
-  { to: "/coach", label: "Treinador", icon: User },
   { to: "/diet", label: "Diário alimentar", icon: Utensils },
   { to: "/recipes", label: "Receitas", icon: BookOpen },
-  { to: "/body", label: "Corpo", icon: HeartPulse },
+  { to: "/body", label: "Progresso", icon: HeartPulse },
   { to: "/profile", label: "Perfil", icon: User },
   { to: "/settings", label: "Configurações", icon: User },
 ] as const;

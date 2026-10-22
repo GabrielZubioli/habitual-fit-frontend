@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { assertOk, unwrapMaybe } from "@/data/supabase-helpers";
-import { saveSuggestedRoutine } from "@/data/routines";
+import { PlanLimitationError, saveSuggestedRoutine } from "@/data/routines";
 import { ensureActiveMealPlan } from "@/data/meal-plans";
 import { todayISO } from "@/lib/date";
 import type { Answers } from "@/lib/onboarding/schema";
@@ -176,9 +176,12 @@ export async function generateEverything(
     routineId = await saveSuggestedRoutine(userId);
   } catch (error) {
     // O treino falhar não pode impedir o resto: a tela Plano oferece montar de novo.
-    warnings.push(
-      `Não conseguimos preparar o treino (${error instanceof Error ? error.message : "erro desconhecido"}). Abra a tela Plano para tentar de novo.`,
-    );
+    // Limitação de lesão não melhora tentando de novo: vai a explicação, só.
+    if (error instanceof PlanLimitationError) warnings.push(error.message);
+    else
+      warnings.push(
+        `Não conseguimos preparar o treino (${error instanceof Error ? error.message : "erro desconhecido"}). Abra a tela Plano para tentar de novo.`,
+      );
   }
 
   // -------------------------------------------------------------- 3. dieta

@@ -520,7 +520,10 @@ function PlanReady({
           )}
         </Secao>
 
-        <AvisoProfissional tipos={["treino", "dieta"]} className={cn("mt-6", entra(5).className)} />
+        <AvisoProfissional
+          tipos={answers?.injuries.length ? ["lesao", "treino", "dieta"] : ["treino", "dieta"]}
+          className={cn("mt-6", entra(5).className)}
+        />
 
         {warnings.length > 0 && (
           <div

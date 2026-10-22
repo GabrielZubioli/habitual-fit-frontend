@@ -79,9 +79,13 @@ export const MINUTES_BY_DURATION: Record<SessionDuration, string> = {
   long: "60+ min",
 };
 
-/** Região que o usuário quer enfatizar. `full_body` = sem ênfase. */
+/**
+ * Região que o usuário quer enfatizar. `full_body` = sem ênfase; `legs` cobre
+ * os membros inferiores e `upper` os superiores.
+ */
 export const FOCUS_AREAS = [
   "full_body",
+  "upper",
   "shoulders",
   "arms",
   "chest",
@@ -91,6 +95,22 @@ export const FOCUS_AREAS = [
   "legs",
 ] as const;
 export type FocusArea = (typeof FOCUS_AREAS)[number];
+
+/**
+ * Regiões de lesão ou dor que o questionário aceita. Os valores espelham a
+ * coluna `exercises.contraindications` do catálogo.
+ */
+export const INJURY_AREAS = [
+  "shoulder",
+  "elbow",
+  "wrist",
+  "lower_back",
+  "neck",
+  "hip",
+  "knee",
+  "ankle",
+] as const;
+export type InjuryArea = (typeof INJURY_AREAS)[number];
 
 export const planInputSchema = z.object({
   level: z.enum(TRAINING_LEVELS),
@@ -102,6 +122,8 @@ export const planInputSchema = z.object({
   duration: z.enum(SESSION_DURATIONS).default("average"),
   /** Região a enfatizar. Padrão: sem ênfase. */
   focus: z.enum(FOCUS_AREAS).default("full_body"),
+  /** Lesões ou dores: os padrões e músculos que sobrecarregam a região saem do plano. */
+  injuries: z.array(z.enum(INJURY_AREAS)).default([]),
 });
 
 /**
@@ -142,6 +164,14 @@ export interface GeneratedPlan {
   splits: PlanSplit[];
   /** Séries efetivas por semana e por músculo, para exibir e validar. */
   weeklySetsByMuscle: Partial<Record<Muscle, number>>;
+  /** Vagas retiradas por causa das lesões informadas. */
+  removedForInjury: number;
+  /**
+   * Divisões que ficaram sem exercícios suficientes depois das restrições de
+   * lesão. Não vazio = o plano não deve ser gravado: melhor explicar do que
+   * entregar um dia de treino incoerente.
+   */
+  blockedSplits: string[];
 }
 
 // --- Parâmetros derivados do nível e do objetivo -------------------------
@@ -173,6 +203,19 @@ const SLOT_WEIGHT: Record<1 | 2, number> = { 1: 1.25, 2: 1 };
 /** Músculos que cada área de foco abrange. */
 const MUSCLES_BY_FOCUS: Record<FocusArea, readonly Muscle[]> = {
   full_body: [],
+  upper: [
+    "chest",
+    "back",
+    "lats",
+    "traps",
+    "shoulders",
+    "front_delts",
+    "side_delts",
+    "rear_delts",
+    "biceps",
+    "triceps",
+    "forearms",
+  ],
   shoulders: ["shoulders", "front_delts", "side_delts", "rear_delts"],
   arms: ["biceps", "triceps", "forearms"],
   chest: ["chest"],
@@ -190,15 +233,18 @@ const MUSCLES_BY_FOCUS: Record<FocusArea, readonly Muscle[]> = {
  * foco — assim uma sessão curta com foco em braços perde a panturrilha, não a
  * rosca.
  *
- * Ao **estender**, repetimos o padrão de isolamento dos músculos que a divisão
- * já treina, em vez de inventar movimentos de grupos que não fazem parte dela.
+ * Ao **estender**, repetimos músculo e padrão de movimento de vagas que a
+ * divisão já tem (uma segunda variação do mesmo movimento), em vez de inventar
+ * grupos que não fazem parte dela — ou um "isolado de core", que não existe
+ * no catálogo.
  */
 function fitToDuration(
   slots: readonly [Muscle, MovementPattern, 1 | 2][],
   duration: SessionDuration,
   focus: FocusArea,
+  level: TrainingLevel,
 ): [Muscle, MovementPattern, 1 | 2][] {
-  const faixa = EXERCISES_BY_DURATION[duration];
+  const faixa = faixaDeExercicios(duration, level);
   const focados = new Set<Muscle>(MUSCLES_BY_FOCUS[focus]);
 
   if (slots.length > faixa.max) {
@@ -217,20 +263,34 @@ function fitToDuration(
 
   if (slots.length < faixa.min) {
     const estendido = [...slots];
-    // Repete isolamento dos músculos que a divisão já trabalha, priorizando o foco.
+    // Repete as vagas que a divisão já tem, priorizando o foco.
     const candidatos = slots
-      .map((s) => s[0])
-      .sort((a, b) => Number(focados.has(b)) - Number(focados.has(a)));
+      .map(([muscle, pattern]) => [muscle, pattern] as const)
+      .sort((a, b) => Number(focados.has(b[0])) - Number(focados.has(a[0])));
 
     let i = 0;
     while (estendido.length < faixa.min && candidatos.length > 0) {
-      estendido.push([candidatos[i % candidatos.length]!, "isolation", 2]);
+      const [muscle, pattern] = candidatos[i % candidatos.length]!;
+      estendido.push([muscle, pattern, 2]);
       i += 1;
     }
     return estendido;
   }
 
   return [...slots];
+}
+
+/**
+ * Exercícios por sessão. Iniciante tem teto de 6, mesmo em sessão longa: uma
+ * ficha curta e repetida é o que dá tempo de aprender os movimentos.
+ */
+const MAX_EXERCICIOS_INICIANTE = 6;
+
+function faixaDeExercicios(duration: SessionDuration, level: TrainingLevel) {
+  const faixa = EXERCISES_BY_DURATION[duration];
+  if (level !== "beginner") return faixa;
+  const max = Math.min(faixa.max, MAX_EXERCICIOS_INICIANTE);
+  return { min: Math.min(faixa.min, max), max };
 }
 
 /** Quanto mais alto, mais cedo a vaga é cortada numa sessão curta. */
@@ -380,27 +440,304 @@ const LOWER: SplitBlueprint = {
   ],
 };
 
-/**
- * Divisões por frequência semanal.
- *
- * A escolha segue o consenso prático: com poucos dias, corpo inteiro distribui
- * melhor o estímulo; a partir de 5 dias, divisões maiores permitem volume por
- * sessão sem sacrificar a recuperação.
- */
-const SPLITS_BY_FREQUENCY: Record<number, SplitBlueprint[]> = {
-  2: [FULL_BODY_A, FULL_BODY_B],
-  3: [PUSH, PULL, LEGS],
-  4: [UPPER, LOWER, UPPER, LOWER],
-  5: [PUSH, PULL, LEGS, UPPER, LOWER],
-  6: [PUSH, PULL, LEGS, PUSH, PULL, LEGS],
+/** Terceiro dia de corpo inteiro, para o iniciante que treina 3×. */
+const FULL_BODY_C: SplitBlueprint = {
+  name: "Corpo inteiro C",
+  slots: [
+    ["quads", "lunge", 1],
+    ["shoulders", "vertical_push", 1],
+    ["lats", "vertical_pull", 2],
+    ["chest", "horizontal_push", 2],
+    ["core", "core", 2],
+  ],
 };
+
+/** Segundo dia de superiores, puxado para costas e ombros — quem prioriza o tronco. */
+const UPPER_B: SplitBlueprint = {
+  name: "Superiores — costas e ombros",
+  slots: [
+    ["back", "horizontal_pull", 1],
+    ["shoulders", "vertical_push", 1],
+    ["lats", "vertical_pull", 2],
+    ["chest", "horizontal_push", 2],
+    ["side_delts", "isolation", 2],
+    ["biceps", "isolation", 2],
+    ["triceps", "isolation", 2],
+  ],
+};
+
+/** Segundo dia de inferiores, puxado para posteriores e glúteos — quem prioriza as pernas. */
+const LOWER_B: SplitBlueprint = {
+  name: "Inferiores — posteriores e glúteos",
+  slots: [
+    ["hamstrings", "hinge", 1],
+    ["glutes", "lunge", 1],
+    ["quads", "squat", 2],
+    ["hamstrings", "isolation", 2],
+    ["glutes", "isolation", 2],
+    ["calves", "isolation", 2],
+    ["core", "core", 2],
+  ],
+};
+
+/**
+ * A semana, por frequência — e por quem treina.
+ *
+ * - **Equilibrado:** o consenso prático — corpo inteiro com poucos dias,
+ *   divisões maiores a partir de 3.
+ * - **Iniciante:** só corpo inteiro e superiores/inferiores. Menos fichas
+ *   diferentes, mais repetição de cada movimento.
+ * - **Foco em inferiores/superiores:** a região escolhida ganha mais sessões
+ *   (ou, onde a proporção não muda, uma sessão própria e mais volume).
+ *
+ * Cada lista tem exatamente `daysPerWeek` divisões: nenhuma sessão a mais que
+ * os dias disponíveis, nenhum dia sem treino.
+ */
+const DIVISOES: Record<"equilibrado" | "iniciante" | Regiao, Record<number, SplitBlueprint[]>> = {
+  equilibrado: {
+    2: [FULL_BODY_A, FULL_BODY_B],
+    3: [PUSH, PULL, LEGS],
+    4: [UPPER, LOWER, UPPER, LOWER],
+    5: [PUSH, PULL, LEGS, UPPER, LOWER],
+    6: [PUSH, PULL, LEGS, PUSH, PULL, LEGS],
+  },
+  iniciante: {
+    2: [FULL_BODY_A, FULL_BODY_B],
+    3: [FULL_BODY_A, FULL_BODY_B, FULL_BODY_C],
+    4: [UPPER, LOWER, UPPER, LOWER],
+    5: [UPPER, LOWER, FULL_BODY_A, UPPER, LOWER],
+    6: [UPPER, LOWER, UPPER, LOWER, UPPER, LOWER],
+  },
+  inferiores: {
+    2: [FULL_BODY_A, FULL_BODY_B],
+    3: [LOWER, UPPER, LOWER_B],
+    4: [LOWER, UPPER, LOWER_B, FULL_BODY_B],
+    5: [LOWER, PUSH, LOWER_B, PULL, LEGS],
+    6: [LOWER, PUSH, LOWER_B, PULL, LEGS, UPPER],
+  },
+  superiores: {
+    2: [FULL_BODY_A, FULL_BODY_B],
+    3: [UPPER, LOWER, UPPER_B],
+    4: [UPPER, LOWER, UPPER_B, LOWER],
+    5: [PUSH, PULL, LOWER, UPPER, UPPER_B],
+    6: [PUSH, PULL, LEGS, UPPER, UPPER_B, LOWER],
+  },
+};
+
+type Regiao = "inferiores" | "superiores";
+
+/** A que metade do corpo cada foco pertence. Abdômen e corpo inteiro não mudam a semana. */
+const REGIAO_DO_FOCO: Partial<Record<FocusArea, Regiao>> = {
+  legs: "inferiores",
+  glutes: "inferiores",
+  upper: "superiores",
+  chest: "superiores",
+  back: "superiores",
+  shoulders: "superiores",
+  arms: "superiores",
+};
+
+/** Focos de um grupo só: além da semana, cada sessão que já treina o grupo ganha uma vaga dele. */
+const FOCO_ESPECIFICO = new Set<FocusArea>(["glutes", "chest", "back", "shoulders", "arms", "abs"]);
+
+/** Multiplicador do alvo semanal de séries nos músculos da área de foco. */
+const VOLUME_DO_FOCO = 1.4;
+
+/**
+ * Com foco numa metade do corpo, a outra fica em volume de manutenção. Sem
+ * isso, a metade de cima — que tem mais grupos musculares — continuava com
+ * mais séries na semana mesmo para quem escolheu priorizar as pernas.
+ */
+const VOLUME_DA_OUTRA_REGIAO = 0.75;
+
+const MUSCULOS_DA_REGIAO: Record<Regiao, readonly Muscle[]> = {
+  inferiores: ["quads", "hamstrings", "glutes", "calves", "adductors", "abductors"],
+  superiores: [
+    "chest",
+    "back",
+    "lats",
+    "traps",
+    "shoulders",
+    "front_delts",
+    "side_delts",
+    "rear_delts",
+    "biceps",
+    "triceps",
+    "forearms",
+  ],
+};
+
+/** Multiplicador do volume semanal de um músculo, dado o foco. */
+function pesoDoFoco(muscle: Muscle, focus: FocusArea): number {
+  if ((MUSCLES_BY_FOCUS[focus] as readonly Muscle[]).includes(muscle)) return VOLUME_DO_FOCO;
+  const regiao = REGIAO_DO_FOCO[focus];
+  if (!regiao) return 1;
+  const outra: Regiao = regiao === "inferiores" ? "superiores" : "inferiores";
+  return MUSCULOS_DA_REGIAO[outra].includes(muscle) ? VOLUME_DA_OUTRA_REGIAO : 1;
+}
+
+function escolherDivisoes(input: PlanConfig): SplitBlueprint[] {
+  const regiao = REGIAO_DO_FOCO[input.focus];
+  const tabela = regiao
+    ? DIVISOES[regiao]
+    : input.level === "beginner"
+      ? DIVISOES.iniciante
+      : DIVISOES.equilibrado;
+  return tabela[input.daysPerWeek] ?? DIVISOES.equilibrado[3]!;
+}
+
+/**
+ * Acrescenta à sessão uma vaga do grupo em foco, se ela já trabalha esse grupo.
+ * Foco numa metade do corpo só reforça as sessões de corpo inteiro — as
+ * demais já vêm da tabela de divisões com a ênfase certa.
+ */
+function reforcarFoco(
+  slots: readonly [Muscle, MovementPattern, 1 | 2][],
+  focus: FocusArea,
+): [Muscle, MovementPattern, 1 | 2][] {
+  const regiao = REGIAO_DO_FOCO[focus];
+  const corpoInteiro =
+    slots.some(([m]) => MUSCULOS_DA_REGIAO.inferiores.includes(m)) &&
+    slots.some(([m]) => MUSCULOS_DA_REGIAO.superiores.includes(m));
+  if (!FOCO_ESPECIFICO.has(focus) && !(regiao && corpoInteiro)) return [...slots];
+  if (focus === "abs") return [...slots, ["abs", "core", 2]];
+  const alvo = MUSCLES_BY_FOCUS[focus];
+  const presente = slots.find(([muscle]) => alvo.includes(muscle));
+  return presente ? [...slots, [presente[0], "isolation", 2]] : [...slots];
+}
+
+// --- Lesões --------------------------------------------------------------
+
+/**
+ * O que cada região de lesão tira do plano: padrões de movimento que a
+ * carregam diretamente e músculos cujo treino a solicita.
+ *
+ * É deliberadamente conservador — na dúvida, sai. Não é avaliação clínica:
+ * serve para não prescrever o óbvio (agachamento para quem informou dor no
+ * joelho), e o app pede orientação profissional a quem informa uma lesão.
+ */
+export const INJURY_RESTRICTIONS: Record<
+  InjuryArea,
+  { patterns: readonly MovementPattern[]; muscles: readonly Muscle[] }
+> = {
+  shoulder: {
+    patterns: ["vertical_push", "horizontal_push"],
+    muscles: ["shoulders", "front_delts", "side_delts", "rear_delts", "chest"],
+  },
+  elbow: { patterns: [], muscles: ["biceps", "triceps", "forearms"] },
+  wrist: { patterns: ["horizontal_push", "vertical_push"], muscles: ["forearms"] },
+  lower_back: { patterns: ["hinge", "squat"], muscles: [] },
+  neck: { patterns: ["vertical_push"], muscles: ["traps"] },
+  hip: { patterns: ["squat", "hinge", "lunge"], muscles: ["glutes", "adductors", "abductors"] },
+  knee: { patterns: ["squat", "lunge"], muscles: ["quads"] },
+  ankle: { patterns: ["squat", "lunge"], muscles: ["calves"] },
+};
+
+function restrito(muscle: string, pattern: string, injuries: readonly InjuryArea[]): boolean {
+  return injuries.some((i) => {
+    const r = INJURY_RESTRICTIONS[i];
+    return (
+      (r.patterns as readonly string[]).includes(pattern) ||
+      (r.muscles as readonly string[]).includes(muscle)
+    );
+  });
+}
+
+/**
+ * O exercício pode entrar no plano de quem informou essas lesões?
+ *
+ * Sai se o catálogo o contraindica para a região, se o músculo ou o padrão de
+ * movimento está nas restrições — e se o padrão não é conhecido: sem saber o
+ * movimento não há como afirmar que é seguro, então não se presume.
+ */
+export function exerciseFitsInjuries(
+  exercise: {
+    primaryMuscle: string;
+    pattern: string | null;
+    contraindications: readonly string[] | null;
+  },
+  injuries: readonly InjuryArea[],
+): boolean {
+  if (injuries.length === 0) return true;
+  if ((exercise.contraindications ?? []).some((c) => (injuries as readonly string[]).includes(c)))
+    return false;
+  if (!exercise.pattern) return false;
+  return !restrito(exercise.primaryMuscle, exercise.pattern, injuries);
+}
+
+// --- Catálogo: o que pode entrar no plano ------------------------------
+
+/** Equipamentos de cada ambiente, do mais ao menos preferido. */
+export const EQUIPMENT_BY_PROFILE: Record<EquipmentProfile, readonly string[]> = {
+  full_gym: [
+    "barbell",
+    "dumbbell",
+    "machine",
+    "cable",
+    "bodyweight",
+    "kettlebell",
+    "band",
+    "other",
+  ],
+  home_basic: ["dumbbell", "bodyweight", "band", "kettlebell", "other"],
+  bodyweight: ["bodyweight", "band"],
+};
+
+/**
+ * Equipamentos utilizáveis: o que a pessoa marcou ter, dentro do que o
+ * ambiente oferece, mais o peso do corpo — que todo mundo tem. Sem nada
+ * marcado, vale o ambiente inteiro.
+ */
+export function allowedEquipment(
+  profile: EquipmentProfile,
+  marked: readonly string[] = [],
+): string[] {
+  const doAmbiente = EQUIPMENT_BY_PROFILE[profile];
+  const marcados = doAmbiente.filter((e) => marked.includes(e));
+  if (marcados.length === 0) return [...doAmbiente];
+  return marcados.includes("bodyweight") ? marcados : [...marcados, "bodyweight"];
+}
+
+/** Iniciante não recebe exercício classificado como avançado. */
+export function exerciseFitsLevel(userLevel: TrainingLevel, exerciseLevel: string | null): boolean {
+  return !(userLevel === "beginner" && exerciseLevel === "advanced");
+}
+
+export interface CatalogCandidate {
+  primaryMuscle: string;
+  pattern: string | null;
+  equipment: string;
+  level: string | null;
+  contraindications: readonly string[] | null;
+}
+
+/**
+ * A regra única de "este exercício pode entrar no plano desta pessoa":
+ * equipamento disponível, nível e lesões. Não há fallback para o catálogo
+ * inteiro — uma vaga sem candidato fica vazia e é avisada, em vez de
+ * receber um exercício com aparelho que a pessoa não tem ou que carrega a
+ * região lesionada.
+ */
+export function exerciseIsSelectable(
+  exercise: CatalogCandidate,
+  rules: { equipment: readonly string[]; level: TrainingLevel; injuries: readonly InjuryArea[] },
+): boolean {
+  return (
+    rules.equipment.includes(exercise.equipment) &&
+    exerciseFitsLevel(rules.level, exercise.level) &&
+    exerciseFitsInjuries(exercise, rules.injuries)
+  );
+}
+
+/** Uma sessão com menos vagas que isto, depois das restrições, não é um treino. */
+const MIN_VAGAS_POR_SESSAO = 2;
 
 const LETTERS = "ABCDEF";
 
 /** Gera o plano a partir das respostas do usuário. */
 export function generatePlan(rawInput: PlanInput): GeneratedPlan {
   const input = planInputSchema.parse(rawInput);
-  const blueprints = SPLITS_BY_FREQUENCY[input.daysPerWeek] ?? SPLITS_BY_FREQUENCY[3]!;
+  const blueprints = escolherDivisoes(input);
   const prescription = PRESCRIPTION_BY_GOAL[input.goal];
   const fallbacks = PATTERN_FALLBACK[input.equipment];
   const target = TARGET_WEEKLY_SETS[input.level];
@@ -409,19 +746,38 @@ export function generatePlan(rawInput: PlanInput): GeneratedPlan {
   const auxTarget = Math.round(target * 0.6);
 
   /*
+   * Ordem: reforço do foco → padrão viável no equipamento → restrições de
+   * lesão → duração. As restrições vêm antes da duração para que a sessão
+   * curta seja montada com o que sobrou, e não cortada depois para menos que
+   * o mínimo.
+   */
+  let removedForInjury = 0;
+  const blockedSplits: string[] = [];
+  const ajustados = blueprints.map((blueprint) => {
+    const viaveis = reforcarFoco(blueprint.slots, input.focus)
+      .map(([m, p, prio]): [Muscle, MovementPattern, 1 | 2] => [m, fallbacks[p] ?? p, prio])
+      .filter(([m, p]) => {
+        const sai = restrito(m, p, input.injuries);
+        if (sai) removedForInjury += 1;
+        return !sai;
+      });
+    if (viaveis.length < MIN_VAGAS_POR_SESSAO) blockedSplits.push(blueprint.name);
+    return {
+      ...blueprint,
+      slots:
+        viaveis.length === 0
+          ? []
+          : fitToDuration(viaveis, input.duration, input.focus, input.level),
+    };
+  });
+
+  /*
    * O alvo semanal é distribuído por **grupo muscular**, não por valor do enum.
    *
    * Distribuir por enum inflava o volume: "costas" recebia o alvo cheio em
    * `lats` e outro tanto em `back`, e a sessão passava de 30 séries. Agrupar
    * antes de dividir mantém a soma do grupo no alvo pretendido.
    */
-  // A duração corta ou estende as vagas **antes** de distribuir o volume: o
-  // alvo semanal precisa ser dividido entre as vagas que de fato existirão.
-  const ajustados = blueprints.map((blueprint) => ({
-    ...blueprint,
-    slots: fitToDuration(blueprint.slots, input.duration, input.focus),
-  }));
-
   const weightByGroup = new Map<string, number>();
   for (const blueprint of ajustados) {
     for (const [muscle, , priority] of blueprint.slots) {
@@ -446,7 +802,9 @@ export function generatePlan(rawInput: PlanInput): GeneratedPlan {
         const [repMin, repMax] = isCompound ? prescription.compound : prescription.isolation;
 
         const grupo = volumeGroupOf(muscle);
-        const alvoDoGrupo = isValidatedGroup(grupo) ? target : auxTarget;
+        const alvoBase = isValidatedGroup(grupo) ? target : auxTarget;
+        // A área de foco recebe mais volume na semana — não só um nome diferente.
+        const alvoDoGrupo = alvoBase * pesoDoFoco(muscle, input.focus);
         const pesoTotal = weightByGroup.get(grupo) ?? SLOT_WEIGHT[priority];
         const parcela = (alvoDoGrupo * SLOT_WEIGHT[priority]) / pesoTotal;
 
@@ -463,7 +821,13 @@ export function generatePlan(rawInput: PlanInput): GeneratedPlan {
     };
   });
 
-  return { input, splits, weeklySetsByMuscle: sumWeeklySets(splits) };
+  return {
+    input,
+    splits,
+    weeklySetsByMuscle: sumWeeklySets(splits),
+    removedForInjury,
+    blockedSplits,
+  };
 }
 
 function clamp(value: number, min: number, max: number): number {

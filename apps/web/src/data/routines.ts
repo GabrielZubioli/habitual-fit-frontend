@@ -13,7 +13,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { assertOk, num, unwrap, unwrapList, unwrapMaybe } from "@/data/supabase-helpers";
 import { loadPlanningInputs, trainingPlanInput } from "@/data/planning-profile";
 import { localDayRange, toISODate } from "@/lib/date";
+import { suggestWeekdays } from "@/lib/onboarding/options";
 import {
+  allowedEquipment,
+  exerciseIsSelectable,
   generatePlan,
   type ExerciseSlot,
   type GeneratedPlan,
@@ -21,22 +24,6 @@ import {
   type PlanInput,
   type ScheduleInput,
 } from "@forja/domain";
-
-/** Equipamentos aceitos em cada perfil, do mais ao menos preferido. */
-const EQUIPMENT_BY_PROFILE: Record<PlanInput["equipment"], string[]> = {
-  full_gym: [
-    "barbell",
-    "dumbbell",
-    "machine",
-    "cable",
-    "bodyweight",
-    "kettlebell",
-    "band",
-    "other",
-  ],
-  home_basic: ["dumbbell", "bodyweight", "band", "kettlebell", "other"],
-  bodyweight: ["bodyweight", "band"],
-};
 
 /**
  * O catálogo agora **declara** o padrão de movimento (coluna
@@ -106,11 +93,6 @@ export type RoutineDraft = {
 };
 
 export interface RoutineDraftOptions {
-  /**
-   * Lesões declaradas no questionário. Exercícios com a articulação
-   * correspondente em `contraindications` são excluídos do catálogo.
-   */
-  injuries?: readonly string[];
   /** Equipamentos que o usuário marcou ter, quando mais restritos que o perfil. */
   equipmentAvailable?: readonly string[];
 }
@@ -126,26 +108,28 @@ export async function buildRoutineDraft(
   options: RoutineDraftOptions = {},
 ): Promise<RoutineDraft> {
   const plan = generatePlan(input);
+  const config = plan.input;
 
-  // O perfil de equipamento define o universo possível; o que o usuário marcou
-  // ter estreita dentro dele. A interseção evita dois erros opostos: prescrever
-  // barra para quem só tem halteres, e reduzir a academia completa ao que o
-  // usuário esqueceu de marcar.
-  const doPerfil = EQUIPMENT_BY_PROFILE[input.equipment];
-  const marcados = options.equipmentAvailable?.filter((e) => doPerfil.includes(e)) ?? [];
-  const permitidos = marcados.length > 0 ? marcados : doPerfil;
+  // Lesões que deixam uma sessão sem treino possível: explicar, não improvisar.
+  if (plan.blockedSplits.length > 0) throw new PlanLimitationError();
 
-  const catalog = await fetchCatalog(permitidos);
-
-  const lesoes = new Set(options.injuries ?? []);
-  const seguros =
-    lesoes.size === 0
-      ? catalog
-      : catalog.filter((e) => !(e.contraindications ?? []).some((c) => lesoes.has(c)));
-
-  // Se as lesões eliminarem quase tudo, um plano com três exercícios é pior que
-  // um plano completo com aviso. O corte só vale enquanto sobra catálogo.
-  const usavel = seguros.length >= 60 ? seguros : catalog;
+  // A regra única de seleção (domínio): equipamento disponível, nível e lesões.
+  // Uma vaga sem candidato fica vazia e é avisada — nunca cai para o catálogo
+  // inteiro, o que traria aparelho que a pessoa não tem ou exercício que
+  // carrega a região lesionada.
+  const permitidos = allowedEquipment(config.equipment, options.equipmentAvailable ?? []);
+  const usavel = (await fetchCatalog()).filter((e) =>
+    exerciseIsSelectable(
+      {
+        primaryMuscle: e.primary_muscle,
+        pattern: e.movement_pattern,
+        equipment: e.equipment,
+        level: e.level,
+        contraindications: e.contraindications,
+      },
+      { equipment: permitidos, level: config.level, injuries: config.injuries },
+    ),
+  );
 
   const usados = new Set<string>();
 
@@ -154,7 +138,8 @@ export async function buildRoutineDraft(
     const unmatched: ExerciseSlot[] = [];
 
     for (const slot of split.slots) {
-      const escolhido = pickExercise(usavel, slot, permitidos, usados, input.level);
+      const naSessao = new Set(items.map((i) => i.exercise.id));
+      const escolhido = pickExercise(usavel, slot, permitidos, usados, naSessao, config.level);
       if (escolhido) {
         // Evita repetir o mesmo exercício dentro da rotina — duas vagas de peito
         // devem virar dois movimentos diferentes.
@@ -172,19 +157,23 @@ export async function buildRoutineDraft(
 }
 
 /**
- * O catálogo utilizável, com o filtro de equipamento como preferência e não
- * como sentença.
- *
- * Filtrar por equipamento é o certo — não adianta prescrever supino com barra a
- * quem treina com elástico em casa. Mas quando o filtro devolve zero linhas (o
- * usuário marcou um equipamento que o catálogo não cobre, ou o catálogo chegou
- * incompleto), insistir nele produz uma rotina sem nenhum exercício. Um treino
- * com o aparelho errado é ajustável em dois toques; um treino vazio não é
- * ajustável de forma alguma.
+ * As lesões informadas impedem montar uma semana coerente com os dias
+ * escolhidos. A mensagem é para a pessoa.
  */
-async function fetchCatalog(permitidos: readonly string[]): Promise<CatalogExercise[]> {
-  const consulta = () =>
-    supabase
+export class PlanLimitationError extends Error {
+  constructor() {
+    super(
+      "Com as lesões ou dores que você informou, não conseguimos montar um treino automático coerente. Procure um profissional de saúde e de educação física para montar um plano adequado — você pode criar suas rotinas manualmente na tela Plano.",
+    );
+    this.name = "PlanLimitationError";
+  }
+}
+
+/** O catálogo de força (sem cardio nem alongamento), do mais ao menos conhecido. */
+async function fetchCatalog(): Promise<CatalogExercise[]> {
+  return unwrapList(
+    "carregar catálogo de exercícios",
+    await supabase
       .from("exercises")
       .select(
         "id, name, primary_muscle, equipment, category, movement_pattern, level, mechanic, contraindications, popularity",
@@ -195,21 +184,8 @@ async function fetchCatalog(permitidos: readonly string[]): Promise<CatalogExerc
       // ocupar vaga de exercício de força num plano de hipertrofia.
       .neq("category", "stretching")
       .order("popularity", { ascending: false })
-      .limit(900);
-
-  const doEquipamento = unwrapList(
-    "carregar catálogo de exercícios",
-    await consulta().in("equipment", permitidos as never[]),
+      .limit(900),
   ) as CatalogExercise[];
-
-  if (doEquipamento.length >= 20) return doEquipamento;
-
-  const completo = unwrapList(
-    "carregar catálogo de exercícios",
-    await consulta(),
-  ) as CatalogExercise[];
-
-  return completo.length > doEquipamento.length ? completo : doEquipamento;
 }
 
 /** Ordem de exigência técnica, para comparar o nível do exercício com o do usuário. */
@@ -233,6 +209,8 @@ function pickExercise(
   slot: ExerciseSlot,
   equipmentPreference: readonly string[],
   usados: ReadonlySet<string>,
+  /** Já está nesta sessão: nunca o mesmo exercício duas vezes no mesmo dia. */
+  naSessao: ReadonlySet<string>,
   userLevel: string,
 ): CatalogExercise | null {
   const keywords = PATTERN_KEYWORDS[slot.pattern] ?? [];
@@ -246,10 +224,14 @@ function pickExercise(
       else if (sameRegion(exercise.primary_muscle, slot.primaryMuscle)) score += 40;
       else return null; // músculo sem relação: descarta
 
-      // Padrão declarado no catálogo. O casamento por nome continua como rede
-      // de segurança para exercícios criados pelo usuário, que nascem sem ele.
+      if (naSessao.has(exercise.id)) return null;
+
+      // Padrão declarado no catálogo: se diz outro movimento, não serve para a
+      // vaga (um "empurrão" não preenche um isolado de glúteo, mesmo com o
+      // músculo certo). O casamento por nome é a rede de segurança para
+      // exercícios criados pelo usuário, que nascem sem padrão.
       if (exercise.movement_pattern === slot.pattern) score += 60;
-      else if (exercise.movement_pattern) score -= 15;
+      else if (exercise.movement_pattern) return null;
       else if (keywords.some((k) => exercise.name.toLowerCase().includes(k))) score += 50;
 
       // Equipamento mais alto na ordem de preferência vale mais.
@@ -640,11 +622,7 @@ export async function saveSuggestedRoutine(
   const planInput = trainingPlanInput(answers);
 
   const rascunho =
-    draft ??
-    (await buildRoutineDraft(planInput, {
-      injuries: answers.injuries,
-      equipmentAvailable: answers.equipment,
-    }));
+    draft ?? (await buildRoutineDraft(planInput, { equipmentAvailable: answers.equipment }));
 
   const preenchidos = rascunho.splits.reduce((n, s) => n + s.items.length, 0);
   if (preenchidos === 0) {
@@ -652,13 +630,26 @@ export async function saveSuggestedRoutine(
       "O catálogo de exercícios está indisponível no momento. Tente novamente em instantes.",
     );
   }
+  // Um dia de treino sem nenhum exercício não é plano: explica em vez de gravar.
+  const vazia = rascunho.splits.find((s) => s.items.length === 0);
+  if (vazia) {
+    throw new Error(
+      `Não encontramos exercícios compatíveis com seu equipamento e suas limitações para o treino "${vazia.name}". Monte essa rotina manualmente na tela Plano ou procure um profissional de educação física.`,
+    );
+  }
+
+  // Uma sessão por dia escolhido. Um rascunho antigo com dias que não batem
+  // com a frequência deixaria divisões sem dia (ou repetidas): nesse caso
+  // valem os dias sugeridos para a frequência.
+  const dias =
+    weekdays.length === planInput.daysPerWeek ? weekdays : suggestWeekdays(planInput.daysPerWeek);
 
   return createRoutine(
     userId,
     planInput,
     rascunho,
     `${objectiveLabel} · ${planInput.daysPerWeek}× por semana`,
-    weekdays,
+    dias,
   );
 }
 

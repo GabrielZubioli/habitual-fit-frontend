@@ -400,7 +400,7 @@ function ProfilePage() {
                 rotulo="Peso atual"
                 valor={peso && fmt(peso)}
                 unidade="kg"
-                nota="Registrar no Corpo"
+                nota="Registrar em Progresso"
                 acao={<ChevronRight className="size-4" />}
               />
             </Link>

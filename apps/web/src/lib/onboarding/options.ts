@@ -195,12 +195,13 @@ export const DURATION_OPTIONS: (Option<SessionDuration> & {
 ];
 
 export const FOCUS_OPTIONS: Option<FocusArea>[] = [
-  { value: "full_body", label: "Corpo inteiro" },
+  { value: "full_body", label: "Equilibrado" },
+  { value: "upper", label: "Membros superiores" },
+  { value: "legs", label: "Membros inferiores" },
   { value: "chest", label: "Peito" },
   { value: "back", label: "Costas" },
   { value: "shoulders", label: "Ombros" },
   { value: "arms", label: "Braços" },
-  { value: "legs", label: "Pernas" },
   { value: "glutes", label: "Glúteos" },
   { value: "abs", label: "Abdômen" },
 ];

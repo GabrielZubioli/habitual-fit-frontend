@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ArrowUp, Loader2, Lock, User, Zap } from "lucide-react";
@@ -15,7 +15,17 @@ import type { ChatMessage } from "@/data/coach-chat";
  * bloqueado, avisando que ainda não existe — melhor que esconder e a pessoa
  * não saber que pode vir.
  */
+/**
+ * O treinador fica para uma versão futura: a tela, as perguntas e os dados
+ * continuam aqui, mas sem entrada na navegação e com a rota levando ao Início
+ * enquanto isto for `false`.
+ */
+const TREINADOR_LIBERADO = false;
+
 export const Route = createFileRoute("/_authenticated/coach")({
+  beforeLoad: () => {
+    if (!TREINADOR_LIBERADO) throw redirect({ to: "/dashboard", replace: true });
+  },
   head: () => ({
     meta: [
       { title: "Treinador — Habitual Fit" },
@@ -25,7 +35,6 @@ export const Route = createFileRoute("/_authenticated/coach")({
   }),
   component: CoachPage,
 });
-
 
 function CoachPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -66,7 +75,10 @@ function CoachPage() {
     if (respondendo) return;
     const pergunta = COACH_FAQ.find((q) => q.key === key)!.pergunta;
     const agora = () => new Date().toISOString();
-    setMessages((m) => [...m, { id: crypto.randomUUID(), role: "user", content: pergunta, createdAt: agora() }]);
+    setMessages((m) => [
+      ...m,
+      { id: crypto.randomUUID(), role: "user", content: pergunta, createdAt: agora() },
+    ]);
     setRespondendo(true);
     try {
       const resposta = await answerFaq(key);
@@ -116,7 +128,8 @@ function CoachPage() {
           */}
           <div
             ref={barra}
-            className="fixed inset-x-0 bottom-(--acima-da-barra) z-30 bg-background/80 px-4 pb-2 pt-2 backdrop-blur-xl md:bottom-0 md:pl-64 md:pr-8">
+            className="fixed inset-x-0 bottom-(--acima-da-barra) z-30 bg-background/80 px-4 pb-2 pt-2 backdrop-blur-xl md:bottom-0 md:pl-64 md:pr-8"
+          >
             <div className="mx-auto max-w-3xl">
               {messages.length > 0 && (
                 <div className="-mx-4 mb-2 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">

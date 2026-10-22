@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
  *
  * - `treino`: o plano sugerido é referência geral, não prescrição individual.
  * - `dieta`: o app não prescreve dieta; o planejamento é com nutricionista.
+ * - `lesao`: lesão informada — a seleção automática não substitui avaliação.
  * - `app`: o Habitual Fit organiza e acompanha; não é consulta profissional.
  */
 const AVISOS = {
@@ -20,6 +21,12 @@ const AVISOS = {
     titulo: "O app não prescreve dietas",
     texto:
       "Monte e registre suas refeições aqui. O planejamento alimentar — o que, quanto e quando comer — deve ser orientado por um nutricionista.",
+  },
+  lesao: {
+    icon: Info,
+    titulo: "Você informou uma lesão ou dor",
+    texto:
+      "Deixamos de fora os exercícios que carregam essa região, mas a seleção automática é só uma referência geral — não é avaliação clínica. Antes de treinar, procure orientação de um profissional de saúde e de educação física.",
   },
   app: {
     icon: Info,

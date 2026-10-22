@@ -36,9 +36,9 @@ import { PhotoTimeline } from "@/components/progress/photo-timeline";
 export const Route = createFileRoute("/_authenticated/body")({
   head: () => ({
     meta: [
-      { title: "Corpo — Habitual Fit" },
+      { title: "Progresso — Habitual Fit" },
       { name: "description", content: "Peso, medidas e progresso corporal." },
-      { property: "og:title", content: "Corpo — Habitual Fit" },
+      { property: "og:title", content: "Progresso — Habitual Fit" },
       { property: "og:description", content: "Peso e medidas com média móvel." },
     ],
   }),
