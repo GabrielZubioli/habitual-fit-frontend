@@ -243,6 +243,20 @@ function SignUpForm() {
         <ShieldCheck className="mt-0.5 size-4 shrink-0" aria-hidden />
         Seus dados de treino, peso e alimentação são privados e visíveis só para você.
       </p>
+      <p className="mt-3 text-center text-xs leading-relaxed text-muted-foreground">
+        Ao criar a conta, você concorda com os{" "}
+        <Link to="/termos" className="font-medium text-primary underline-offset-4 hover:underline">
+          Termos de Uso
+        </Link>{" "}
+        e declara ter lido a{" "}
+        <Link
+          to="/privacidade"
+          className="font-medium text-primary underline-offset-4 hover:underline"
+        >
+          Política de Privacidade
+        </Link>
+        .
+      </p>
     </div>
   );
 }

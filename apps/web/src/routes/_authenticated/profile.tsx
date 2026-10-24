@@ -455,6 +455,14 @@ function ProfilePage() {
         <p className="mt-6 truncate px-1 text-center text-xs text-muted-foreground">
           Conectado como {user.email}
         </p>
+        <p className="mt-2 flex justify-center gap-4 text-xs text-muted-foreground">
+          <Link to="/termos" className="hover:text-foreground">
+            Termos de Uso
+          </Link>
+          <Link to="/privacidade" className="hover:text-foreground">
+            Política de Privacidade
+          </Link>
+        </p>
       </div>
 
       {p && editando && (

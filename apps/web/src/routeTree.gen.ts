@@ -17,6 +17,8 @@ import { Route as CriarContaRouteImport } from './routes/criar-conta'
 import { Route as EsqueciSenhaRouteImport } from './routes/esqueci-senha'
 import { Route as NovaSenhaRouteImport } from './routes/nova-senha'
 import { Route as PreparandoRouteImport } from './routes/preparando'
+import { Route as PrivacidadeRouteImport } from './routes/privacidade'
+import { Route as TermosRouteImport } from './routes/termos'
 import { Route as AuthenticatedBodyRouteImport } from './routes/_authenticated/body'
 import { Route as AuthenticatedCoachRouteImport } from './routes/_authenticated/coach'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -73,6 +75,16 @@ const NovaSenhaRoute = NovaSenhaRouteImport.update({
 const PreparandoRoute = PreparandoRouteImport.update({
   id: '/preparando',
   path: '/preparando',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacidadeRoute = PrivacidadeRouteImport.update({
+  id: '/privacidade',
+  path: '/privacidade',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermosRoute = TermosRouteImport.update({
+  id: '/termos',
+  path: '/termos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedBodyRoute = AuthenticatedBodyRouteImport.update({
@@ -179,6 +191,8 @@ export interface FileRoutesByFullPath {
   '/esqueci-senha': typeof EsqueciSenhaRoute
   '/nova-senha': typeof NovaSenhaRoute
   '/preparando': typeof PreparandoRoute
+  '/privacidade': typeof PrivacidadeRoute
+  '/termos': typeof TermosRoute
   '/body': typeof AuthenticatedBodyRoute
   '/coach': typeof AuthenticatedCoachRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -206,6 +220,8 @@ export interface FileRoutesByTo {
   '/esqueci-senha': typeof EsqueciSenhaRoute
   '/nova-senha': typeof NovaSenhaRoute
   '/preparando': typeof PreparandoRoute
+  '/privacidade': typeof PrivacidadeRoute
+  '/termos': typeof TermosRoute
   '/body': typeof AuthenticatedBodyRoute
   '/coach': typeof AuthenticatedCoachRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -235,6 +251,8 @@ export interface FileRoutesById {
   '/esqueci-senha': typeof EsqueciSenhaRoute
   '/nova-senha': typeof NovaSenhaRoute
   '/preparando': typeof PreparandoRoute
+  '/privacidade': typeof PrivacidadeRoute
+  '/termos': typeof TermosRoute
   '/_authenticated/body': typeof AuthenticatedBodyRoute
   '/_authenticated/coach': typeof AuthenticatedCoachRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -264,6 +282,8 @@ export interface FileRouteTypes {
     | '/esqueci-senha'
     | '/nova-senha'
     | '/preparando'
+    | '/privacidade'
+    | '/termos'
     | '/body'
     | '/coach'
     | '/dashboard'
@@ -291,6 +311,8 @@ export interface FileRouteTypes {
     | '/esqueci-senha'
     | '/nova-senha'
     | '/preparando'
+    | '/privacidade'
+    | '/termos'
     | '/body'
     | '/coach'
     | '/dashboard'
@@ -319,6 +341,8 @@ export interface FileRouteTypes {
     | '/esqueci-senha'
     | '/nova-senha'
     | '/preparando'
+    | '/privacidade'
+    | '/termos'
     | '/_authenticated/body'
     | '/_authenticated/coach'
     | '/_authenticated/dashboard'
@@ -348,6 +372,8 @@ export interface RootRouteChildren {
   EsqueciSenhaRoute: typeof EsqueciSenhaRoute
   NovaSenhaRoute: typeof NovaSenhaRoute
   PreparandoRoute: typeof PreparandoRoute
+  PrivacidadeRoute: typeof PrivacidadeRoute
+  TermosRoute: typeof TermosRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -406,6 +432,20 @@ declare module '@tanstack/react-router' {
       path: '/preparando'
       fullPath: '/preparando'
       preLoaderRoute: typeof PreparandoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacidade': {
+      id: '/privacidade'
+      path: '/privacidade'
+      fullPath: '/privacidade'
+      preLoaderRoute: typeof PrivacidadeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/termos': {
+      id: '/termos'
+      path: '/termos'
+      fullPath: '/termos'
+      preLoaderRoute: typeof TermosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/body': {
@@ -591,6 +631,8 @@ const rootRouteChildren: RootRouteChildren = {
   EsqueciSenhaRoute: EsqueciSenhaRoute,
   NovaSenhaRoute: NovaSenhaRoute,
   PreparandoRoute: PreparandoRoute,
+  PrivacidadeRoute: PrivacidadeRoute,
+  TermosRoute: TermosRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
