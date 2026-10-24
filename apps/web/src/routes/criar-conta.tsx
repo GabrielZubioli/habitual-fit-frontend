@@ -6,6 +6,7 @@ import { ArrowLeft, Loader2, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { errorMessage } from "@/data/supabase-helpers";
 import { Button } from "@/components/ui/button";
+import { GoogleSignIn } from "@/components/google-sign-in";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -228,16 +229,27 @@ function SignUpForm() {
         <div className="h-px flex-1 bg-border" />
       </div>
 
-      <Button
-        type="button"
-        variant="outline"
-        className="h-12 w-full rounded-xl text-base"
-        onClick={googleSignUp}
-        disabled={loading !== null}
-      >
-        {loading === "google" ? <Loader2 className="mr-2 size-4 animate-spin" /> : <GoogleIcon />}
-        Continuar com Google
-      </Button>
+      {/* Botão oficial do Google; o redirecionamento do Supabase fica de reserva. */}
+      <GoogleSignIn
+        texto="signup_with"
+        onSuccess={() => void navigate({ to: "/", replace: true })}
+        fallback={
+          <Button
+            type="button"
+            variant="outline"
+            className="h-12 w-full rounded-xl text-base"
+            onClick={googleSignUp}
+            disabled={loading !== null}
+          >
+            {loading === "google" ? (
+              <Loader2 className="mr-2 size-4 animate-spin" />
+            ) : (
+              <GoogleIcon />
+            )}
+            Continuar com Google
+          </Button>
+        }
+      />
 
       <p className="mt-4 flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
         <ShieldCheck className="mt-0.5 size-4 shrink-0" aria-hidden />

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { errorMessage } from "@/data/supabase-helpers";
 import { Button } from "@/components/ui/button";
+import { GoogleSignIn } from "@/components/google-sign-in";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
@@ -92,6 +93,7 @@ function AuthPage() {
 }
 
 function GoogleButton() {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
   const signIn = async () => {
@@ -106,17 +108,24 @@ function GoogleButton() {
     }
   };
 
+  // Botão oficial do Google; o redirecionamento do Supabase fica de reserva.
   return (
-    <Button
-      type="button"
-      variant="outline"
-      className="h-12 w-full rounded-xl text-base"
-      onClick={signIn}
-      disabled={loading}
-    >
-      {loading ? <Loader2 className="mr-2 size-4 animate-spin" /> : <GoogleIcon />}
-      Continuar com Google
-    </Button>
+    <GoogleSignIn
+      texto="signin_with"
+      onSuccess={() => void navigate({ to: "/", replace: true })}
+      fallback={
+        <Button
+          type="button"
+          variant="outline"
+          className="h-12 w-full rounded-xl text-base"
+          onClick={signIn}
+          disabled={loading}
+        >
+          {loading ? <Loader2 className="mr-2 size-4 animate-spin" /> : <GoogleIcon />}
+          Continuar com Google
+        </Button>
+      }
+    />
   );
 }
 
