@@ -46,11 +46,18 @@ export const MACRO_COLORS = {
 export function CalorieRing({
   consumed,
   target,
+  planejado = 0,
   size = 148,
   compacto = false,
 }: {
   consumed: number;
   target: number;
+  /**
+   * Calorias do que está planejado para o dia (o cardápio). Sem meta — o
+   * padrão, já que o app não prescreve —, é a referência do anel: ele enche
+   * conforme a pessoa marca o que comeu, em vez de ficar parado em zero.
+   */
+  planejado?: number;
   size?: number;
   /** Versão pequena (Início): só o restante no centro. */
   compacto?: boolean;
@@ -59,12 +66,15 @@ export function CalorieRing({
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
 
-  const ratio = target > 0 ? consumed / target : 0;
+  const usaMeta = target > 0;
+  const referencia = usaMeta ? target : planejado;
+  const ratio = referencia > 0 ? consumed / referencia : 0;
   const offset = circumference * (1 - Math.min(1, ratio));
   const restante = Math.round(target - consumed);
-  const excedeu = ratio > 1.05;
-  // Sem meta (o app não prescreve): o centro mostra só o que foi consumido.
-  const semMeta = target <= 0;
+  // Comer além do planejado não é "excesso": só a meta acende o vermelho.
+  const excedeu = usaMeta && ratio > 1.05;
+  // Sem meta: o centro mostra o que foi consumido (e, se houver, de quanto planejado).
+  const semMeta = !usaMeta;
 
   return (
     // `max-width` em vez de `width`: em telas muito estreitas o anel acompanha a
@@ -118,18 +128,24 @@ export function CalorieRing({
         <p
           className={cn(
             "mt-1.5 text-[11px] tabular-nums text-muted-foreground",
-            (compacto || semMeta) && "hidden",
+            (compacto || referencia <= 0) && "hidden",
           )}
         >
-          {Math.round(consumed).toLocaleString("pt-BR")} /{" "}
-          {Math.round(target).toLocaleString("pt-BR")}
+          {usaMeta ? (
+            <>
+              {Math.round(consumed).toLocaleString("pt-BR")} /{" "}
+              {Math.round(target).toLocaleString("pt-BR")}
+            </>
+          ) : (
+            `de ${Math.round(planejado).toLocaleString("pt-BR")} planejadas`
+          )}
         </p>
       </div>
 
       <span className="sr-only">
-        {semMeta
-          ? `${Math.round(consumed)} calorias consumidas.`
-          : `${Math.round(consumed)} de ${Math.round(target)} calorias consumidas.`}
+        {referencia > 0
+          ? `${Math.round(consumed)} de ${Math.round(referencia)} calorias ${usaMeta ? "da meta" : "planejadas"} consumidas.`
+          : `${Math.round(consumed)} calorias consumidas.`}
       </span>
     </div>
   );

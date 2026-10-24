@@ -35,7 +35,7 @@ import { isComplete } from "@/lib/onboarding/schema";
 import { loadDraft } from "@/lib/onboarding/storage";
 import { fetchActiveRoutine, fetchCompletedWorkouts, scheduleInputOf } from "@/data/routines";
 import { openWorkoutForTemplate } from "@/data/workout-session";
-import { ensureDayMaterialized, fetchDayEntries } from "@/data/diet-day";
+import { ensureDayMaterialized, fetchDayEntries, type DayEntry } from "@/data/diet-day";
 import { ensureActiveMealPlan } from "@/data/meal-plans";
 import { fetchGoalWeight, fetchWeighIns } from "@/data/body";
 import { useCurrentUserId } from "@/hooks/use-current-user";
@@ -383,20 +383,21 @@ function DietaCard({
   });
 
   const consumidos = (diario.data ?? []).filter((e) => e.consumed);
-  const totais = nutritionTotals(
-    consumidos.map((e) => ({
-      food: {
-        servingSizeG: e.food.servingSizeG,
-        kcal: e.food.kcal,
-        proteinG: e.food.proteinG,
-        carbsG: e.food.carbsG,
-        fatG: e.food.fatG,
-        fiberG: e.food.fiberG,
-      },
-      grams: e.grams,
-      servings: 1,
-    })),
-  );
+  const porcao = (e: DayEntry) => ({
+    food: {
+      servingSizeG: e.food.servingSizeG,
+      kcal: e.food.kcal,
+      proteinG: e.food.proteinG,
+      carbsG: e.food.carbsG,
+      fatG: e.food.fatG,
+      fiberG: e.food.fiberG,
+    },
+    grams: e.grams,
+    servings: 1,
+  });
+  const totais = nutritionTotals(consumidos.map(porcao));
+  // O planejado do dia é a referência do anel quando não há meta.
+  const planejado = nutritionTotals((diario.data ?? []).map(porcao)).kcal;
   const pendentes = (diario.data ?? []).filter((e) => !e.consumed).length;
   const pct = kcalTarget > 0 ? Math.min(100, (totais.kcal / kcalTarget) * 100) : 0;
 
@@ -416,7 +417,13 @@ function DietaCard({
         <Skeleton className="size-[88px] shrink-0 rounded-full" />
       ) : (
         <div className="w-[88px] shrink-0">
-          <CalorieRing consumed={totais.kcal} target={kcalTarget} size={88} compacto />
+          <CalorieRing
+            consumed={totais.kcal}
+            target={kcalTarget}
+            planejado={planejado}
+            size={88}
+            compacto
+          />
         </div>
       )}
       <div className="min-w-0 flex-1">

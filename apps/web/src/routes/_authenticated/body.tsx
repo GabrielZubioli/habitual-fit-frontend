@@ -70,22 +70,23 @@ function BodyPage() {
       <PageHeader title="Progresso" description="Onde você está e para onde está indo." />
       <PageBody>
         <Tabs defaultValue="overview">
-          <TabsList>
-            <TabsTrigger value="overview">
-              <LineChart className="mr-1.5 size-4" aria-hidden />
+          {/* A faixa ocupa a largura toda e as abas a dividem por igual. */}
+          <TabsList className="flex w-full">
+            <TabsTrigger value="overview" className="flex-1 px-1.5 sm:px-3">
+              <LineChart className="mr-1 size-4 sm:mr-1.5" aria-hidden />
               Resumo
             </TabsTrigger>
-            <TabsTrigger value="weight">
-              <Scale className="mr-1.5 size-4" aria-hidden />
+            <TabsTrigger value="weight" className="flex-1 px-1.5 sm:px-3">
+              <Scale className="mr-1 size-4 sm:mr-1.5" aria-hidden />
               Peso
             </TabsTrigger>
-            <TabsTrigger value="measures">
-              <Ruler className="mr-1.5 size-4" aria-hidden />
+            <TabsTrigger value="measures" className="flex-1 px-1.5 sm:px-3">
+              <Ruler className="mr-1 size-4 sm:mr-1.5" aria-hidden />
               Medidas
             </TabsTrigger>
             {FOTOS_LIBERADAS && (
-              <TabsTrigger value="photos">
-                <Camera className="mr-1.5 size-4" aria-hidden />
+              <TabsTrigger value="photos" className="flex-1 px-1.5 sm:px-3">
+                <Camera className="mr-1 size-4 sm:mr-1.5" aria-hidden />
                 Fotos
               </TabsTrigger>
             )}

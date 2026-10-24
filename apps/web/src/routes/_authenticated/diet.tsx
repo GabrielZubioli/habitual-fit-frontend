@@ -340,6 +340,7 @@ function DietPage() {
                     <CalorieRing
                       consumed={totaisConsumidos.kcal}
                       target={num(profile.data?.daily_kcal_target)}
+                      planejado={totaisPlanejados.kcal}
                       size={200}
                     />
                   </div>
@@ -348,24 +349,28 @@ function DietPage() {
                       nome="Proteína"
                       valor={totaisConsumidos.proteinG}
                       meta={num(profile.data?.protein_g_target)}
+                      planejado={totaisPlanejados.proteinG}
                       cor={MACRO_COLORS.protein}
                     />
                     <MacroLinha
                       nome="Carbo"
                       valor={totaisConsumidos.carbsG}
                       meta={num(profile.data?.carbs_g_target)}
+                      planejado={totaisPlanejados.carbsG}
                       cor={MACRO_COLORS.carbs}
                     />
                     <MacroLinha
                       nome="Gordura"
                       valor={totaisConsumidos.fatG}
                       meta={num(profile.data?.fat_g_target)}
+                      planejado={totaisPlanejados.fatG}
                       cor={MACRO_COLORS.fat}
                     />
                     <MacroLinha
                       nome="Fibra"
                       valor={totaisConsumidos.fiberG}
                       meta={num(profile.data?.fiber_g_target)}
+                      planejado={totaisPlanejados.fiberG}
                       cor={MACRO_COLORS.fiber}
                     />
                   </div>
@@ -1036,17 +1041,21 @@ function MacroLinha({
   nome,
   valor,
   meta,
+  planejado,
   cor,
 }: {
   nome: string;
   valor: number;
   meta: number;
+  /** Quanto do macro está planejado para o dia: a referência quando não há meta. */
+  planejado: number;
   cor: string;
 }) {
   const r = 26;
   const c = 2 * Math.PI * r;
-  const semMeta = meta <= 0;
-  const pct = semMeta ? 0 : Math.min(1, valor / meta);
+  const referencia = meta > 0 ? meta : planejado;
+  const semMeta = referencia <= 0;
+  const pct = semMeta ? 0 : Math.min(1, valor / referencia);
   return (
     <div className="flex min-w-0 flex-col items-center text-center">
       <div className="relative size-16">
@@ -1080,11 +1089,11 @@ function MacroLinha({
       <p className="mt-1.5 w-full truncate text-xs font-semibold">{nome}</p>
       <p className="text-[11px] tabular-nums text-muted-foreground">
         {semMeta ? (
-          "sem meta"
+          "nada planejado"
         ) : (
           <>
             <span className="font-bold text-foreground">{Math.round(valor)}</span>/
-            {Math.round(meta)}g
+            {Math.round(referencia)}g
           </>
         )}
       </p>
