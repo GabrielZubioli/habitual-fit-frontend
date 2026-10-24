@@ -133,8 +133,6 @@ export function GoogleSignIn({
           text: texto,
           logo_alignment: "center",
           locale: "pt-BR",
-          // O botão oficial aceita no máximo 400 px.
-          width: Math.min(400, Math.max(200, Math.round(el.getBoundingClientRect().width))),
         });
       } catch {
         if (ativo) setFalhou(true);
