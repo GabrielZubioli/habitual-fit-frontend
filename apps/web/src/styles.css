@@ -532,6 +532,340 @@
 
 @layer components {
   /*
+   * Entrar / criar conta — a troca animada entre os dois formulários.
+   *
+   * Parte de github.com/GabrielZubioli/responsive-login-screen: um "blob"
+   * verde três vezes mais largo que o cartão (`::before`) atravessa de um lado
+   * ao outro, e os formulários trocam de metade atrás dele. No celular a mesma
+   * coreografia acontece na vertical: o painel ocupa 30% de cima e desce.
+   *
+   * Tudo anda por `transform` e `opacity` — só composição, sem recalcular
+   * layout a cada quadro. A linha do tempo (1,1 s):
+   *
+   *   0 s      painel de saída recua e some; campos de saída apagam
+   *   0,55 s   blob cobre o cartão inteiro — os formulários trocam de metade
+   *   0,5 s →  painel de entrada chega; campos de entrada sobem em cascata
+   *
+   * O estado vem de `data-mode` no cartão — o React só troca o atributo.
+   * Verde #3AD598 com tinta quase preta: branco sobre ele não passa de 1,9:1.
+   */
+  .auth-page {
+    background:
+      radial-gradient(55% 45% at 12% 8%, rgb(58 213 152 / 0.2), transparent 70%),
+      radial-gradient(45% 45% at 92% 95%, rgb(58 213 152 / 0.14), transparent 70%),
+      var(--background);
+  }
+
+  /* A tela não rola: a faixa reservada para a barra só cortaria o fundo. */
+  html:has(.auth-flip) {
+    scrollbar-gutter: auto;
+  }
+
+  .auth-flip {
+    --auth-brand: #3ad598;
+    --auth-ink: #04261a;
+    --auth-swap: 0.55s; /* metade do blob: o cartão está todo verde */
+    --auth-in: cubic-bezier(0.55, 0, 0.75, 0.2);
+    --auth-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --auth-move: cubic-bezier(0.76, 0, 0.24, 1);
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    height: min(660px, calc(100dvh - 40px));
+    overflow: hidden;
+    isolation: isolate;
+    border: 1px solid color-mix(in oklab, var(--foreground) 7%, transparent);
+    border-radius: 32px;
+    background: var(--card);
+    color: var(--card-foreground);
+    box-shadow:
+      0 1px 2px rgb(0 0 0 / 0.04),
+      0 30px 80px -24px rgb(4 38 26 / 0.28);
+    animation: auth-card-in 0.7s var(--auth-out) both;
+  }
+  @keyframes auth-card-in {
+    from {
+      opacity: 0;
+      transform: translateY(16px) scale(0.98);
+    }
+  }
+
+  .auth-flip__form {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1;
+    display: flex;
+    width: 50%;
+    height: 100%;
+    overflow-y: auto;
+    padding: 40px 48px;
+    background: var(--card);
+    transition:
+      transform 0s var(--auth-swap),
+      visibility 0s var(--auth-swap);
+  }
+  .auth-flip__form > * {
+    width: 100%;
+    margin-block: auto; /* centraliza sem cortar o topo quando rola */
+  }
+  .auth-flip[data-mode="signup"] .auth-flip__form {
+    transform: translateX(-100%);
+  }
+  .auth-flip__form--signup,
+  .auth-flip[data-mode="signup"] .auth-flip__form--login {
+    visibility: hidden;
+  }
+  .auth-flip[data-mode="signup"] .auth-flip__form--signup {
+    visibility: visible;
+  }
+
+  /* Campos: saem juntos e rápido; entram um a um quando o blob libera a metade. */
+  .auth-flip__form > form > * {
+    opacity: 0;
+    transform: translateY(12px);
+    transition:
+      opacity 0.2s var(--auth-in),
+      transform 0.2s var(--auth-in);
+  }
+  .auth-flip[data-mode="login"] .auth-flip__form--login > form > *,
+  .auth-flip[data-mode="signup"] .auth-flip__form--signup > form > * {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 0.5s var(--auth-out),
+      transform 0.6s var(--auth-out);
+    transition-delay: calc(0.6s + var(--i, 0) * 40ms);
+  }
+  .auth-flip__form > form > :nth-child(2) {
+    --i: 1;
+  }
+  .auth-flip__form > form > :nth-child(3) {
+    --i: 2;
+  }
+  .auth-flip__form > form > :nth-child(4) {
+    --i: 3;
+  }
+  .auth-flip__form > form > :nth-child(5) {
+    --i: 4;
+  }
+  .auth-flip__form > form > :nth-child(6) {
+    --i: 5;
+  }
+  .auth-flip__form > form > :nth-child(7) {
+    --i: 6;
+  }
+  .auth-flip__form > form > :nth-child(n + 8) {
+    --i: 7;
+  }
+
+  .auth-flip__toggle {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .auth-flip__toggle::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -250%;
+    z-index: 2;
+    width: 300%;
+    height: 100%;
+    border-radius: 150px;
+    background:
+      radial-gradient(28% 60% at 72% 18%, rgb(255 255 255 / 0.28), transparent 70%),
+      radial-gradient(30% 70% at 28% 90%, rgb(4 38 26 / 0.12), transparent 70%), var(--auth-brand);
+    transition: transform 1.1s var(--auth-move);
+    will-change: transform;
+  }
+  .auth-flip[data-mode="signup"] .auth-flip__toggle::before {
+    transform: translateX(100%); /* 300% do cartão: de -250% a 50% */
+  }
+
+  .auth-flip__panel {
+    position: absolute;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 50%;
+    height: 100%;
+    padding: 0 40px;
+    text-align: center;
+    color: var(--auth-ink);
+    pointer-events: auto;
+    /* Recorta a marca d'água na mesma curva do blob, para ela não vazar no branco. */
+    overflow: hidden;
+    /* Entrada: espera o blob chegar e desacelera no lugar. */
+    transition:
+      transform 0.7s var(--auth-out) 0.5s,
+      opacity 0.5s var(--auth-out) 0.5s;
+  }
+  .auth-flip__panel--left {
+    left: 0;
+    border-radius: 0 150px 150px 0;
+  }
+  .auth-flip__panel--right {
+    right: 0;
+    border-radius: 150px 0 0 150px;
+  }
+
+  /*
+   * O símbolo da marca como textura do verde: grande, girado, cortado pela
+   * borda externa do cartão e em tinta escura translúcida — lê como parte do
+   * fundo, não como uma segunda logo. Anda junto com o painel na troca.
+   * A altura vem na classe do componente (`h-[120%]`): o `h-auto` dele venceria.
+   */
+  .auth-flip__marca {
+    position: absolute;
+    bottom: -38%; /* a "cabeça" do símbolo vai para o canto, longe da logo da frente */
+    z-index: -1;
+    opacity: 0.09;
+    transform: rotate(-12deg);
+    pointer-events: none;
+    user-select: none;
+  }
+  .auth-flip__panel--left .auth-flip__marca {
+    left: -40%;
+  }
+  .auth-flip__panel--right .auth-flip__marca {
+    right: -62%; /* a cabeça fica no canto de cima; aqui ela encostaria na logo */
+  }
+  /* Saída: recua para fora junto com o blob, sem atraso. */
+  .auth-flip[data-mode="signup"] .auth-flip__panel--left,
+  .auth-flip[data-mode="login"] .auth-flip__panel--right {
+    opacity: 0;
+    transition:
+      transform 0.5s var(--auth-in),
+      opacity 0.3s var(--auth-in);
+  }
+  .auth-flip[data-mode="signup"] .auth-flip__panel--left {
+    transform: translateX(-45%);
+  }
+  .auth-flip[data-mode="login"] .auth-flip__panel--right {
+    transform: translateX(45%);
+  }
+
+  .auth-flip__panel :focus-visible {
+    outline-color: var(--auth-ink); /* o anel verde sumiria sobre o verde */
+  }
+
+  .auth-flip__panel-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-width: 168px;
+    height: 48px;
+    padding: 0 1.5rem;
+    border: 2px solid var(--auth-ink);
+    border-radius: 999px;
+    font-weight: 600;
+    transition:
+      background-color 0.25s,
+      color 0.25s,
+      transform 0.25s var(--auth-out);
+  }
+  .auth-flip__panel-btn:hover {
+    background: var(--auth-ink);
+    color: var(--auth-brand);
+  }
+  .auth-flip__panel-btn:active {
+    transform: scale(0.97);
+  }
+  .auth-flip__panel-btn svg {
+    transition: transform 0.25s var(--auth-out);
+  }
+  .auth-flip__panel-btn:hover svg {
+    transform: translateX(3px);
+  }
+
+  @media (max-width: 649px) {
+    .auth-flip {
+      max-width: none;
+      height: 100dvh;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+      animation: none;
+    }
+    .auth-flip__form {
+      top: auto;
+      bottom: 0;
+      width: 100%;
+      height: 70%;
+      padding: 24px 24px 28px;
+    }
+    .auth-flip__form > * {
+      margin-block: 0 auto;
+    }
+    .auth-flip[data-mode="signup"] .auth-flip__form {
+      transform: translateY(-42.857%); /* 30% do cartão, sobre 70% de altura */
+    }
+    .auth-flip__toggle::before {
+      top: -270%;
+      left: 0;
+      width: 100%;
+      height: 300%;
+      border-radius: 20vw;
+      background: var(--auth-brand); /* os brilhos esticariam em faixas na vertical */
+    }
+    .auth-flip[data-mode="signup"] .auth-flip__toggle::before {
+      transform: translateY(113.333%); /* 340% do cartão: de -270% a 70% */
+    }
+    .auth-flip__panel {
+      width: 100%;
+      height: 30%;
+      padding: 0 24px;
+    }
+    .auth-flip__panel--left {
+      border-radius: 0 0 20vw 20vw;
+    }
+    .auth-flip__panel--right {
+      border-radius: 20vw 20vw 0 0;
+    }
+    .auth-flip__marca {
+      top: -20%;
+      bottom: auto;
+    }
+    .auth-flip__panel--left .auth-flip__marca,
+    .auth-flip__panel--right .auth-flip__marca {
+      right: -14%;
+      left: auto;
+    }
+    .auth-flip__panel--right {
+      top: auto;
+      bottom: 0;
+    }
+    .auth-flip[data-mode="signup"] .auth-flip__panel--left {
+      transform: translateY(-45%);
+    }
+    .auth-flip[data-mode="login"] .auth-flip__panel--right {
+      transform: translateY(45%);
+    }
+  }
+  @media (max-width: 400px) {
+    .auth-flip__form {
+      padding-inline: 20px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .auth-flip,
+    .auth-flip__form,
+    .auth-flip__form > form > *,
+    .auth-flip__panel,
+    .auth-flip__toggle::before {
+      /* !important: as transições por modo têm seletores mais específicos. */
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+
+  /*
    * Tela do treino — tokens próprios (--t-*).
    *
    * A tela inteira lê só estes tokens. Fora de um treino em andamento (vendo

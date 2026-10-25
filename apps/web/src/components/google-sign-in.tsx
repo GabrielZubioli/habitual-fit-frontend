@@ -83,12 +83,15 @@ async function novoNonce(): Promise<{ bruto: string; hash: string }> {
 export function GoogleSignIn({
   texto = "continue_with",
   onSuccess,
+  onError,
   fallback,
 }: {
   /** Rótulo do botão oficial: "Continuar com o Google", "Fazer login…", "Inscrever-se…". */
   texto?: "continue_with" | "signin_with" | "signup_with";
   /** Sessão aberta: para onde ir agora. */
   onSuccess: () => void;
+  /** Falha ao abrir a sessão — para a tela mostrar o aviso (os toasts podem estar desligados). */
+  onError?: (mensagem: string) => void;
   /** Botão de reserva (redirecionamento), se o do Google não puder ser exibido. */
   fallback: ReactNode;
 }) {
@@ -100,6 +103,8 @@ export function GoogleSignIn({
   // O callback do Google é registrado uma vez; a ref evita usar um `onSuccess` velho.
   const sucesso = useRef(onSuccess);
   sucesso.current = onSuccess;
+  const falha = useRef(onError);
+  falha.current = onError;
 
   useEffect(() => {
     let ativo = true;
@@ -120,8 +125,10 @@ export function GoogleSignIn({
               nonce: nonce.bruto,
             });
             setEntrando(false);
-            if (error) toast.error("Não foi possível entrar com o Google.");
-            else sucesso.current();
+            if (error) {
+              toast.error("Não foi possível entrar com o Google.");
+              falha.current?.("Não foi possível entrar com o Google.");
+            } else sucesso.current();
           },
         });
         el.replaceChildren();

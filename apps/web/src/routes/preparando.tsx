@@ -110,7 +110,7 @@ function PreparingPage() {
       const user = data.session?.user;
 
       // Sem sessão: o cadastro é o pré-requisito desta tela.
-      if (!user) return void navigate({ to: "/criar-conta", replace: true });
+      if (!user) return void navigate({ to: "/auth", search: { modo: "cadastro" }, replace: true });
 
       // Já gerado: entrar de novo aqui (link antigo, refresh) não pode
       // sobrescrever o plano que a pessoa já vem usando.

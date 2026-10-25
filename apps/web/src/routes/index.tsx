@@ -517,7 +517,9 @@ function Welcome({ onStart, logado }: { onStart: () => void; logado: boolean }) 
       </ul>
 
       <NextButton
-        onClick={logado ? onStart : () => void navigate({ to: "/criar-conta" })}
+        onClick={
+          logado ? onStart : () => void navigate({ to: "/auth", search: { modo: "cadastro" } })
+        }
         label={logado ? "Começar" : "Criar conta"}
       />
 
