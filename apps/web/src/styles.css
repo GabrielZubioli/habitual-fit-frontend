@@ -620,21 +620,18 @@
     visibility: visible;
   }
 
-  /* Campos: saem juntos e rápido; entram um a um quando o blob libera a metade. */
+  /*
+   * Campos: saem juntos e rápido; entram um a um quando o blob libera a metade.
+   * Só opacidade — deslocar os campos na entrada parecia o formulário tremendo.
+   */
   .auth-flip__form > form > * {
     opacity: 0;
-    transform: translateY(12px);
-    transition:
-      opacity 0.2s var(--auth-in),
-      transform 0.2s var(--auth-in);
+    transition: opacity 0.2s var(--auth-in);
   }
   .auth-flip[data-mode="login"] .auth-flip__form--login > form > *,
   .auth-flip[data-mode="signup"] .auth-flip__form--signup > form > * {
     opacity: 1;
-    transform: none;
-    transition:
-      opacity 0.5s var(--auth-out),
-      transform 0.6s var(--auth-out);
+    transition: opacity 0.5s var(--auth-out);
     transition-delay: calc(0.6s + var(--i, 0) * 40ms);
   }
   .auth-flip__form > form > :nth-child(2) {

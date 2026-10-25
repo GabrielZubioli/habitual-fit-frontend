@@ -242,7 +242,9 @@ function SignInForm({
     <form onSubmit={submit} className="space-y-3 text-center" noValidate aria-busy={loading}>
       <Cabecalho titulo={titulo}>Entrar na sua conta</Cabecalho>
 
-      <div className="pt-1">
+      {/* Altura fixa: o botão do Google muda de tamanho enquanto monta, e o
+          formulário centralizado pularia inteiro junto. */}
+      <div className="h-12 overflow-hidden pt-1">
         <GoogleButton ativo={ativo} texto="signin_with" onError={setErro} />
       </div>
       <Divisor>ou com e-mail</Divisor>
@@ -362,7 +364,9 @@ function SignUpForm({
     <form onSubmit={submit} className="space-y-3 text-center" noValidate aria-busy={loading}>
       <Cabecalho titulo={titulo}>Criar sua conta</Cabecalho>
 
-      <div className="pt-1">
+      {/* Altura fixa: o botão do Google muda de tamanho enquanto monta, e o
+          formulário centralizado pularia inteiro junto. */}
+      <div className="h-12 overflow-hidden pt-1">
         <GoogleButton ativo={ativo} texto="signup_with" onError={setErro} />
       </div>
       <Divisor>ou com e-mail</Divisor>
@@ -416,28 +420,30 @@ function SignUpForm({
       />
 
       {contaExiste && (
-        <div
-          role="alert"
-          className="rounded-2xl border border-primary/40 bg-primary/10 p-4 text-left animate-in fade-in slide-in-from-bottom-1 duration-300"
-        >
-          <p className="font-semibold">Este e-mail já tem uma conta</p>
-          <p className="mt-1 text-pretty text-sm text-muted-foreground">
-            <span className="break-all font-medium text-foreground">{contaExiste}</span> já está
-            cadastrado. Entre com ele ou recupere a senha.
-          </p>
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <Button
-              type="button"
-              className="h-11 rounded-xl"
-              onClick={() => irParaLogin(contaExiste)}
-            >
-              Entrar
-            </Button>
-            <Button asChild variant="outline" className="h-11 rounded-xl">
-              <Link to="/esqueci-senha" search={{ email: contaExiste }}>
-                Esqueci a senha
-              </Link>
-            </Button>
+        <div>
+          <div
+            role="alert"
+            className="rounded-2xl border border-primary/40 bg-primary/10 p-4 text-left animate-in fade-in slide-in-from-bottom-1 duration-300"
+          >
+            <p className="font-semibold">Este e-mail já tem uma conta</p>
+            <p className="mt-1 text-pretty text-sm text-muted-foreground">
+              <span className="break-all font-medium text-foreground">{contaExiste}</span> já está
+              cadastrado. Entre com ele ou recupere a senha.
+            </p>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <Button
+                type="button"
+                className="h-11 rounded-xl"
+                onClick={() => irParaLogin(contaExiste)}
+              >
+                Entrar
+              </Button>
+              <Button asChild variant="outline" className="h-11 rounded-xl">
+                <Link to="/esqueci-senha" search={{ email: contaExiste }}>
+                  Esqueci a senha
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       )}
@@ -565,36 +571,47 @@ function IconField({
   );
 }
 
+/**
+ * Dentro de um `div` de propósito: a entrada em cascata do formulário anima os
+ * filhos diretos, e a transição própria do botão (hover) a sobrescreveria — ele
+ * apareceria antes dos outros, fora de sincronia.
+ */
 function SubmitButton({ loading, children }: { loading: boolean; children: React.ReactNode }) {
   return (
-    <Button
-      type="submit"
-      size="lg"
-      className="group/btn h-13 w-full rounded-xl bg-[var(--auth-brand)] text-base font-semibold text-[var(--auth-ink)] shadow-[0_10px_24px_-12px_rgb(58_213_152/0.9)] transition-[background-color,box-shadow,transform] duration-200 hover:-translate-y-px hover:bg-[color-mix(in_oklab,var(--auth-brand)_90%,black)] hover:shadow-[0_14px_28px_-12px_rgb(58_213_152/1)] active:translate-y-0 active:scale-[0.99]"
-      disabled={loading}
-    >
-      {children}
-      {loading ? (
-        <Loader2 className="ml-1 size-4 animate-spin" aria-hidden />
-      ) : (
-        <ArrowRight
-          className="ml-1 size-4 transition-transform duration-200 group-hover/btn:translate-x-0.5"
-          aria-hidden
-        />
-      )}
-    </Button>
+    <div>
+      <Button
+        type="submit"
+        size="lg"
+        className="group/btn h-13 w-full rounded-xl bg-[var(--auth-brand)] text-base font-semibold text-[var(--auth-ink)] shadow-[0_10px_24px_-12px_rgb(58_213_152/0.9)] transition-[background-color,box-shadow,transform] duration-200 hover:bg-[color-mix(in_oklab,var(--auth-brand)_90%,black)] hover:shadow-[0_14px_28px_-12px_rgb(58_213_152/1)] active:scale-[0.99]"
+        disabled={loading}
+      >
+        {children}
+        {loading ? (
+          <Loader2 className="ml-1 size-4 animate-spin" aria-hidden />
+        ) : (
+          <ArrowRight
+            className="ml-1 size-4 transition-transform duration-200 group-hover/btn:translate-x-0.5"
+            aria-hidden
+          />
+        )}
+      </Button>
+    </div>
   );
 }
 
 function Aviso({ children }: { children: React.ReactNode }) {
+  // No `div` pelo mesmo motivo do botão: a animação de entrada do aviso brigaria
+  // com a da cascata.
   return (
-    <p
-      role="alert"
-      className="flex items-start gap-2 rounded-xl bg-destructive-soft px-3.5 py-3 text-left text-sm font-medium text-destructive animate-in fade-in slide-in-from-top-1 duration-200"
-    >
-      <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden />
-      {children}
-    </p>
+    <div>
+      <p
+        role="alert"
+        className="flex items-start gap-2 rounded-xl bg-destructive-soft px-3.5 py-3 text-left text-sm font-medium text-destructive animate-in fade-in slide-in-from-top-1 duration-200"
+      >
+        <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden />
+        {children}
+      </p>
+    </div>
   );
 }
 
@@ -646,7 +663,7 @@ function GoogleButton({
         <Button
           type="button"
           variant="outline"
-          className="h-12 w-full rounded-lg text-base"
+          className="h-11 w-full rounded-lg text-base"
           onClick={signIn}
           disabled={loading}
         >
