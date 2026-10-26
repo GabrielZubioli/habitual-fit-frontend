@@ -711,25 +711,26 @@
   }
 
   /*
-   * O símbolo da marca como textura do verde: grande, girado, cortado pela
-   * borda externa do cartão e em tinta escura translúcida — lê como parte do
-   * fundo, não como uma segunda logo. Anda junto com o painel na troca.
-   * A altura vem na classe do componente (`h-[120%]`): o `h-auto` dele venceria.
+   * O punho da tela Treinar (`Punho`) encaixado no verde: em pé, com a base
+   * rente à borda de baixo do painel e na largura dele — do jeito que ele se
+   * emenda no braço na tela Treinar. Em tinta escura translúcida: lê como um
+   * tom mais escuro do próprio verde, não como um desenho a mais. Anda junto
+   * com o painel na troca. No celular o painel é mais baixo que a mão nessa
+   * largura: as pontas dos dedos ficam cortadas pela borda de cima, sem
+   * distorcer o desenho.
    */
   .auth-flip__marca {
     position: absolute;
-    bottom: -38%; /* a "cabeça" do símbolo vai para o canto, longe da logo da frente */
+    bottom: 0;
+    left: 0;
     z-index: -1;
-    opacity: 0.09;
-    transform: rotate(-12deg);
+    width: 100%;
+    max-width: none;
+    height: auto;
+    color: var(--auth-ink); /* o punho pinta com `currentColor` */
+    opacity: 0.12;
     pointer-events: none;
     user-select: none;
-  }
-  .auth-flip__panel--left .auth-flip__marca {
-    left: -40%;
-  }
-  .auth-flip__panel--right .auth-flip__marca {
-    right: -62%; /* a cabeça fica no canto de cima; aqui ela encostaria na logo */
   }
   /* Saída: recua para fora junto com o blob, sem atraso. */
   .auth-flip[data-mode="signup"] .auth-flip__panel--left,
@@ -824,18 +825,15 @@
     .auth-flip__panel--right {
       border-radius: 20vw 20vw 0 0;
     }
-    .auth-flip__marca {
-      top: -20%;
-      bottom: auto;
-    }
-    .auth-flip__panel--left .auth-flip__marca,
-    .auth-flip__panel--right .auth-flip__marca {
-      right: -14%;
-      left: auto;
-    }
     .auth-flip__panel--right {
       top: auto;
       bottom: 0;
+    }
+    /* O painel do login fica em cima: a mão vem de cima, apontando para baixo. */
+    .auth-flip__panel--left .auth-flip__marca {
+      top: 0;
+      bottom: auto;
+      transform: rotate(180deg);
     }
     .auth-flip[data-mode="signup"] .auth-flip__panel--left {
       transform: translateY(-45%);

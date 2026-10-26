@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { GoogleSignIn } from "@/components/google-sign-in";
 import { Input } from "@/components/ui/input";
 import { BrandSymbol } from "@/components/brand-logo";
+import { Punho } from "@/components/train-launch";
 import { cn } from "@/lib/utils";
 
 /**
@@ -168,10 +169,7 @@ function Painel({
 }) {
   return (
     <div className={`auth-flip__panel auth-flip__panel--${lado}`} inert={inativo}>
-      <BrandSymbol
-        escuro
-        className="auth-flip__marca h-[120%] w-auto max-w-none max-[649px]:h-[150%]"
-      />
+      <Punho className="auth-flip__marca" />
       <Link to="/" aria-label="Habitual Fit — início" className="rounded-lg">
         <BrandSymbol
           escuro
