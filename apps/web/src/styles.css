@@ -784,7 +784,8 @@
   @media (max-width: 649px) {
     .auth-flip {
       max-width: none;
-      height: 100dvh;
+      /* `--auth-altura`: a altura da tela medida sem teclado (ver `useAlturaSemTeclado`). */
+      height: var(--auth-altura, 100dvh);
       border: 0;
       border-radius: 0;
       box-shadow: none;

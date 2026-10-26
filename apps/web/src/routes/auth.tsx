@@ -70,6 +70,8 @@ function AuthPage() {
   const [loginEmail, setLoginEmail] = useState("");
   const tituloLogin = useRef<HTMLHeadingElement>(null);
   const tituloCadastro = useRef<HTMLHeadingElement>(null);
+  const cartao = useRef<HTMLDivElement>(null);
+  useAlturaSemTeclado(cartao);
   const trocou = useRef(false);
 
   useEffect(() => {
@@ -108,7 +110,7 @@ function AuthPage() {
 
   return (
     <div className="auth-page grid min-h-dvh place-items-center min-[650px]:p-5">
-      <div className="auth-flip" data-mode={modo}>
+      <div ref={cartao} className="auth-flip" data-mode={modo}>
         <section className="auth-flip__form auth-flip__form--login" inert={modo !== "login"}>
           <SignInForm
             ativo={modo === "login"}
@@ -150,6 +152,40 @@ function AuthPage() {
       </div>
     </div>
   );
+}
+
+/**
+ * No celular o cartão tem a altura da tela e o painel verde ocupa 30% dela.
+ * Com o teclado aberto a tela encolhe (no Android a página é redimensionada):
+ * o cartão encolhia junto e o painel subia por cima dos campos.
+ *
+ * Aqui a altura fica travada na medida sem teclado — só é atualizada quando
+ * nenhum campo está em foco. Com o teclado aberto o cartão passa a ser maior
+ * que o que se vê, a página rola e o navegador leva o campo até a área
+ * visível; o painel fica onde estava, fora dos campos.
+ */
+function useAlturaSemTeclado(cartao: React.RefObject<HTMLDivElement | null>) {
+  useEffect(() => {
+    const digitando = () => document.activeElement?.matches("input, textarea, select") ?? false;
+    const medir = () => {
+      if (!digitando())
+        cartao.current?.style.setProperty("--auth-altura", `${window.innerHeight}px`);
+    };
+    // Ao sair do campo o teclado ainda está fechando: mede depois que ele some.
+    let t: number | undefined;
+    const saiu = () => {
+      window.clearTimeout(t);
+      t = window.setTimeout(medir, 400);
+    };
+    medir();
+    window.addEventListener("resize", medir);
+    document.addEventListener("focusout", saiu);
+    return () => {
+      window.clearTimeout(t);
+      window.removeEventListener("resize", medir);
+      document.removeEventListener("focusout", saiu);
+    };
+  }, [cartao]);
 }
 
 function Painel({
