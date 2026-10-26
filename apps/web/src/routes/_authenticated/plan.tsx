@@ -1,10 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, type ReactNode } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
+  CalendarCog,
   ChevronDown,
   ChevronRight,
+  Loader2,
   PencilRuler,
   Pencil,
   Play,
@@ -53,7 +55,10 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { AvisoProfissional } from "@/components/aviso-profissional";
 import { ExercisePicker } from "@/components/pickers/exercise-picker";
 import { RoutineExerciseRow, estimarDuracao } from "@/components/workouts/routine-exercise-row";
-import { RoutineIcon, RoutineIconPicker } from "@/components/workouts/routine-icon";
+import { RoutineIconPicker } from "@/components/workouts/routine-icon";
+import { ExerciseDemo } from "@/components/workouts/exercise-demo-images";
+import { BodyMap, aggregateMuscleIntensities } from "@/components/body-map/body-map";
+import { exerciseImages } from "@/data/exercise-media";
 import { todayISO } from "@/lib/date";
 import { cn } from "@/lib/utils";
 
@@ -62,7 +67,8 @@ import { cn } from "@/lib/utils";
  *
  * Duas abas, como nos apps de academia que se usa com uma mão:
  *
- * - **Agenda** — o que se faz em cada dia: cada rotina tem os seus dias
+ * - **Agenda** — o treino de um dia por vez (Dia 1 a Dia 7): os músculos no
+ *   boneco, os exercícios e o botão de iniciar. Cada rotina tem os seus dias
  *   (segunda = Peito, quarta = Costas…). Dia sem rotina é descanso.
  * - **Rotinas** — o conteúdo de cada uma: exercícios, séries, descanso.
  */
@@ -271,39 +277,23 @@ function PlanPage() {
         )}
 
         {aba === "agenda" ? (
-          <section aria-label="Agenda da semana" className="mt-5">
-            <p className="px-1 text-sm text-muted-foreground">
-              Cada rotina tem os seus dias. Dia sem rotina é descanso.
-            </p>
-
-            <h2 className="mb-3 mt-5 flex items-center gap-2 px-1 text-lg font-bold">
-              <span className="h-5 w-1.5 rounded-full bg-primary" aria-hidden />
-              Agenda da semana
-            </h2>
-            <ul className="space-y-3">
-              {ORDEM_SEMANA.map((dia) => (
-                <li key={dia}>
-                  <DiaFixo
-                    dia={dia}
-                    dados={dados}
-                    onAdd={(templateId, dias) =>
-                      salvar.mutate(() => setTemplateWeekdays(templateId, [...dias, dia]))
-                    }
-                    onRemove={(templateId, dias) =>
-                      salvar.mutate(() =>
-                        setTemplateWeekdays(
-                          templateId,
-                          dias.filter((d) => d !== dia),
-                        ),
-                      )
-                    }
-                    onStart={pedirInicio}
-                    isToday={dia === hoje}
-                  />
-                </li>
-              ))}
-            </ul>
-          </section>
+          <AgendaDia
+            dados={dados}
+            hoje={hoje}
+            iniciando={abrir.isPending}
+            onStart={pedirInicio}
+            onAdd={(templateId, dias, dia) =>
+              salvar.mutate(() => setTemplateWeekdays(templateId, [...dias, dia]))
+            }
+            onRemove={(templateId, dias, dia) =>
+              salvar.mutate(() =>
+                setTemplateWeekdays(
+                  templateId,
+                  dias.filter((d) => d !== dia),
+                ),
+              )
+            }
+          />
         ) : (
           <section aria-label="Rotinas" className="mt-5">
             <ul className="space-y-3">
@@ -559,135 +549,302 @@ function PlanPage() {
   );
 }
 
-/** Dia na semana fixa: as rotinas dele, remover, adicionar; ou "Descanso". */
-function DiaFixo({
-  dia,
+/**
+ * Agenda: o treino de um dia da programação por vez.
+ *
+ * Dia 1 a Dia 7 seguem o vínculo que já existe entre rotina e dia da semana
+ * (`weekdays` de cada rotina): Dia 1 é segunda, Dia 7 é domingo — a mesma
+ * ordem da agenda de sempre, com o dia da semana escrito em cada botão.
+ *
+ * Trocar de dia é só consulta: não abre treino, não mexe na agenda. Iniciar é
+ * o botão do dia, que passa pela mesma confirmação de antes.
+ */
+function AgendaDia({
   dados,
+  hoje,
+  iniciando,
+  onStart,
   onAdd,
   onRemove,
-  onStart,
-  isToday,
 }: {
-  dia: Weekday;
   dados: WorkoutWeek;
-  onAdd: (templateId: string, diasAtuais: number[]) => void;
-  onRemove: (templateId: string, diasAtuais: number[]) => void;
+  hoje: Weekday;
+  iniciando: boolean;
   onStart: (templateId: string) => void;
-  isToday: boolean;
+  onAdd: (templateId: string, diasAtuais: number[], dia: Weekday) => void;
+  onRemove: (templateId: string, diasAtuais: number[], dia: Weekday) => void;
 }) {
+  const navigate = useNavigate();
+  const [dia, setDia] = useState<Weekday>(hoje);
+  // Mais de uma rotina no dia: qual está à vista. Guardada pelo id, e não pela
+  // posição, para sobreviver a uma rotina tirada do dia.
+  const [escolhida, setEscolhida] = useState<string | null>(null);
+
   const doDia = dados.splits.filter((s) => s.weekdays.includes(dia));
   const outras = dados.splits.filter((s) => !s.weekdays.includes(dia));
+  const split = doDia.find((s) => s.templateId === escolhida) ?? doDia[0] ?? null;
+  const numero = ORDEM_SEMANA.indexOf(dia) + 1;
 
-  const adicionar = (gatilho: ReactNode) => (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>{gatilho}</DropdownMenuTrigger>
-      <DropdownMenuContent align={doDia.length === 0 ? "end" : "start"}>
-        <DropdownMenuLabel>Rotina para {WEEKDAY_LABELS[dia].toLowerCase()}</DropdownMenuLabel>
-        {dados.splits.length === 0 ? (
-          <DropdownMenuItem disabled>Crie uma rotina na aba Rotinas primeiro</DropdownMenuItem>
-        ) : outras.length === 0 ? (
-          <DropdownMenuItem disabled>Todas as rotinas já estão neste dia</DropdownMenuItem>
-        ) : (
-          outras.map((s) => (
-            <DropdownMenuItem key={s.templateId} onSelect={() => onAdd(s.templateId, s.weekdays)}>
-              {s.name.replace(/^[A-Z]\s*—\s*/, "")}
-            </DropdownMenuItem>
-          ))
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+  const musculos = useMemo(
+    () => (split ? aggregateMuscleIntensities(split.exercises.flatMap((e) => e.muscles)) : []),
+    [split],
   );
 
-  // Dia livre: o card é só informação; vincular uma rotina é no botão "+".
-  if (doDia.length === 0) {
-    return (
-      <div
-        className={cn(
-          "flex w-full items-center gap-3 rounded-[1.25rem] border border-dashed py-3 pl-5 pr-3",
-          isToday ? "border-primary bg-primary/10" : "border-border bg-card/60",
-        )}
-      >
-        <span className="flex-1 text-xl font-medium">
-          {WEEKDAY_LABELS[dia]}
-          {isToday && (
-            <span className="ml-2 rounded-full bg-[#01D798] px-2 py-0.5 align-middle text-xs font-extrabold text-[#020306]">
-              hoje
-            </span>
-          )}
-        </span>
-        <span className="rounded-full bg-elevated px-3 py-1 text-sm font-medium text-muted-foreground">
-          Descanso
-        </span>
-        {adicionar(
-          <button
-            type="button"
-            aria-label={`Vincular uma rotina a ${WEEKDAY_LABELS[dia].toLowerCase()}`}
-            className="grid size-11 shrink-0 place-items-center rounded-full bg-primary/15 text-primary transition-colors hover:bg-primary/25"
-          >
-            <Plus className="size-5" aria-hidden />
-          </button>,
-        )}
-      </div>
-    );
-  }
+  const status: "treino" | "vazio" | "descanso" = !split
+    ? "descanso"
+    : split.exercises.length > 0
+      ? "treino"
+      : "vazio";
+
+  const nomeDia = WEEKDAY_LABELS[dia].toLowerCase();
 
   return (
-    <div
-      className={cn(
-        "relative overflow-hidden rounded-[1.25rem] p-5",
-        isToday ? "border-2 border-primary bg-card" : "border border-primary/15 bg-card",
-      )}
-    >
-      <div className="relative mb-2 flex items-baseline justify-between">
-        <h3 className="text-xl font-bold">
-          {WEEKDAY_LABELS[dia]}
-          {isToday && (
-            <span className="ml-2 rounded-full bg-[#01D798] px-2 py-0.5 align-middle text-xs font-extrabold text-[#020306]">
-              hoje
-            </span>
-          )}
-        </h3>
-        <span className="rounded-full bg-primary/15 px-2.5 py-0.5 text-xs font-bold text-primary">
-          {doDia.length} {doDia.length === 1 ? "rotina" : "rotinas"}
-        </span>
-      </div>
-      <ul className="relative space-y-1">
-        {doDia.map((s) => (
-          <li key={s.templateId} className="flex items-center gap-3 py-1.5">
-            <RoutineIcon icon={s.icon} name={splitDisplayName(s.name)} />
+    <section aria-label="Agenda" className="mt-5">
+      {/* Seletor dos sete dias: sete colunas iguais, sem rolagem lateral. */}
+      <div role="radiogroup" aria-label="Dia da programação" className="grid grid-cols-7 gap-1.5">
+        {ORDEM_SEMANA.map((d, i) => {
+          const ativo = d === dia;
+          const ehHoje = d === hoje;
+          const temTreino = dados.splits.some(
+            (s) => s.weekdays.includes(d) && s.exercises.length > 0,
+          );
+          return (
             <button
+              key={d}
               type="button"
-              onClick={() => onStart(s.templateId)}
-              className="min-w-0 flex-1 text-left"
-              aria-label={`Começar ${s.name}`}
+              role="radio"
+              aria-checked={ativo}
+              aria-label={`Dia ${i + 1}, ${WEEKDAY_LABELS[d]}${ehHoje ? ", hoje" : ""}${temTreino ? "" : ", descanso"}`}
+              onClick={() => {
+                setDia(d);
+                setEscolhida(null);
+              }}
+              className={cn(
+                "relative flex flex-col items-center gap-0.5 rounded-xl border py-2 transition-colors",
+                ativo
+                  ? "border-transparent bg-[#3AD598] text-[#04261a] shadow-[0_6px_16px_-8px_rgb(58_213_152/0.9)]"
+                  : ehHoje
+                    ? "border-primary/60 bg-card text-foreground"
+                    : "border-border/70 bg-card text-muted-foreground hover:text-foreground",
+              )}
             >
-              <span className="block truncate text-lg">{s.name.replace(/^[A-Z]\s*—\s*/, "")}</span>
-              <span className="block text-sm text-muted-foreground">
-                {s.exercises.length} {s.exercises.length === 1 ? "exercício" : "exercícios"}
+              <span className="text-[10px] font-semibold uppercase tracking-wide opacity-80">
+                Dia
               </span>
+              <span className="text-lg font-bold leading-none tabular-nums">{i + 1}</span>
+              <span className="text-[11px] font-medium">
+                {ehHoje ? "hoje" : WEEKDAY_LABELS[d].slice(0, 3)}
+              </span>
+              {/* Ponto: dia com treino. Sem ponto: descanso. */}
+              <span
+                aria-hidden
+                className={cn(
+                  "mt-0.5 size-1.5 rounded-full",
+                  temTreino ? (ativo ? "bg-[#04261a]" : "bg-primary") : "bg-transparent",
+                )}
+              />
             </button>
-            <button
-              type="button"
-              onClick={() => onRemove(s.templateId, s.weekdays)}
-              aria-label={`Tirar ${s.name} de ${WEEKDAY_LABELS[dia].toLowerCase()}`}
-              className="grid size-10 place-items-center rounded-full text-foreground hover:bg-elevated"
-            >
-              <X className="size-5" />
-            </button>
-          </li>
-        ))}
-      </ul>
-      {outras.length > 0 &&
-        adicionar(
-          <button
-            type="button"
-            className="mt-2 flex items-center gap-2 px-1 py-1 text-lg text-primary"
+          );
+        })}
+      </div>
+
+      <div
+        key={`${dia}-${split?.templateId ?? "nada"}`}
+        className="mt-6 animate-in fade-in duration-200 motion-reduce:animate-none"
+      >
+        {/* A — identificação */}
+        <header className="flex items-start gap-3 px-1">
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium text-muted-foreground">
+              Dia {numero} · {WEEKDAY_LABELS[dia]}
+              {dia === hoje && " · hoje"}
+            </p>
+            <h2 className="mt-0.5 text-balance text-2xl font-bold leading-tight tracking-tight">
+              {split ? splitDisplayName(split.name) : "Dia de descanso"}
+            </h2>
+            <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+              <span
+                className={cn(
+                  "rounded-full px-2.5 py-0.5 text-xs font-bold",
+                  status === "treino" && "bg-primary/15 text-primary",
+                  status === "vazio" && "bg-chart-4/15 text-chart-4",
+                  status === "descanso" && "bg-elevated text-muted-foreground",
+                )}
+              >
+                {status === "treino"
+                  ? "Treino programado"
+                  : status === "vazio"
+                    ? "Sem exercícios"
+                    : "Descanso"}
+              </span>
+              {split && status === "treino" && (
+                <span>
+                  {split.exercises.length}{" "}
+                  {split.exercises.length === 1 ? "exercício" : "exercícios"} ·{" "}
+                  {estimarDuracao(split)}
+                </span>
+              )}
+            </p>
+          </div>
+
+          {/* Vincular e tirar rotinas do dia — o que a agenda sempre permitiu. */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="shrink-0 rounded-full"
+                aria-label={`Ajustar as rotinas de ${nomeDia}`}
+              >
+                <CalendarCog className="size-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Rotinas de {nomeDia}</DropdownMenuLabel>
+              {dados.splits.length === 0 && (
+                <DropdownMenuItem disabled>
+                  Crie uma rotina na aba Rotinas primeiro
+                </DropdownMenuItem>
+              )}
+              {outras.map((s) => (
+                <DropdownMenuItem
+                  key={`add-${s.templateId}`}
+                  onSelect={() => onAdd(s.templateId, s.weekdays, dia)}
+                >
+                  <Plus className="mr-2 size-4" aria-hidden />
+                  {splitDisplayName(s.name)}
+                </DropdownMenuItem>
+              ))}
+              {doDia.map((s) => (
+                <DropdownMenuItem
+                  key={`rm-${s.templateId}`}
+                  onSelect={() => onRemove(s.templateId, s.weekdays, dia)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <X className="mr-2 size-4" aria-hidden />
+                  Tirar {splitDisplayName(s.name)} deste dia
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </header>
+
+        {/* Duas ou mais rotinas no mesmo dia: escolha qual ver. */}
+        {doDia.length > 1 && (
+          <div
+            role="radiogroup"
+            aria-label="Rotina do dia"
+            className="mt-3 flex flex-wrap gap-2 px-1"
           >
-            <Plus className="size-5" aria-hidden />
-            Adicionar rotina
-          </button>,
+            {doDia.map((s) => {
+              const ativa = s.templateId === split?.templateId;
+              return (
+                <button
+                  key={s.templateId}
+                  type="button"
+                  role="radio"
+                  aria-checked={ativa}
+                  onClick={() => setEscolhida(s.templateId)}
+                  className={cn(
+                    "rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
+                    ativa
+                      ? "border-primary bg-primary/15 text-primary"
+                      : "border-border text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {splitDisplayName(s.name)}
+                </button>
+              );
+            })}
+          </div>
         )}
-    </div>
+
+        {status === "treino" && split ? (
+          <div className="mt-5 grid gap-6 md:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] md:items-start">
+            {/* B — a região trabalhada no dia, pelo que os exercícios realmente trabalham */}
+            <div className="rounded-[1.5rem] bg-card px-4 pb-5 pt-6 md:sticky md:top-4">
+              {musculos.length > 0 ? (
+                <BodyMap key={split.templateId} muscles={musculos} enquadrar className="w-full" />
+              ) : (
+                <>
+                  <BodyMap muscles={[]} size="lg" showToggle={false} />
+                  <p className="mt-3 text-center text-sm text-muted-foreground">
+                    Os exercícios deste treino ainda não têm os músculos cadastrados.
+                  </p>
+                </>
+              )}
+            </div>
+
+            {/* C — exercícios do dia, na ordem da rotina */}
+            <div>
+              <h3 className="mb-2 px-1 text-sm font-semibold text-muted-foreground">Exercícios</h3>
+              <ol className="divide-y divide-border/60 overflow-hidden rounded-[1.5rem] bg-card">
+                {split.exercises.map((e, i) => (
+                  <li key={e.itemId}>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        void navigate({ to: "/exercises/$id", params: { id: e.exerciseId } })
+                      }
+                      className="flex w-full items-center gap-3 p-3 text-left transition-colors hover:bg-elevated"
+                    >
+                      <ExerciseDemo
+                        images={exerciseImages(e.name, e.imageUrls)}
+                        name={e.name}
+                        autoPlay={false}
+                        interactive={false}
+                        className="w-16 shrink-0"
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-balance font-semibold leading-snug">
+                          <span className="mr-1.5 text-muted-foreground">{i + 1}.</span>
+                          {e.name}
+                        </span>
+                        <span className="mt-0.5 block text-sm text-muted-foreground">
+                          {e.targetSets} ×{" "}
+                          {e.targetRepMin && e.targetRepMax
+                            ? `${e.targetRepMin}–${e.targetRepMax}`
+                            : e.targetReps}{" "}
+                          · descanso {e.restSeconds} s
+                          {e.targetRpe !== null && ` · RPE ${e.targetRpe}`}
+                        </span>
+                      </span>
+                      <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                    </button>
+                  </li>
+                ))}
+              </ol>
+
+              {/* D — iniciar: o fluxo de sempre, com a confirmação */}
+              <Button
+                className="mt-4 h-14 w-full rounded-2xl bg-[#3AD598] text-base font-bold text-[#04261a] hover:bg-[#3AD598]/90"
+                disabled={iniciando}
+                onClick={() => onStart(split.templateId)}
+              >
+                {iniciando ? (
+                  <Loader2 className="mr-2 size-5 animate-spin" aria-hidden />
+                ) : (
+                  <Play className="mr-2 size-5 fill-current" aria-hidden />
+                )}
+                Iniciar treino
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="mt-5 flex flex-col items-center rounded-[1.5rem] bg-card px-6 pb-8 pt-6 text-center">
+            <BodyMap muscles={[]} size="md" showToggle={false} showLegend={false} />
+            <p className="mt-5 text-lg font-semibold">
+              {status === "vazio" ? "Nenhum exercício nesta rotina" : "Nenhum treino programado"}
+            </p>
+            <p className="mt-1 max-w-sm text-pretty text-sm text-muted-foreground">
+              {status === "vazio"
+                ? "Adicione exercícios a ela na aba Rotinas para poder iniciar o treino deste dia."
+                : `${WEEKDAY_LABELS[dia]} é dia de descanso. Para treinar neste dia, vincule uma rotina pelo botão de ajustar.`}
+            </p>
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
 

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { MUSCLE_LABELS, label } from "@/lib/labels";
 import {
@@ -37,6 +37,14 @@ import {
  *
  * Um dia de costas abre de costas. Obrigar o usuário a virar a figura para ver
  * o que ele vai treinar é um toque a mais em cada abertura da tela.
+ *
+ * ## Enquadrar no que foi trabalhado
+ *
+ * Com `enquadrar`, a figura mostra só a região dos músculos destacados na vista
+ * aberta — o mesmo efeito do `recorte` dos grupos de exercício, mas calculado
+ * pelos próprios músculos, porque o treino de um dia muda de um dia para o
+ * outro. A caixa sai da área real dos desenhos (`getBBox`), com folga e um
+ * tamanho mínimo para o músculo não aparecer solto, sem o corpo em volta.
  */
 
 export interface MuscleIntensity {
@@ -55,6 +63,7 @@ export function BodyMap({
   showToggle = true,
   size = "md",
   recorte,
+  enquadrar = false,
 }: {
   muscles: readonly MuscleIntensity[];
   className?: string;
@@ -67,6 +76,8 @@ export function BodyMap({
    * contêiner.
    */
   recorte?: { view: BodyView; box: readonly [number, number, number, number] };
+  /** Mostra só a região dos músculos destacados, numa moldura 4:3 que ocupa a largura. */
+  enquadrar?: boolean;
 }) {
   /** Intensidade por grupo desenhável, já resolvendo os apelidos. */
   const corDoGrupo = useMemo(() => {
@@ -100,9 +111,31 @@ export function BodyMap({
   const [escolhida, setEscolhida] = useState<BodyView | null>(null);
   // Enquanto o usuário não escolher, a vista acompanha o treino selecionado.
   const view = recorte?.view ?? escolhida ?? vistaSugerida;
+
+  // Enquadramento: medido depois de desenhar, na área dos músculos ativos.
+  const ativos = useRef<SVGGElement>(null);
+  const [caixa, setCaixa] = useState<string | null>(null);
+  useLayoutEffect(() => {
+    const g = ativos.current;
+    if (!enquadrar || !g || g.childElementCount === 0) {
+      setCaixa(null);
+      return;
+    }
+    const b = g.getBBox();
+    // Folga de 15% e no mínimo 360 × 270 (meia figura): o músculo aparece com
+    // o corpo em volta, não solto. Moldura 4:3, centrada no que foi trabalhado.
+    let w = Math.max(b.width * 1.3, 360);
+    let h = Math.max(b.height * 1.3, 270);
+    if (w / h > 4 / 3) h = (w * 3) / 4;
+    else w = (h * 4) / 3;
+    const cx = b.x + b.width / 2;
+    const cy = b.y + b.height / 2;
+    setCaixa(`${cx - w / 2} ${cy - h / 2} ${w} ${h}`);
+  }, [enquadrar, view, porGrupo]);
+
   const viewBox = recorte
     ? `${(view === "back" ? 724 : 0) + recorte.box[0]} ${recorte.box[1]} ${recorte.box[2]} ${recorte.box[3]}`
-    : VIEW_BOX[view];
+    : (caixa ?? VIEW_BOX[view]);
 
   const destacados = [...porGrupo.entries()].sort((a, b) => b[1] - a[1]);
 
@@ -110,10 +143,10 @@ export function BodyMap({
 
   return (
     <div className={cn("flex flex-col items-center", className)}>
-      <div className={cn("relative", recorte && "size-full")}>
+      <div className={cn("relative", recorte && "size-full", enquadrar && "aspect-[4/3] w-full")}>
         <svg
           viewBox={viewBox}
-          className={cn(recorte ? "size-full" : cn("w-auto", altura))}
+          className={cn(recorte || enquadrar ? "size-full" : cn("w-auto", altura))}
           role="img"
           aria-label={
             destacados.length > 0
@@ -135,25 +168,27 @@ export function BodyMap({
             )),
           )}
 
-          {/* 3 — músculos ativos */}
-          {Object.entries(MUSCLES_BY_VIEW[view]).map(([muscle, paths]) => {
-            const intensidade = porGrupo.get(muscle) ?? 0;
-            if (intensidade <= 0) return null;
+          {/* 3 — músculos ativos (num grupo: é a área dele que o enquadramento mede) */}
+          <g ref={ativos}>
+            {Object.entries(MUSCLES_BY_VIEW[view]).map(([muscle, paths]) => {
+              const intensidade = porGrupo.get(muscle) ?? 0;
+              if (intensidade <= 0) return null;
 
-            // Piso de 0,35: um músculo com contribuição 0,1 ficaria invisível, e
-            // "quase não aparece" não é a mesma informação que "não trabalha".
-            const opacidade = 0.35 + Math.min(1, intensidade) * 0.65;
+              // Piso de 0,35: um músculo com contribuição 0,1 ficaria invisível, e
+              // "quase não aparece" não é a mesma informação que "não trabalha".
+              const opacidade = 0.35 + Math.min(1, intensidade) * 0.65;
 
-            return paths.map((d, i) => (
-              <path
-                key={`on-${muscle}-${i}`}
-                d={d}
-                fill={corDoGrupo.get(muscle) ?? "var(--primary)"}
-                opacity={opacidade}
-                className="transition-opacity duration-500 motion-reduce:transition-none"
-              />
-            ));
-          })}
+              return paths.map((d, i) => (
+                <path
+                  key={`on-${muscle}-${i}`}
+                  d={d}
+                  fill={corDoGrupo.get(muscle) ?? "var(--primary)"}
+                  opacity={opacidade}
+                  className="transition-opacity duration-500 motion-reduce:transition-none"
+                />
+              ));
+            })}
+          </g>
 
           {/* 4 — contorno por cima, que é o que dá a linha da figura */}
           <path
