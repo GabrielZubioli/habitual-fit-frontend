@@ -29,7 +29,7 @@ export function PageHeader({
   wide = false,
 }: {
   title: string;
-  description?: string;
+  description?: ReactNode;
   action?: ReactNode;
   /** Ação secundária numa linha acima do título (ex.: "Agora não"), para o
    *  título ocupar a largura toda. */
@@ -47,7 +47,9 @@ export function PageHeader({
         aria-hidden
       />
       {topo && (
-        <div className={cn("mx-auto mb-2 flex w-full justify-end", LARGURA[wide ? "wide" : "default"])}>
+        <div
+          className={cn("mx-auto mb-2 flex w-full justify-end", LARGURA[wide ? "wide" : "default"])}
+        >
           {topo}
         </div>
       )}

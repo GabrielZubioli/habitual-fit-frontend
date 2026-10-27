@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Copy, Plus, X } from "lucide-react";
+import { AlertTriangle, Copy, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   KCAL_TOLERANCE,
@@ -42,6 +42,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CATEGORY_EMOJI } from "@/lib/food-emoji";
+import { MACRO_COLORS, MacroRing } from "@/components/home/macro-rings";
 import { MEAL_LABELS, label } from "@/lib/labels";
 import { todayISO } from "@/lib/date";
 import { cn } from "@/lib/utils";
@@ -145,12 +146,12 @@ export function WeeklyMenu() {
               aria-label={WEEKDAY_LABELS[d]}
               onClick={() => setDia(d)}
               className={cn(
-                "flex h-14 min-w-0 items-center justify-center rounded-2xl text-xs font-extrabold tracking-wide transition-all duration-200 active:scale-95",
+                "flex h-12 min-w-0 items-center justify-center rounded-xl border text-xs font-extrabold tracking-wide transition-all duration-200 active:scale-95",
                 ativo
-                  ? "bg-primary text-primary-foreground"
+                  ? "border-primary bg-gradient-to-b from-primary to-primary-active text-primary-foreground shadow-[var(--shadow-primary)]"
                   : d === hoje
-                    ? "border-2 border-primary/60 bg-card text-primary"
-                    : "bg-card text-muted-foreground hover:text-foreground",
+                    ? "border-primary/60 bg-primary/10 text-primary"
+                    : "border-primary/15 bg-primary/[0.07] text-muted-foreground hover:text-foreground",
               )}
             >
               {SIGLA[d]}
@@ -160,7 +161,7 @@ export function WeeklyMenu() {
       </div>
 
       {/* Resumo do dia escolhido. */}
-      <section className="mt-3 rounded-[1.5rem] bg-card p-5">
+      <section className="mt-3 rounded-[1.5rem] border border-border/60 bg-card p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
@@ -176,7 +177,12 @@ export function WeeklyMenu() {
               </span>
             </p>
             {status && (
-              <p className={cn("mt-1 text-xs font-semibold", status.cor)}>{status.texto}</p>
+              <p className={cn("mt-1.5 flex items-center gap-1 text-xs font-semibold", status.cor)}>
+                {status.cor === "text-destructive" && (
+                  <AlertTriangle className="size-3.5 shrink-0" aria-hidden />
+                )}
+                {status.texto}
+              </p>
             )}
           </div>
           <DropdownMenu>
@@ -202,22 +208,28 @@ export function WeeklyMenu() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-          {[
-            ["Proteína", t.proteinG, p.proteinTarget],
-            ["Carbo", t.carbsG, p.carbsTarget],
-            ["Gordura", t.fatG, p.fatTarget],
-          ].map(([nome, v, meta]) => (
-            <div key={nome as string} className="rounded-xl bg-elevated px-2 py-2">
-              <p className="text-[11px] font-semibold text-muted-foreground">{nome}</p>
-              <p className="text-sm font-extrabold tabular-nums">
-                {Math.round(v as number)}
-                <span className="font-medium text-muted-foreground">
-                  {semMeta ? " g" : ` / ${Math.round(meta as number)} g`}
-                </span>
-              </p>
-            </div>
-          ))}
+        <div className="mt-5 grid grid-cols-3 gap-2">
+          <MacroRing
+            nome="Proteína"
+            icone="🥤"
+            valor={t.proteinG}
+            meta={p.proteinTarget}
+            cor={MACRO_COLORS.protein}
+          />
+          <MacroRing
+            nome="Carbo"
+            icone="🍚"
+            valor={t.carbsG}
+            meta={p.carbsTarget}
+            cor={MACRO_COLORS.carbs}
+          />
+          <MacroRing
+            nome="Gordura"
+            icone="🥑"
+            valor={t.fatG}
+            meta={p.fatTarget}
+            cor={MACRO_COLORS.fat}
+          />
         </div>
         {p.generation && p.generation.warnings.length > 0 && (
           <ul className="mt-3 space-y-1 rounded-xl bg-elevated px-3 py-2 text-xs text-muted-foreground">
@@ -241,10 +253,10 @@ export function WeeklyMenu() {
           // Receita de que os itens fazem parte (gravada pelo gerador).
           const receita = [...new Set(itens.map((i) => i.prepNotes).filter(Boolean))].join(" · ");
           return (
-            <section key={m.id} className="rounded-[1.5rem] bg-card p-4">
+            <section key={m.id} className="rounded-[1.5rem] border border-border/60 bg-card p-4">
               <div className="mb-2 flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <h3 className="truncate text-lg font-bold">{nome}</h3>
+                  <h3 className="truncate text-xl font-bold">{nome}</h3>
                   <p className="text-xs text-muted-foreground tabular-nums">
                     {Math.round(kcalRefeicao)} kcal
                     {receita && ` · ${receita}`}
@@ -279,13 +291,13 @@ export function WeeklyMenu() {
                   {itens.map((i) => (
                     <li key={i.id} className="flex items-center gap-3 py-2.5">
                       <span
-                        className="grid size-10 shrink-0 place-items-center rounded-xl bg-elevated text-lg"
+                        className="grid size-11 shrink-0 place-items-center rounded-full bg-elevated text-lg ring-1 ring-primary/30"
                         aria-hidden
                       >
                         {CATEGORY_EMOJI[i.food.category ?? "other"] ?? CATEGORY_EMOJI.other}
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-semibold">{i.name}</span>
+                        <span className="block truncate text-[15px] font-semibold">{i.name}</span>
                         <span className="block text-xs text-muted-foreground tabular-nums">
                           {Math.round(i.grams)} g · {Math.round(macrosDe(i).kcal)} kcal
                           {i.weekday !== null && (

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, ChevronDown } from "lucide-react";
 import { ptBR } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -21,6 +21,7 @@ export function DatePicker({
   disabled,
   className,
   years = false,
+  simples = false,
   "aria-label": ariaLabel,
   "aria-invalid": ariaInvalid,
 }: {
@@ -34,6 +35,8 @@ export function DatePicker({
   className?: string;
   /** Mês e ano em listas — para datas distantes, como a de nascimento. */
   years?: boolean;
+  /** Só o texto ("Hoje", "seg, 27 de out") com uma seta: para cabeçalhos. */
+  simples?: boolean;
   "aria-label"?: string;
   "aria-invalid"?: boolean;
 }) {
@@ -61,15 +64,16 @@ export function DatePicker({
             className,
           )}
         >
-          <CalendarDays className="size-4 shrink-0 text-primary" aria-hidden />
+          {!simples && <CalendarDays className="size-4 shrink-0 text-primary" aria-hidden />}
           <span
             className={cn(
               "flex-1 truncate first-letter:uppercase",
               !value && "text-muted-foreground",
             )}
           >
-            {value ? rotulo(value) : "Escolher data"}
+            {simples && value === hoje ? "Hoje" : value ? rotulo(value) : "Escolher data"}
           </span>
+          {simples && <ChevronDown className="size-4 shrink-0" aria-hidden />}
         </button>
       </PopoverTrigger>
       <PopoverContent

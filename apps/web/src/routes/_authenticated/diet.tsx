@@ -55,11 +55,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ErrorState } from "@/components/query-boundary";
 import { SubstituteFoodDialog } from "@/components/diet/substitute-food-dialog";
-import { CalorieRing, MACRO_COLORS } from "@/components/home/macro-rings";
+import { CalorieRing, MACRO_COLORS, MacroRing } from "@/components/home/macro-rings";
 import { MEALS, MEAL_LABELS, label, type MealValue } from "@/lib/labels";
-import { fromISODate, toISODate, todayISO } from "@/lib/date";
+import { formatDate, fromISODate, toISODate, todayISO } from "@/lib/date";
 import { cn } from "@/lib/utils";
-import { addDays } from "date-fns";
+import { addDays, startOfWeek } from "date-fns";
 import { nutritionTotals, portionMacros, type FoodCandidate } from "@forja/domain";
 import { CATEGORY_EMOJI } from "@/lib/food-emoji";
 import { WeeklyMenu } from "@/components/diet/weekly-menu";
@@ -277,24 +277,29 @@ function DietPage() {
     <>
       <PageHeader
         title="Dieta"
-        description={aba === "cardapio" ? "Cardápio da semana" : date === hoje ? "Hoje" : undefined}
-        action={
-          aba === "diario" && (
+        description={
+          // Mesma altura nas duas abas (h-8, a do "Hoje ⌄"): o cabeçalho não
+          // muda de tamanho e as abas abaixo não saem do lugar ao trocar.
+          aba === "cardapio" ? (
+            <span className="flex h-8 items-center">Cardápio da semana</span>
+          ) : (
             <DatePicker
+              simples
               value={date}
               onChange={setDate}
-              className="h-11 w-auto rounded-2xl border-transparent bg-card"
+              className="h-8 w-auto gap-1 border-0 bg-transparent px-0 text-base text-muted-foreground hover:bg-transparent hover:text-foreground"
               aria-label="Data do diário"
             />
           )
         }
+        action={aba === "diario" && <SemanaDias date={date} hoje={hoje} onChange={setDate} />}
       />
 
       <PageBody>
         <div
           role="tablist"
           aria-label="Seção da dieta"
-          className="mb-4 flex rounded-2xl bg-card p-1"
+          className="mb-6 flex rounded-full bg-card p-1"
         >
           {(
             [
@@ -309,10 +314,10 @@ function DietPage() {
               aria-selected={aba === v}
               onClick={() => setAba(v)}
               className={cn(
-                "flex-1 rounded-xl py-2.5 text-[15px] font-medium transition-colors",
+                "flex-1 rounded-full py-2.5 text-[15px] font-medium transition-colors",
                 aba === v
-                  ? "bg-primary font-bold text-primary-foreground"
-                  : "text-muted-foreground",
+                  ? "bg-gradient-to-b from-primary to-primary-active font-bold text-primary-foreground shadow-[var(--shadow-primary)]"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
               {rotulo}
@@ -327,7 +332,7 @@ function DietPage() {
             <section className="mb-6" aria-label="Resumo do dia">
               {entries.isPending || profile.isPending ? (
                 <>
-                  <Skeleton className="mx-auto size-[200px] rounded-full" />
+                  <Skeleton className="mx-auto size-[230px] rounded-full" />
                   <div className="mt-6 grid grid-cols-2 gap-4">
                     {[0, 1, 2, 3].map((i) => (
                       <Skeleton key={i} className="h-12 rounded-xl" />
@@ -336,38 +341,42 @@ function DietPage() {
                 </>
               ) : (
                 <>
-                  <div className="mx-auto w-full max-w-[200px]">
+                  <div className="mx-auto w-full max-w-[230px]">
                     <CalorieRing
                       consumed={totaisConsumidos.kcal}
                       target={num(profile.data?.daily_kcal_target)}
                       planejado={totaisPlanejados.kcal}
-                      size={200}
+                      size={230}
                     />
                   </div>
                   <div className="mt-7 grid grid-cols-4 gap-2">
-                    <MacroLinha
+                    <MacroRing
                       nome="Proteína"
+                      icone="🥤"
                       valor={totaisConsumidos.proteinG}
                       meta={num(profile.data?.protein_g_target)}
                       planejado={totaisPlanejados.proteinG}
                       cor={MACRO_COLORS.protein}
                     />
-                    <MacroLinha
+                    <MacroRing
                       nome="Carbo"
+                      icone="🍚"
                       valor={totaisConsumidos.carbsG}
                       meta={num(profile.data?.carbs_g_target)}
                       planejado={totaisPlanejados.carbsG}
                       cor={MACRO_COLORS.carbs}
                     />
-                    <MacroLinha
+                    <MacroRing
                       nome="Gordura"
+                      icone="🥑"
                       valor={totaisConsumidos.fatG}
                       meta={num(profile.data?.fat_g_target)}
                       planejado={totaisPlanejados.fatG}
                       cor={MACRO_COLORS.fat}
                     />
-                    <MacroLinha
+                    <MacroRing
                       nome="Fibra"
+                      icone="🥦"
                       valor={totaisConsumidos.fiberG}
                       meta={num(profile.data?.fiber_g_target)}
                       planejado={totaisPlanejados.fiberG}
@@ -494,10 +503,11 @@ function MealCard({
   );
 
   const todosConsumidos = items.length > 0 && items.every((i) => i.consumed);
-  // Refeição concluída se fecha: some a lista, fica o resumo. Tocar reabre.
+  // Refeição concluída se fecha: some a lista, fica o resumo. A seta abre e
+  // fecha qualquer refeição com alimentos.
   const [aberta, setAberta] = useState(!todosConsumidos);
   useEffect(() => setAberta(!todosConsumidos), [todosConsumidos]);
-  const fechada = todosConsumidos && !aberta;
+  const fechada = items.length > 0 && !aberta;
 
   const toggleItem = useMutation({
     mutationFn: ({ id, consumed }: { id: string; consumed: boolean }) => setConsumed(id, consumed),
@@ -564,14 +574,14 @@ function MealCard({
   return (
     <Card
       className={cn(
-        "border border-primary/15 transition-colors",
-        todosConsumidos && "border-primary/50 bg-primary/[0.06]",
+        "rounded-[1.5rem] border border-border/60 transition-colors",
+        todosConsumidos && "border-primary/40",
       )}
     >
       <CardContent className="p-4">
         <div className={cn("flex items-start justify-between gap-3", !fechada && "mb-3")}>
           <div className="min-w-0 flex-1">
-            <h3 className="flex items-center gap-1.5 text-lg font-bold leading-tight">
+            <h3 className="flex items-center gap-1.5 text-xl font-bold leading-tight">
               <span className="truncate">{nome}</span>
               <RenomearRefeicao
                 atual={nome}
@@ -588,12 +598,10 @@ function MealCard({
               )}
             </h3>
             {items.length > 0 && (
-              <p className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                {fechada && (
-                  <span>
-                    {items.length} {items.length === 1 ? "alimento" : "alimentos"}
-                  </span>
-                )}
+              <p className="mt-1.5 flex items-center gap-2 text-xs text-muted-foreground">
+                <span>
+                  {items.length} {items.length === 1 ? "alimento" : "alimentos"}
+                </span>
                 <span className="whitespace-nowrap rounded-full bg-primary/15 px-2 py-0.5 font-bold tabular-nums text-primary">
                   {Math.round(totals.kcal)} kcal · P {Math.round(totals.proteinG)} g
                 </span>
@@ -601,7 +609,7 @@ function MealCard({
             )}
           </div>
 
-          {todosConsumidos && (
+          {items.length > 0 && (
             <button
               type="button"
               onClick={() => setAberta((v) => !v)}
@@ -627,7 +635,7 @@ function MealCard({
           </p>
         ) : (
           <>
-            <ul className="space-y-1">
+            <ul className="space-y-1 border-t border-border/60 pt-2">
               {items.map((item) => (
                 <FoodRow
                   key={item.id}
@@ -677,14 +685,14 @@ function FoodThumb({ item }: { item: DayEntry }) {
         alt=""
         loading="lazy"
         decoding="async"
-        className="size-11 shrink-0 rounded-lg object-cover"
+        className="size-11 shrink-0 rounded-full object-cover"
       />
     );
   }
 
   return (
     <span
-      className="grid size-11 shrink-0 place-items-center rounded-lg bg-muted text-lg"
+      className="grid size-11 shrink-0 place-items-center rounded-full bg-elevated text-lg ring-1 ring-primary/30"
       aria-hidden
     >
       {CATEGORY_EMOJI[item.food.category ?? "other"] ?? CATEGORY_EMOJI.other}
@@ -751,10 +759,13 @@ function FoodRow({
         <FoodThumb item={item} />
 
         <div className="min-w-0 flex-1">
-          <p className={cn("truncate text-sm font-medium", item.consumed && "line-through")}>
+          <p className={cn("truncate text-[15px] font-semibold", item.consumed && "line-through")}>
             {item.name}
           </p>
-          <p className="text-xs tabular-nums text-muted-foreground">
+          <p className="text-[13px] tabular-nums text-muted-foreground">
+            {Math.round(macros.kcal)} kcal · P {macros.proteinG.toFixed(0)} g
+          </p>
+          <p className="text-[11px] tabular-nums text-muted-foreground">
             <button
               type="button"
               onClick={() => setEditando((v) => !v)}
@@ -764,12 +775,9 @@ function FoodRow({
               {Math.round(item.grams)} g
             </button>
             {medida && <span className="ml-1">({medida})</span>}
-          </p>
-          <p className="mt-0.5 flex flex-wrap gap-x-2 text-[11px] tabular-nums text-muted-foreground">
-            <span>{Math.round(macros.kcal)} kcal</span>
-            <span>P {macros.proteinG.toFixed(0)} g</span>
-            <span>C {macros.carbsG.toFixed(0)} g</span>
-            <span>G {macros.fatG.toFixed(0)} g</span>
+            <span className="ml-1">
+              · C {macros.carbsG.toFixed(0)} g · G {macros.fatG.toFixed(0)} g
+            </span>
           </p>
         </div>
 
@@ -1034,69 +1042,46 @@ function RenomearRefeicao({
 }
 
 /**
- * Um macro do dia: anel grosso com o percentual no centro, o nome e as
- * gramas contra a meta logo abaixo. Os quatro lado a lado leem como um painel.
+ * A semana do dia aberto, de segunda a domingo: trocar de dia com um toque.
+ * Outras semanas ficam no "Hoje", que abre o calendário.
  */
-function MacroLinha({
-  nome,
-  valor,
-  meta,
-  planejado,
-  cor,
+function SemanaDias({
+  date,
+  hoje,
+  onChange,
 }: {
-  nome: string;
-  valor: number;
-  meta: number;
-  /** Quanto do macro está planejado para o dia: a referência quando não há meta. */
-  planejado: number;
-  cor: string;
+  date: string;
+  hoje: string;
+  onChange: (iso: string) => void;
 }) {
-  const r = 26;
-  const c = 2 * Math.PI * r;
-  const referencia = meta > 0 ? meta : planejado;
-  const semMeta = referencia <= 0;
-  const pct = semMeta ? 0 : Math.min(1, valor / referencia);
+  const inicio = startOfWeek(fromISODate(date), { weekStartsOn: 1 });
   return (
-    <div className="flex min-w-0 flex-col items-center text-center">
-      <div className="relative size-16">
-        <svg viewBox="0 0 64 64" className="size-full -rotate-90" aria-hidden>
-          <circle
-            cx="32"
-            cy="32"
-            r={r}
-            fill="none"
-            stroke={cor}
-            strokeOpacity={0.16}
-            strokeWidth="9"
-          />
-          <circle
-            cx="32"
-            cy="32"
-            r={r}
-            fill="none"
-            stroke={cor}
-            strokeWidth="9"
-            strokeLinecap="round"
-            strokeDasharray={c}
-            strokeDashoffset={c * (1 - pct)}
-            className="transition-[stroke-dashoffset] duration-700"
-          />
-        </svg>
-        <span className="absolute inset-0 grid place-items-center text-xs font-extrabold tabular-nums">
-          {semMeta ? `${Math.round(valor)}g` : `${Math.round(pct * 100)}%`}
-        </span>
-      </div>
-      <p className="mt-1.5 w-full truncate text-xs font-semibold">{nome}</p>
-      <p className="text-[11px] tabular-nums text-muted-foreground">
-        {semMeta ? (
-          "nada planejado"
-        ) : (
-          <>
-            <span className="font-bold text-foreground">{Math.round(valor)}</span>/
-            {Math.round(referencia)}g
-          </>
-        )}
-      </p>
+    <div role="radiogroup" aria-label="Dia da semana" className="flex">
+      {Array.from({ length: 7 }, (_, i) => {
+        const iso = toISODate(addDays(inicio, i));
+        const ativo = iso === date;
+        return (
+          <button
+            key={iso}
+            type="button"
+            role="radio"
+            aria-checked={ativo}
+            aria-label={`${formatDate(iso, "EEEE, d 'de' MMMM")}${iso === hoje ? ", hoje" : ""}`}
+            onClick={() => onChange(iso)}
+            className={cn(
+              "flex w-7 flex-col items-center rounded-xl py-1.5 leading-tight transition-colors min-[380px]:w-8",
+              ativo
+                ? "bg-elevated text-foreground ring-1 ring-border"
+                : "text-muted-foreground hover:text-foreground",
+              iso === hoje && !ativo && "text-primary",
+            )}
+          >
+            <span className="text-[11px] font-semibold uppercase">{formatDate(iso, "EEEEE")}</span>
+            <span className="mt-1 text-[13px] font-bold tabular-nums">{iso.slice(8)}</span>
+            <span className="text-[10px]">{formatDate(iso, "MMM").replace(".", "")}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }
