@@ -5,7 +5,13 @@
  */
 import { Languages } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChipRadio } from "@/components/ui/chip-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   LANGUAGE_NAMES,
   LANGUAGES,
@@ -19,10 +25,6 @@ const AUTO = "auto";
 
 export function LanguageCard() {
   const atual = languagePreference() ?? AUTO;
-  const opcoes = [
-    { value: AUTO, label: t("Automático (pelo país)") },
-    ...LANGUAGES.map((l) => ({ value: l, label: LANGUAGE_NAMES[l] })),
-  ];
 
   return (
     <Card>
@@ -33,14 +35,24 @@ export function LanguageCard() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <ChipRadio
-          label={t("Idioma")}
-          options={opcoes}
+        <Select
           value={atual}
-          onChange={(v) => {
+          onValueChange={(v) => {
             if (v !== atual) setLanguagePreference(v === AUTO ? null : (v as Language));
           }}
-        />
+        >
+          <SelectTrigger aria-label={t("Idioma")} className="h-11 w-full rounded-2xl">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={AUTO}>{t("Automático (pelo país)")}</SelectItem>
+            {LANGUAGES.map((l) => (
+              <SelectItem key={l} value={l}>
+                {LANGUAGE_NAMES[l]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </CardContent>
     </Card>
   );

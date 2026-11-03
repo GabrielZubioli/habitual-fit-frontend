@@ -63,6 +63,8 @@ import { PageHeader, PageScroll } from "@/ui/page-header";
 import { Text } from "@/ui/text";
 import * as SecureStore from "expo-secure-store";
 import { __iconNode as languages } from "lucide-react/dist/esm/icons/languages.js";
+import { __iconNode as chevronDown } from "lucide-react/dist/esm/icons/chevron-down.js";
+import { Sheet } from "@/ui/sheet";
 import {
   LANGUAGE_NAMES,
   LANGUAGE_PREF_KEY,
@@ -643,24 +645,26 @@ function ManualNutritionTargets({
 }
 
 /**
- * Exportar — o `export-data-card.tsx` do web. No celular o arquivo é gravado
- * numa pasta que a pessoa escolhe (o seletor do sistema).
- */
-/**
- * Idioma do app. "Automático" segue o país (ver `resolveLanguage`). A escolha
- * vai para o SecureStore e vale ao reabrir: o `index.js` a lê antes do i18n,
- * que decide o idioma uma vez, na carga.
+ * Idioma do app, numa caixa de seleção: o campo mostra a escolha e abre a
+ * lista num painel de baixo (o RN não tem `<select>`). "Automático" segue o
+ * país (ver `resolveLanguage`). A escolha vai para o SecureStore e vale ao
+ * reabrir: o `index.js` a lê antes do i18n, que decide o idioma uma vez.
  */
 function LanguageCard({ avisar }: { avisar: (item: string, erro?: boolean) => void }) {
   const [escolha, setEscolha] = useState<string>(
     () => SecureStore.getItem(LANGUAGE_PREF_KEY) ?? "auto",
   );
+  const [aberto, setAberto] = useState(false);
+  const texto = useColor("foreground");
+  const primaria = useColor("primary");
   const opcoes = [
     { value: "auto", label: t("Automático (pelo país)") },
     ...LANGUAGES.map((l: Language) => ({ value: l, label: LANGUAGE_NAMES[l] })),
   ];
+  const rotulo = opcoes.find((o) => o.value === escolha)?.label ?? opcoes[0]!.label;
 
   const escolher = (v: string) => {
+    setAberto(false);
     if (v === escolha) return;
     try {
       if (v === "auto") void SecureStore.deleteItemAsync(LANGUAGE_PREF_KEY);
@@ -674,11 +678,49 @@ function LanguageCard({ avisar }: { avisar: (item: string, erro?: boolean) => vo
 
   return (
     <Cartao titulo={t("Idioma")} icone={languages}>
-      <Chips options={opcoes} ativo={(v) => v === escolha} onPress={escolher} />
+      <Pressable
+        onPress={() => setAberto(true)}
+        accessibilityRole="combobox"
+        accessibilityLabel={t("Idioma")}
+        accessibilityValue={{ text: rotulo }}
+        className="h-11 flex-row items-center justify-between rounded-2xl border border-border bg-background px-4 active:opacity-80"
+      >
+        <Text className="text-[15px]">{rotulo}</Text>
+        <Icon node={chevronDown} color={texto} size={18} />
+      </Pressable>
+      <Sheet open={aberto} onClose={() => setAberto(false)}>
+        <View accessibilityRole="radiogroup" className="gap-1 px-4 pb-4 pt-5">
+          <Text className="mb-2 px-2 text-lg font-bold">{t("Idioma")}</Text>
+          {opcoes.map((o) => {
+            const on = o.value === escolha;
+            return (
+              <Pressable
+                key={o.value}
+                onPress={() => escolher(o.value)}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: on }}
+                className={cn(
+                  "h-12 flex-row items-center justify-between rounded-xl px-3 active:bg-muted",
+                  on && "bg-primary/10",
+                )}
+              >
+                <Text className={cn("text-[15px]", on && "font-semibold text-primary")}>
+                  {o.label}
+                </Text>
+                {on ? <Icon node={check} color={primaria} size={18} strokeWidth={3} /> : null}
+              </Pressable>
+            );
+          })}
+        </View>
+      </Sheet>
     </Cartao>
   );
 }
 
+/**
+ * Exportar — o `export-data-card.tsx` do web. No celular o arquivo é gravado
+ * numa pasta que a pessoa escolhe (o seletor do sistema).
+ */
 function ExportDataCard({ avisar }: { avisar: (item: string, erro?: boolean) => void }) {
   const [exporting, setExporting] = useState<ExportFormat | null>(null);
   const texto = useColor("foreground");
