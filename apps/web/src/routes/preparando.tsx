@@ -37,6 +37,7 @@ import { isComplete, type Answers } from "@forja/app-core/lib/onboarding/schema"
 import { derivedObjective } from "@forja/app-core/lib/onboarding/options";
 import { MEAL_LABELS, label } from "@forja/app-core/lib/labels";
 import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * A tela onde o plano é montado — e depois apresentado.
@@ -54,7 +55,10 @@ import { LOCALE } from "@forja/app-core/i18n";
  */
 export const Route = createFileRoute("/preparando")({
   head: () => ({
-    meta: [{ title: "Montando seu plano — Habitual Fit" }, { name: "robots", content: "noindex" }],
+    meta: [
+      { title: t("Montando seu plano — Habitual Fit") },
+      { name: "robots", content: "noindex" },
+    ],
   }),
   ssr: false,
   component: PreparingPage,
@@ -64,20 +68,20 @@ export const Route = createFileRoute("/preparando")({
 const ETAPAS: { stage: GenerationStage; titulo: string; detalhe: string; icon: typeof User }[] = [
   {
     stage: "profile",
-    titulo: "Salvando seu perfil",
-    detalhe: "Objetivo, experiência e rotina de treino",
+    titulo: t("Salvando seu perfil"),
+    detalhe: t("Objetivo, experiência e rotina de treino"),
     icon: User,
   },
   {
     stage: "workout",
-    titulo: "Preparando seu treino",
-    detalhe: "Os exercícios e os dias da sua semana",
+    titulo: t("Preparando seu treino"),
+    detalhe: t("Os exercícios e os dias da sua semana"),
     icon: Dumbbell,
   },
   {
     stage: "diet",
-    titulo: "Criando suas refeições",
-    detalhe: "Vazias, prontas para você preencher",
+    titulo: t("Criando suas refeições"),
+    detalhe: t("Vazias, prontas para você preencher"),
     icon: Utensils,
   },
 ];
@@ -228,13 +232,13 @@ function Building({ stage }: { stage: GenerationStage }) {
       </div>
 
       <h1 className="mt-8 text-[1.75rem] font-extrabold leading-tight tracking-tight">
-        {pronto ? "Plano pronto!" : "Montando seu plano"}
+        {pronto ? t("Plano pronto!") : t("Montando seu plano")}
       </h1>
       <p
         key={atual.stage + String(pronto)}
         className="mt-2 h-5 text-muted-foreground animate-in fade-in slide-in-from-bottom-1 duration-500"
       >
-        {pronto ? "Preparando o resumo para você" : atual.detalhe}
+        {pronto ? t("Preparando o resumo para você") : atual.detalhe}
       </p>
 
       <ol className="mt-8 space-y-2 text-left">
@@ -367,10 +371,10 @@ function PlanReady({
           />
           <BrandSymbol className="animate-pop relative mx-auto w-20" />
           <h1 className="relative mt-6 text-[2.25rem] font-extrabold leading-[1.05] tracking-tight">
-            {nome ? `${nome}, seu plano está pronto` : "Seu plano está pronto"}
+            {nome ? t("{{nome}}, seu plano está pronto", { nome }) : t("Seu plano está pronto")}
           </h1>
           <p className="relative mt-3 text-muted-foreground">
-            Seu treino foi montado a partir das suas respostas.
+            {t("Seu treino foi montado a partir das suas respostas.")}
           </p>
           <div className="relative mt-4 flex flex-wrap justify-center gap-2">
             {objetivo && (
@@ -380,7 +384,7 @@ function PlanReady({
             )}
             {diasTreino > 0 && (
               <span className="rounded-full bg-card px-3 py-1.5 text-sm text-muted-foreground">
-                {diasTreino}× por semana
+                {t("{{diasTreino}}× por semana", { diasTreino })}
               </span>
             )}
           </div>
@@ -388,13 +392,13 @@ function PlanReady({
 
         {/* Peso */}
         {pesoAtual && pesoMeta && Math.abs(pesoAtual - pesoMeta) >= 0.1 && (
-          <Secao titulo="Sua jornada" i={2}>
+          <Secao titulo={t("Sua jornada")} i={2}>
             <div className="flex items-center gap-4 rounded-[1.5rem] bg-card p-5">
               <div className="text-center">
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">Hoje</p>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">{t("Hoje")}</p>
                 <p className="text-2xl font-extrabold tabular-nums">
                   {kg(pesoAtual)}
-                  <span className="text-sm font-semibold text-muted-foreground"> kg</span>
+                  <span className="text-sm font-semibold text-muted-foreground"> {t("kg")}</span>
                 </p>
               </div>
               <div className="flex flex-1 items-center" aria-hidden>
@@ -404,11 +408,11 @@ function PlanReady({
               <div className="text-center">
                 <p className="flex items-center justify-center gap-1 text-xs uppercase tracking-wide text-primary">
                   <Flag className="size-3" aria-hidden />
-                  Meta
+                  {t("Meta")}
                 </p>
                 <p className="text-2xl font-extrabold tabular-nums">
                   {kg(pesoMeta)}
-                  <span className="text-sm font-semibold text-muted-foreground"> kg</span>
+                  <span className="text-sm font-semibold text-muted-foreground"> {t("kg")}</span>
                 </p>
               </div>
             </div>
@@ -416,11 +420,15 @@ function PlanReady({
         )}
 
         {/* Treino */}
-        <Secao titulo="Sua semana de treino" i={3}>
+        <Secao titulo={t("Sua semana de treino")} i={3}>
           {semana.isPending ? (
             <Skeleton className="h-64 rounded-[1.5rem]" />
           ) : splits.length === 0 ? (
-            <Vazio texto="Não conseguimos montar o treino agora. Na tela Plano você pode tentar de novo ou montar o seu." />
+            <Vazio
+              texto={t(
+                "Não conseguimos montar o treino agora. Na tela Plano você pode tentar de novo ou montar o seu.",
+              )}
+            />
           ) : (
             <>
               <ol className="grid grid-cols-7 gap-1.5 rounded-[1.5rem] bg-card p-3">
@@ -455,12 +463,14 @@ function PlanReady({
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-lg font-bold">{splitDisplayName(s.name)}</p>
                         <p className="text-sm text-muted-foreground">
-                          {[...s.weekdays]
-                            .sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7))
-                            .map((d) => WEEKDAY_LABELS[d as Weekday].slice(0, 3))
-                            .join(" · ") || "Sem dia fixo"}
-                          {" · "}
-                          {s.exercises.length} exercícios
+                          {t("{{v0}} · {{length}} exercícios", {
+                            v0:
+                              [...s.weekdays]
+                                .sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7))
+                                .map((d) => WEEKDAY_LABELS[d as Weekday].slice(0, 3))
+                                .join(" · ") || t("Sem dia fixo"),
+                            length: s.exercises.length,
+                          })}
                         </p>
                       </div>
                     </div>
@@ -474,14 +484,17 @@ function PlanReady({
                           <span className="shrink-0 tabular-nums text-muted-foreground">
                             {e.targetSets} ×{" "}
                             {e.targetRepMin && e.targetRepMax
-                              ? `${e.targetRepMin}–${e.targetRepMax}`
+                              ? t("{{targetRepMin}}–{{targetRepMax}}", {
+                                  targetRepMin: e.targetRepMin,
+                                  targetRepMax: e.targetRepMax,
+                                })
                               : e.targetReps}
                           </span>
                         </li>
                       ))}
                       {s.exercises.length > 4 && (
                         <li className="text-sm text-primary">
-                          + {s.exercises.length - 4} exercícios
+                          {t("+ {{v0}} exercícios", { v0: s.exercises.length - 4 })}
                         </li>
                       )}
                     </ul>
@@ -493,11 +506,13 @@ function PlanReady({
         </Secao>
 
         {/* Refeições */}
-        <Secao titulo="Suas refeições" i={4}>
+        <Secao titulo={t("Suas refeições")} i={4}>
           {cardapio.isPending ? (
             <Skeleton className="h-40 rounded-[1.5rem]" />
           ) : !cardapio.data || cardapio.data.meals.length === 0 ? (
-            <Vazio texto="Suas refeições aparecem na tela Dieta, prontas para você preencher." />
+            <Vazio
+              texto={t("Suas refeições aparecem na tela Dieta, prontas para você preencher.")}
+            />
           ) : (
             <>
               <ul className="divide-y divide-border/60 rounded-[1.5rem] bg-card">
@@ -508,14 +523,17 @@ function PlanReady({
                       {m.label?.trim() || label(MEAL_LABELS, m.slot)}
                     </span>
                     <span className="text-sm text-muted-foreground">
-                      {m.items.length === 0 ? "vazia" : `${m.items.length} itens`}
+                      {m.items.length === 0
+                        ? "vazia"
+                        : t("{{length}} itens", { length: m.items.length })}
                     </span>
                   </li>
                 ))}
               </ul>
               <p className="mt-3 px-1 text-sm text-muted-foreground">
-                Dê nomes, horários e adicione os alimentos na tela Dieta — por conta própria ou com
-                a orientação de um nutricionista.
+                {t(
+                  "Dê nomes, horários e adicione os alimentos na tela Dieta — por conta própria ou com a orientação de um nutricionista.",
+                )}
               </p>
             </>
           )}
@@ -536,7 +554,7 @@ function PlanReady({
           >
             <p className="mb-2 flex items-center gap-2 text-sm font-semibold">
               <AlertTriangle className="size-4 shrink-0 text-warning" aria-hidden />
-              Vale saber
+              {t("Vale saber")}
             </p>
             <ul className="space-y-1.5 text-sm leading-relaxed text-muted-foreground">
               {warnings.map((w) => (
@@ -550,7 +568,7 @@ function PlanReady({
           className={cn("mt-6 text-center text-sm text-muted-foreground", entra(6).className)}
           style={entra(6).style}
         >
-          Tudo isso pode ser ajustado depois, no Plano e na Dieta.
+          {t("Tudo isso pode ser ajustado depois, no Plano e na Dieta.")}
         </p>
       </div>
 
@@ -563,7 +581,7 @@ function PlanReady({
             onClick={onContinue}
             disabled={semPlano.isPending}
           >
-            Ir para o app
+            {t("Ir para o app")}
             <ArrowRight className="ml-1 size-5" aria-hidden />
           </Button>
           <Button
@@ -573,7 +591,7 @@ function PlanReady({
             disabled={semPlano.isPending}
           >
             {semPlano.isPending && <Loader2 className="mr-2 size-4 animate-spin" aria-hidden />}
-            Começar sem um plano
+            {t("Começar sem um plano")}
           </Button>
         </div>
       </div>
@@ -605,13 +623,15 @@ function ErrorState({ message, onRetry }: { message: string | null; onRetry: () 
       <span className="mx-auto grid size-16 place-items-center rounded-2xl bg-destructive/10 text-destructive">
         <AlertTriangle className="size-8" aria-hidden />
       </span>
-      <h1 className="mt-6 text-xl font-bold tracking-tight">Não conseguimos montar seu plano</h1>
+      <h1 className="mt-6 text-xl font-bold tracking-tight">
+        {t("Não conseguimos montar seu plano")}
+      </h1>
       <p className="mt-2 text-sm text-muted-foreground">{message}</p>
       <p className="mt-4 text-sm text-muted-foreground">
-        Sua conta foi criada e suas respostas estão salvas — nada se perdeu.
+        {t("Sua conta foi criada e suas respostas estão salvas — nada se perdeu.")}
       </p>
       <Button className="mt-6 h-12 w-full rounded-xl" onClick={onRetry}>
-        Tentar de novo
+        {t("Tentar de novo")}
       </Button>
     </div>
   );

@@ -3,6 +3,7 @@ import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { WEEKDAY_INITIALS, WEEKDAY_LABELS, WEEKDAYS } from "@forja/domain";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Controles do questionário.
@@ -234,7 +235,7 @@ export function Stepper({
         className="size-14 rounded-full text-2xl"
         onClick={() => onChange(Math.max(min, value - 1))}
         disabled={value <= min}
-        aria-label="Diminuir"
+        aria-label={t("Diminuir")}
       >
         −
       </Button>
@@ -248,7 +249,7 @@ export function Stepper({
         className="size-14 rounded-full text-2xl"
         onClick={() => onChange(Math.min(max, value + 1))}
         disabled={value >= max}
-        aria-label="Aumentar"
+        aria-label={t("Aumentar")}
       >
         +
       </Button>
@@ -340,7 +341,7 @@ export function Feedback({
 export function NextButton({
   onClick,
   disabled,
-  label = "Continuar",
+  label = t("Continuar"),
   hint,
 }: {
   onClick: () => void;
@@ -370,7 +371,7 @@ export function ProgressBar({ current, total }: { current: number; total: number
     <div
       className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted"
       role="progressbar"
-      aria-label="Progresso do questionário"
+      aria-label={t("Progresso do questionário")}
       aria-valuenow={current}
       aria-valuemin={0}
       aria-valuemax={total}
@@ -427,7 +428,7 @@ export function TagInput({
           className="min-h-[2.75rem] flex-1 rounded-xl border-2 border-border bg-background px-4 text-base focus-visible:border-primary focus-visible:outline-none"
         />
         <Button type="button" variant="outline" onClick={add} disabled={!draft.trim()}>
-          Adicionar
+          {t("Adicionar")}
         </Button>
       </div>
 
@@ -438,7 +439,7 @@ export function TagInput({
               key={v}
               type="button"
               onClick={() => onChange(values.filter((x) => x !== v))}
-              aria-label={`Remover ${v}`}
+              aria-label={t("Remover {{v}}", { v })}
               className="min-h-[2.25rem] rounded-full border-2 border-primary bg-primary/10 px-3 py-1 text-sm font-medium transition-colors hover:bg-primary/20"
             >
               {v} <span aria-hidden>×</span>

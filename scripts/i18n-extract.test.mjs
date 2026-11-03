@@ -4,7 +4,14 @@ import assert from "node:assert/strict";
 import { pareceTexto, textoJsx } from "./i18n-extract.mjs";
 
 test("separa texto de interface de classes, rotas e chaves", () => {
-  for (const s of ["Salvar", "Sua semana", "Informe um e-mail válido", "Já tem conta?", "2 min"]) {
+  for (const s of [
+    "Salvar",
+    "Sua semana",
+    "Informe um e-mail válido",
+    "Já tem conta?",
+    "2 min",
+    "E-mail",
+  ]) {
     assert.equal(pareceTexto(s), true, s);
   }
   for (const s of [

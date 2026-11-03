@@ -45,6 +45,7 @@ import {
   Stepper,
   WeekdayPicker,
 } from "@/ui/onboarding";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * A raiz do app: boas-vindas e, para quem já tem conta, o questionário —
@@ -146,7 +147,7 @@ export default function OnboardingQuiz() {
           {safeIndex > 0 ? (
             <Pressable
               onPress={back}
-              accessibilityLabel="Voltar para a pergunta anterior"
+              accessibilityLabel={t("Voltar para a pergunta anterior")}
               className="h-10 w-10 items-center justify-center rounded-full active:bg-accent"
             >
               <Icon node={arrowLeft} color={textoForte} size={20} />
@@ -163,8 +164,8 @@ export default function OnboardingQuiz() {
         <View className="flex-1">
           {step.id === "objective" && (
             <Question
-              title="Qual é o seu objetivo?"
-              subtitle="Ele define o treino e as repetições do seu plano."
+              title={t("Qual é o seu objetivo?")}
+              subtitle={t("Ele define o treino e as repetições do seu plano.")}
             >
               <ChoiceList
                 options={OBJECTIVE_OPTIONS}
@@ -176,8 +177,8 @@ export default function OnboardingQuiz() {
 
           {step.id === "sex" && (
             <Question
-              title="Com qual gênero você se identifica?"
-              subtitle="Usamos apenas para calcular seu gasto energético."
+              title={t("Com qual gênero você se identifica?")}
+              subtitle={t("Usamos apenas para calcular seu gasto energético.")}
             >
               <ChoiceList
                 options={SEX_OPTIONS}
@@ -188,7 +189,7 @@ export default function OnboardingQuiz() {
           )}
 
           {step.id === "experience" && (
-            <Question title="Qual sua experiência com musculação?">
+            <Question title={t("Qual sua experiência com musculação?")}>
               <ChoiceList
                 options={EXPERIENCE_OPTIONS}
                 selected={answers.experience}
@@ -198,7 +199,7 @@ export default function OnboardingQuiz() {
           )}
 
           {step.id === "consistency" && (
-            <Question title="Como está sua rotina de treino hoje?">
+            <Question title={t("Como está sua rotina de treino hoje?")}>
               <ChoiceList
                 options={CONSISTENCY_OPTIONS}
                 selected={answers.consistency}
@@ -208,13 +209,13 @@ export default function OnboardingQuiz() {
           )}
 
           {step.id === "age" && (
-            <Question title="Quantos anos você tem?">
+            <Question title={t("Quantos anos você tem?")}>
               <NumberField
                 value={answers.age ?? RANGES.age.default}
                 min={RANGES.age.min}
                 max={RANGES.age.max}
                 unit="anos"
-                label="Idade"
+                label={t("Idade")}
                 onChange={(v) => update({ age: v })}
               />
               <NextButton
@@ -227,13 +228,13 @@ export default function OnboardingQuiz() {
           )}
 
           {step.id === "height" && (
-            <Question title="Qual sua altura?">
+            <Question title={t("Qual sua altura?")}>
               <NumberField
                 value={answers.heightCm ?? RANGES.heightCm.default}
                 min={RANGES.heightCm.min}
                 max={RANGES.heightCm.max}
                 unit="cm"
-                label="Altura em centímetros"
+                label={t("Altura em centímetros")}
                 onChange={(v) => update({ heightCm: v })}
               />
               <NextButton
@@ -252,7 +253,7 @@ export default function OnboardingQuiz() {
           )}
 
           {step.id === "place" && (
-            <Question title="Onde você vai treinar?">
+            <Question title={t("Onde você vai treinar?")}>
               <ChoiceList
                 options={PLACE_OPTIONS}
                 selected={answers.place}
@@ -267,8 +268,8 @@ export default function OnboardingQuiz() {
 
           {step.id === "equipment" && (
             <Question
-              title="O que você tem disponível?"
-              subtitle="Já marcamos o mais comum para o lugar que você escolheu."
+              title={t("O que você tem disponível?")}
+              subtitle={t("Já marcamos o mais comum para o lugar que você escolheu.")}
             >
               <ChipGroup
                 options={EQUIPMENT_OPTIONS}
@@ -276,26 +277,28 @@ export default function OnboardingQuiz() {
                 onToggle={(v) => toggle("equipment", v)}
               />
               <Feedback>
-                Só prescrevemos exercícios que você consegue fazer. Desmarcar algo troca o
-                exercício, não remove o estímulo.
+                {t(
+                  "Só prescrevemos exercícios que você consegue fazer. Desmarcar algo troca o exercício, não remove o estímulo.",
+                )}
               </Feedback>
               <NextButton onPress={next} disabled={answers.equipment.length === 0} />
             </Question>
           )}
 
           {step.id === "daysPerWeek" && (
-            <Question title="Quantos dias por semana você consegue treinar?">
+            <Question title={t("Quantos dias por semana você consegue treinar?")}>
               <Stepper
                 value={answers.daysPerWeek ?? RANGES.daysPerWeek.default}
                 min={RANGES.daysPerWeek.min}
                 max={RANGES.daysPerWeek.max}
-                unit="dias por semana"
+                unit={t("dias por semana")}
                 onChange={(v) => update({ daysPerWeek: v, weekdays: suggestWeekdays(v) })}
               />
               <Feedback>
-                Para o seu nível e objetivo, {recommendedDays(level, objective.goal)} dias por
-                semana costuma render mais. Prefira o que você consegue sustentar: consistência
-                vence intensidade.
+                {t(
+                  "Para o seu nível e objetivo, {{v0}} dias por semana costuma render mais. Prefira o que você consegue sustentar: consistência vence intensidade.",
+                  { v0: recommendedDays(level, objective.goal) },
+                )}
               </Feedback>
               <NextButton
                 onPress={() => {
@@ -311,7 +314,7 @@ export default function OnboardingQuiz() {
           )}
 
           {step.id === "duration" && (
-            <Question title="Quanto tempo você tem por treino?">
+            <Question title={t("Quanto tempo você tem por treino?")}>
               <View className="gap-2.5">
                 {DURATION_OPTIONS.map((o) => {
                   const ativo = answers.duration === o.value;
@@ -333,7 +336,7 @@ export default function OnboardingQuiz() {
                         </View>
                         <Text className="mt-0.5 text-sm text-muted-foreground">{o.exercises}</Text>
                       </View>
-                      {o.recommended ? <Badge>Recomendado</Badge> : null}
+                      {o.recommended ? <Badge>{t("Recomendado")}</Badge> : null}
                     </Pressable>
                   );
                 })}
@@ -342,7 +345,7 @@ export default function OnboardingQuiz() {
           )}
 
           {step.id === "weekdays" && (
-            <Question title="Em quais dias?">
+            <Question title={t("Em quais dias?")}>
               <WeekdayPicker
                 selected={answers.weekdays}
                 onToggle={(dia) =>
@@ -355,8 +358,13 @@ export default function OnboardingQuiz() {
               />
               <Feedback>
                 {answers.weekdays.length === (answers.daysPerWeek ?? 0)
-                  ? "Estes dias são um guia, não uma cobrança. A sequência A → B → C avança a cada treino concluído, não pela data: se você faltar na segunda, o treino A espera na quarta."
-                  : `Escolha ${answers.daysPerWeek ?? 3} dias — você marcou ${answers.weekdays.length}.`}
+                  ? t(
+                      "Estes dias são um guia, não uma cobrança. A sequência A → B → C avança a cada treino concluído, não pela data: se você faltar na segunda, o treino A espera na quarta.",
+                    )
+                  : t("Escolha {{v0}} dias — você marcou {{length}}.", {
+                      v0: answers.daysPerWeek ?? 3,
+                      length: answers.weekdays.length,
+                    })}
               </Feedback>
               <NextButton
                 onPress={next}
@@ -367,8 +375,10 @@ export default function OnboardingQuiz() {
 
           {step.id === "focus" && (
             <Question
-              title="Alguma região que você quer priorizar?"
-              subtitle="O resto do corpo continua no plano. A região escolhida ganha mais volume e, conforme os dias, mais sessões."
+              title={t("Alguma região que você quer priorizar?")}
+              subtitle={t(
+                "O resto do corpo continua no plano. A região escolhida ganha mais volume e, conforme os dias, mais sessões.",
+              )}
             >
               <ChoiceList
                 options={FOCUS_OPTIONS}
@@ -381,8 +391,8 @@ export default function OnboardingQuiz() {
 
           {step.id === "injuries" && (
             <Question
-              title="Você tem alguma lesão ou dor?"
-              subtitle="Deixamos de fora os exercícios que carregam essa região."
+              title={t("Você tem alguma lesão ou dor?")}
+              subtitle={t("Deixamos de fora os exercícios que carregam essa região.")}
             >
               <ChipGroup
                 options={INJURY_OPTIONS}
@@ -390,38 +400,40 @@ export default function OnboardingQuiz() {
                 onToggle={(v) => toggle("injuries", v)}
               />
               {answers.injuries.length > 0 ? (
-                <Feedback title="Importante">
-                  A seleção automática é só uma referência geral: não é avaliação clínica e não
-                  garante que um exercício seja seguro para você. Antes de treinar com lesão ou dor,
-                  procure orientação de um profissional de saúde e de educação física.
+                <Feedback title={t("Importante")}>
+                  {t(
+                    "A seleção automática é só uma referência geral: não é avaliação clínica e não garante que um exercício seja seguro para você. Antes de treinar com lesão ou dor, procure orientação de um profissional de saúde e de educação física.",
+                  )}
                 </Feedback>
               ) : null}
               <NextButton
                 onPress={next}
-                label={answers.injuries.length ? "Continuar" : "Não tenho nenhuma"}
+                label={answers.injuries.length ? t("Continuar") : t("Não tenho nenhuma")}
               />
             </Question>
           )}
 
           {step.id === "mealsPerDay" && (
             <Question
-              title="Quantas refeições por dia você faz?"
-              subtitle="Criamos essas refeições vazias na sua dieta, para você preencher como quiser."
+              title={t("Quantas refeições por dia você faz?")}
+              subtitle={t(
+                "Criamos essas refeições vazias na sua dieta, para você preencher como quiser.",
+              )}
             >
               <ChoiceList
                 options={MEALS_PER_DAY_OPTIONS.map((n) => ({
                   value: String(n),
-                  label: `${n} refeições`,
+                  label: t("{{n}} refeições", { n }),
                   hint:
                     n === 3
-                      ? "Café, almoço e jantar"
+                      ? t("Café, almoço e jantar")
                       : n === 4
-                        ? "Com um lanche"
+                        ? t("Com um lanche")
                         : n === 5
-                          ? "Com dois lanches"
+                          ? t("Com dois lanches")
                           : n === 6
-                            ? "Refeições menores e mais frequentes"
-                            : "O dia completo, com pré e pós-treino e ceia",
+                            ? t("Refeições menores e mais frequentes")
+                            : t("O dia completo, com pré e pós-treino e ceia"),
                 }))}
                 selected={answers.mealsPerDay ? String(answers.mealsPerDay) : undefined}
                 onSelect={(v) => choose({ mealsPerDay: Number(v) })}
@@ -493,7 +505,7 @@ function WeightStep({
   const imc = bmiFeedback(peso, altura);
 
   return (
-    <Question title="Qual seu peso atual?">
+    <Question title={t("Qual seu peso atual?")}>
       <NumberField
         value={peso}
         min={RANGES.weightKg.min}
@@ -501,7 +513,7 @@ function WeightStep({
         step={RANGES.weightKg.step}
         decimals={1}
         unit="kg"
-        label="Peso em quilos"
+        label={t("Peso em quilos")}
         onChange={(v) =>
           update({
             weightKg: v,
@@ -512,7 +524,7 @@ function WeightStep({
           })
         }
       />
-      <Feedback title={`IMC ${imc.bmi}`}>{imc.text}</Feedback>
+      <Feedback title={t("IMC {{bmi}}", { bmi: imc.bmi })}>{imc.text}</Feedback>
       <NextButton
         onPress={() => {
           update({ weightKg: peso });
@@ -536,7 +548,7 @@ function GoalWeightStep({
   const meta = answers.goalWeightKg ?? atual;
 
   return (
-    <Question title="Qual peso você quer alcançar?">
+    <Question title={t("Qual peso você quer alcançar?")}>
       <NumberField
         value={meta}
         min={RANGES.weightKg.min}
@@ -544,7 +556,7 @@ function GoalWeightStep({
         step={RANGES.weightKg.step}
         decimals={1}
         unit="kg"
-        label="Peso desejado em quilos"
+        label={t("Peso desejado em quilos")}
         onChange={(v) => update({ goalWeightKg: v })}
       />
       <Feedback>{weightGoalFeedback(atual, meta)}</Feedback>
@@ -574,40 +586,40 @@ function Review({
   const indexOf = (id: string) => steps.findIndex((s) => s.id === id);
 
   const linhas = [
-    { label: "Objetivo", value: objective.label, step: "objective" },
+    { label: t("Objetivo"), value: objective.label, step: "objective" },
     {
-      label: "Perfil",
+      label: t("Perfil"),
       value: `${answers.age ?? "—"} anos · ${answers.heightCm ?? "—"} cm · ${answers.weightKg ?? "—"} kg`,
       step: "age",
     },
     {
-      label: "Treino",
+      label: t("Treino"),
       value: `${answers.daysPerWeek ?? "—"}× por semana · ${
         DURATION_OPTIONS.find((d) => d.value === answers.duration)?.minutes ?? "duração livre"
       }`,
       step: "daysPerWeek",
     },
     {
-      label: "Dias",
+      label: t("Dias"),
       value: answers.weekdays.length
         ? answers.weekdays.map((d) => WEEKDAY_LABELS[d as Weekday].slice(0, 3)).join(" · ")
-        : "a definir",
+        : t("a definir"),
       step: "weekdays",
     },
     {
-      label: "Local",
+      label: t("Local"),
       value: PLACE_OPTIONS.find((p) => p.value === answers.place)?.label ?? "—",
       step: "place",
     },
     {
-      label: "Refeições",
+      label: t("Refeições"),
       value: `${answers.mealsPerDay ?? DEFAULT_MEALS_PER_DAY} por dia`,
       step: "mealsPerDay",
     },
     ...(answers.injuries.length
       ? [
           {
-            label: "Cuidados",
+            label: t("Cuidados"),
             value: answers.injuries
               .map((i) => INJURY_OPTIONS.find((o) => o.value === i)?.label ?? i)
               .join(" · "),
@@ -619,8 +631,8 @@ function Review({
 
   return (
     <Question
-      title="É isso mesmo?"
-      subtitle="Confira antes de montarmos seu plano. Toque em qualquer linha para corrigir."
+      title={t("É isso mesmo?")}
+      subtitle={t("Confira antes de montarmos seu plano. Toque em qualquer linha para corrigir.")}
     >
       <View className="overflow-hidden rounded-2xl border border-border">
         {linhas.map((l, i) => {
@@ -643,12 +655,13 @@ function Review({
         })}
       </View>
 
-      <Feedback title="O que vem agora">
-        Montamos o plano de treino sugerido para as suas respostas e criamos suas refeições, vazias.
-        No fim, você escolhe se segue com o plano ou se começa sem um.
+      <Feedback title={t("O que vem agora")}>
+        {t(
+          "Montamos o plano de treino sugerido para as suas respostas e criamos suas refeições, vazias. No fim, você escolhe se segue com o plano ou se começa sem um.",
+        )}
       </Feedback>
 
-      <NextButton onPress={onConfirm} label="Montar meu plano" />
+      <NextButton onPress={onConfirm} label={t("Montar meu plano")} />
     </Question>
   );
 }

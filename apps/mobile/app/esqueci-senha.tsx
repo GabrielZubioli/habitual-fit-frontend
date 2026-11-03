@@ -12,9 +12,10 @@ import { BrandLogo } from "@/ui/brand-logo";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { Text } from "@/ui/text";
+import { t, tRich } from "@forja/app-core/i18n";
 
 /** O `routes/esqueci-senha.tsx` do web. O link do e-mail abre o app (`nova-senha`). */
-const emailSchema = z.string().trim().email("Informe um e-mail válido").max(255);
+const emailSchema = z.string().trim().email(t("Informe um e-mail válido")).max(255);
 
 export default function EsqueciSenha() {
   const params = useLocalSearchParams<{ email?: string }>();
@@ -56,31 +57,40 @@ export default function EsqueciSenha() {
           <View className="h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
             <Icon node={mailCheck} color={primaria} size={32} />
           </View>
-          <Text className="mt-6 text-2xl font-bold tracking-tight">Verifique seu e-mail</Text>
+          <Text className="mt-6 text-2xl font-bold tracking-tight">
+            {t("Verifique seu e-mail")}
+          </Text>
           <Text className="mt-3 text-center text-sm leading-relaxed text-muted-foreground">
-            Se houver uma conta com <Text className="text-sm font-medium">{enviadoPara}</Text>,
-            enviamos um link para criar uma nova senha. Ele vale por 1 hora.
+            {tRich(
+              t(
+                "Se houver uma conta com <0>{{email}}</0>, enviamos um link para criar uma nova senha. Ele vale por 1 hora.",
+              ),
+              [(s) => <Text className="text-sm font-medium">{s}</Text>],
+              { email: enviadoPara },
+            )}
           </Text>
           <Button
             variant="outline"
             className="mt-8 h-12 w-full rounded-xl"
             onPress={() => setEnviadoPara(null)}
           >
-            Usar outro e-mail
+            {t("Usar outro e-mail")}
           </Button>
           <Text className="mt-6 text-xs text-muted-foreground">
-            Não chegou? Verifique a caixa de spam ou de promoções.
+            {t("Não chegou? Verifique a caixa de spam ou de promoções.")}
           </Text>
         </View>
       ) : (
         <View>
-          <Text className="text-center text-2xl font-bold tracking-tight">Esqueceu a senha?</Text>
+          <Text className="text-center text-2xl font-bold tracking-tight">
+            {t("Esqueceu a senha?")}
+          </Text>
           <Text className="mt-2 text-center text-sm text-muted-foreground">
-            Informe o e-mail da sua conta e enviaremos um link para criar uma nova senha.
+            {t("Informe o e-mail da sua conta e enviaremos um link para criar uma nova senha.")}
           </Text>
           <View className="mt-8 gap-3.5">
             <View className="gap-1.5">
-              <Text className="text-sm font-medium">E-mail</Text>
+              <Text className="text-sm font-medium">{t("E-mail")}</Text>
               <TextInput
                 value={email}
                 onChangeText={setEmail}
@@ -89,7 +99,7 @@ export default function EsqueciSenha() {
                 autoComplete="email"
                 placeholder="voce@email.com"
                 placeholderTextColor={apagada}
-                accessibilityLabel="E-mail"
+                accessibilityLabel={t("E-mail")}
                 onSubmitEditing={submit}
                 className="h-12 rounded-xl border border-input bg-card px-3 font-sans text-base"
                 style={{ color: texto }}
@@ -103,7 +113,7 @@ export default function EsqueciSenha() {
               loading={loading}
               onPress={submit}
             >
-              Enviar link
+              {t("Enviar link")}
             </Button>
           </View>
         </View>
@@ -114,7 +124,9 @@ export default function EsqueciSenha() {
         className="mt-8 flex-row items-center justify-center gap-1.5"
       >
         <Icon node={arrowLeft} color={apagada} size={16} />
-        <Text className="text-sm font-medium text-muted-foreground">Voltar para o login</Text>
+        <Text className="text-sm font-medium text-muted-foreground">
+          {t("Voltar para o login")}
+        </Text>
       </Pressable>
     </ScrollView>
   );

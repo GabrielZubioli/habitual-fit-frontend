@@ -64,9 +64,10 @@ const CAMPOS_DE_TEXTO = new Set([
   "resposta",
   "unidade",
   "botao",
-  "titulo2",
   "acao",
   "vazio",
+  "text",
+  "unit",
 ]);
 
 /** Atributos JSX que nunca são texto, mesmo quando a string parece frase. */
@@ -229,10 +230,15 @@ const PROPRIEDADES_TECNICAS = new Set([
   "letter",
 ]);
 
+/** Parâmetros que recebem o nome da operação para o log, não para a tela. */
+const ROTULO_DE_LOG = /^(operation|operacao|acao|contexto|context|sql|query)$/i;
+
 /** Parece texto de interface: tem letra, começa como frase e não é classe/rota/chave. */
 export function pareceTexto(s) {
   const v = s.trim();
   if (!/\p{L}/u.test(v) || /^[a-z]+:\/\//i.test(v)) return false;
+  if (/^(no)?(index|follow)(,\s*(no)?(index|follow))*$/.test(v)) return false; // meta robots
+  if (/^(SELECT|INSERT|UPDATE|DELETE|WITH|CREATE|ALTER|DROP|PRAGMA)\s/i.test(v)) return false; // SQL
   if (!/^[\p{L}¿¡"“(«…0-9+]/u.test(v)) return false;
   if (/^[\w.-]+\/[\w./-]*$/.test(v) || /^\/[\w/$.-]*$/.test(v)) return false; // rotas, caminhos
   const palavras = v.split(/\s+/);
@@ -243,9 +249,9 @@ export function pareceTexto(s) {
   ) {
     return false;
   }
-  if (/^[a-z][a-z0-9]*([_.:-][a-z0-9]+)+$/i.test(v)) return false; // chaves e enums: lose_weight, a.b
+  if (/^[a-z][a-z0-9]*([_.:-][a-z0-9]+)+$/.test(v)) return false; // chaves e enums: lose_weight, a.b
   if (/\s/.test(v) || /[^\x00-\x7F]/.test(v)) return true;
-  return /^\p{Lu}\p{Ll}/u.test(v); // uma palavra só, com inicial maiúscula: "Salvar"
+  return /^\p{Lu}-?\p{Ll}/u.test(v); // uma palavra só, com inicial maiúscula: "Salvar", "E-mail"
 }
 
 /** Junta as linhas de um texto JSX como o React faz. */
@@ -410,7 +416,14 @@ export function processar(sf, checker, { importacao }) {
     )
       return true;
     if (ts.isEnumMember(p) || ts.isPropertySignature(p) || ts.isMethodDeclaration(p)) return true;
+    if (ts.isParameter(p) && ts.isIdentifier(p.name) && ROTULO_DE_LOG.test(p.name.text))
+      return true;
     if (ts.isCallExpression(p) || ts.isNewExpression(p)) {
+      // Rótulo de operação (`unwrap("salvar perfil", …)`) só vai para o log.
+      const assinatura = checker.getResolvedSignature(p);
+      const i = (p.arguments ?? []).indexOf(n);
+      const param = assinatura?.parameters[Math.min(i, (assinatura?.parameters.length ?? 1) - 1)];
+      if (param && ROTULO_DE_LOG.test(param.name)) return true;
       const alvo = p.expression;
       const nome = ts.isIdentifier(alvo)
         ? alvo.text
@@ -473,7 +486,8 @@ export function processar(sf, checker, { importacao }) {
       return;
     }
     const motivo = tecnico(n);
-    if (motivo === "erro") return duvida(n, "mensagem de Error");
+    // Mensagem de erro em frase (maiúscula) chega à tela pelo errorMessage().
+    if (motivo === "erro" && !/^\p{Lu}/u.test(frase)) return duvida(n, "mensagem de Error");
     if (motivo) return;
     // Dentro de uma propriedade: só os campos de texto conhecidos.
     const prop = n.parent;
@@ -497,7 +511,10 @@ export function processar(sf, checker, { importacao }) {
         (ts.isJsxElement(e) ? e.openingElement : e).tagName.getText(sf),
       ),
     );
-    if (temTexto && inline) {
+    const jsxEmExpressao = filhos.some(
+      (c) => ts.isJsxExpression(c) && c.expression && hasJsx(c.expression),
+    );
+    if (temTexto && (inline || jsxEmExpressao)) {
       duvida(filhos[0].parent, "frase partida por elemento interno: converter à mão com tRich");
       for (const c of filhos) if (!ts.isJsxText(c)) visitar(c);
       return;

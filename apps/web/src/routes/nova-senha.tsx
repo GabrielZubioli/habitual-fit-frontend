@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BrandLogo } from "@/components/brand-logo";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Nova senha: destino do link de recuperação. O link já abre uma sessão; aqui
@@ -16,7 +17,7 @@ import { BrandLogo } from "@/components/brand-logo";
  */
 export const Route = createFileRoute("/nova-senha")({
   head: () => ({
-    meta: [{ title: "Nova senha — Habitual Fit" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: t("Nova senha — Habitual Fit") }, { name: "robots", content: "noindex" }],
   }),
   ssr: false,
   component: NewPasswordPage,
@@ -24,10 +25,10 @@ export const Route = createFileRoute("/nova-senha")({
 
 const passSchema = z
   .string()
-  .min(8, "Use pelo menos 8 caracteres")
+  .min(8, t("Use pelo menos 8 caracteres"))
   .max(72)
-  .regex(/[A-Za-z]/, "Use pelo menos uma letra")
-  .regex(/[0-9]/, "Use pelo menos um número");
+  .regex(/[A-Za-z]/, t("Use pelo menos uma letra"))
+  .regex(/[0-9]/, t("Use pelo menos um número"));
 
 function NewPasswordPage() {
   const navigate = useNavigate();
@@ -52,7 +53,7 @@ function NewPasswordPage() {
     const pw = passSchema.safeParse(senha);
     const next: typeof erros = {};
     if (!pw.success) next.senha = pw.error.issues[0]?.message;
-    else if (senha !== confirma) next.confirma = "As senhas não são iguais";
+    else if (senha !== confirma) next.confirma = t("As senhas não são iguais");
     setErros(next);
     if (next.senha || next.confirma) return;
 
@@ -62,19 +63,23 @@ function NewPasswordPage() {
     if (error) {
       return toast.error(errorMessage(error));
     }
-    toast.success("Senha alterada.");
+    toast.success(t("Senha alterada."));
     void navigate({ to: "/", replace: true });
   };
 
   return (
     <div className="grid min-h-dvh place-items-center bg-background px-6 py-10">
       <div className="w-full max-w-sm">
-        <Link to="/" className="mb-8 flex items-center justify-center" aria-label="Habitual Fit">
+        <Link
+          to="/"
+          className="mb-8 flex items-center justify-center"
+          aria-label={t("Habitual Fit")}
+        >
           <BrandLogo className="h-14" />
         </Link>
 
         {estado === "verificando" && (
-          <div className="grid place-items-center py-10" role="status" aria-label="Carregando">
+          <div className="grid place-items-center py-10" role="status" aria-label={t("Carregando")}>
             <Loader2 className="size-6 animate-spin text-muted-foreground" />
           </div>
         )}
@@ -84,26 +89,31 @@ function NewPasswordPage() {
             <span className="mx-auto grid size-16 place-items-center rounded-2xl bg-destructive/12 text-destructive">
               <ShieldAlert className="size-8" aria-hidden />
             </span>
-            <h1 className="mt-6 text-2xl font-bold tracking-tight">Link inválido ou expirado</h1>
+            <h1 className="mt-6 text-2xl font-bold tracking-tight">
+              {t("Link inválido ou expirado")}
+            </h1>
             <p className="mt-3 text-pretty text-sm leading-relaxed text-muted-foreground">
-              O link de redefinição vale por 1 hora e só pode ser usado uma vez. Peça um novo para
-              continuar.
+              {t(
+                "O link de redefinição vale por 1 hora e só pode ser usado uma vez. Peça um novo para continuar.",
+              )}
             </p>
             <Button asChild className="mt-8 h-12 w-full rounded-xl">
-              <Link to="/esqueci-senha">Pedir novo link</Link>
+              <Link to="/esqueci-senha">{t("Pedir novo link")}</Link>
             </Button>
           </div>
         )}
 
         {estado === "pronto" && (
           <>
-            <h1 className="text-center text-2xl font-bold tracking-tight">Crie uma nova senha</h1>
+            <h1 className="text-center text-2xl font-bold tracking-tight">
+              {t("Crie uma nova senha")}
+            </h1>
             <p className="mt-2 text-center text-sm text-muted-foreground">
-              Pelo menos 8 caracteres, com letras e números.
+              {t("Pelo menos 8 caracteres, com letras e números.")}
             </p>
             <form onSubmit={submit} className="mt-8 space-y-3.5" noValidate>
               <div className="space-y-1.5">
-                <Label htmlFor="senha">Nova senha</Label>
+                <Label htmlFor="senha">{t("Nova senha")}</Label>
                 <Input
                   id="senha"
                   type="password"
@@ -122,7 +132,7 @@ function NewPasswordPage() {
                 )}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="confirma">Repita a nova senha</Label>
+                <Label htmlFor="confirma">{t("Repita a nova senha")}</Label>
                 <Input
                   id="confirma"
                   type="password"
@@ -147,7 +157,7 @@ function NewPasswordPage() {
                 disabled={salvando}
               >
                 {salvando && <Loader2 className="mr-2 size-4 animate-spin" />}
-                Salvar nova senha
+                {t("Salvar nova senha")}
               </Button>
             </form>
           </>

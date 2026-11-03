@@ -17,6 +17,7 @@
  * `unwrap`/`unwrapList` lançam o erro, devolvendo ao React Query o controle de
  * retry e de estado de erro.
  */
+import { t } from "../i18n";
 import type {
   PostgrestError,
   PostgrestResponse,
@@ -107,26 +108,26 @@ export function num(value: unknown, fallback = 0): number {
 function traduzirErro(error: PostgrestError): string {
   switch (error.code) {
     case "23505":
-      return "Esse registro já existe.";
+      return t("Esse registro já existe.");
     case "23503":
-      return "Não é possível concluir: o item está em uso por outro registro.";
+      return t("Não é possível concluir: o item está em uso por outro registro.");
     case "23514":
-      return "Valor fora da faixa permitida.";
+      return t("Valor fora da faixa permitida.");
     case "42501":
     case "PGRST301":
-      return "Sem permissão para acessar estes dados. Tente entrar novamente.";
+      return t("Sem permissão para acessar estes dados. Tente entrar novamente.");
     case "PGRST116":
-      return "Registro não encontrado.";
+      return t("Registro não encontrado.");
     case "23502":
-      return "Preencha todos os campos obrigatórios.";
+      return t("Preencha todos os campos obrigatórios.");
     case "22001":
-      return "Texto longo demais.";
+      return t("Texto longo demais.");
     case "22P02":
     case "22007":
     case "22008":
-      return "Valor em formato inválido.";
+      return t("Valor em formato inválido.");
     case "57014":
-      return "O servidor demorou para responder. Tente de novo.";
+      return t("O servidor demorou para responder. Tente de novo.");
     case "PGRST303":
       return SESSAO_EXPIRADA;
     // Mensagens das nossas próprias regras (`raise exception`), já em pt-BR.
@@ -140,30 +141,30 @@ function traduzirErro(error: PostgrestError): string {
   }
 }
 
-const FALHA_GENERICA = "Não foi possível concluir a operação. Tente de novo.";
-const SEM_CONEXAO = "Sem conexão com o servidor. Verifique sua internet.";
-const SESSAO_EXPIRADA = "Sua sessão expirou. Entre de novo.";
+const FALHA_GENERICA = t("Não foi possível concluir a operação. Tente de novo.");
+const SEM_CONEXAO = t("Sem conexão com o servidor. Verifique sua internet.");
+const SESSAO_EXPIRADA = t("Sua sessão expirou. Entre de novo.");
 
 /** Erros do Supabase Auth (cadastro, login, senha), pelo código e, sem ele, pelo texto. */
 const ERROS_AUTH: Record<string, string> = {
-  invalid_credentials: "E-mail ou senha incorretos.",
-  email_not_confirmed: "Confirme seu e-mail para entrar.",
-  user_already_exists: "Este e-mail já tem conta. Faça login para continuar.",
-  email_exists: "Este e-mail já tem conta. Faça login para continuar.",
-  weak_password: "Senha fraca: use pelo menos 8 caracteres, com letras e números.",
-  same_password: "A nova senha precisa ser diferente da anterior.",
-  over_email_send_rate_limit: "Muitas tentativas. Aguarde um pouco e tente de novo.",
-  over_request_rate_limit: "Muitas tentativas. Aguarde um pouco e tente de novo.",
-  email_address_invalid: "E-mail inválido.",
-  validation_failed: "Confira os dados informados.",
-  signup_disabled: "Novos cadastros estão desativados no momento.",
+  invalid_credentials: t("E-mail ou senha incorretos."),
+  email_not_confirmed: t("Confirme seu e-mail para entrar."),
+  user_already_exists: t("Este e-mail já tem conta. Faça login para continuar."),
+  email_exists: t("Este e-mail já tem conta. Faça login para continuar."),
+  weak_password: t("Senha fraca: use pelo menos 8 caracteres, com letras e números."),
+  same_password: t("A nova senha precisa ser diferente da anterior."),
+  over_email_send_rate_limit: t("Muitas tentativas. Aguarde um pouco e tente de novo."),
+  over_request_rate_limit: t("Muitas tentativas. Aguarde um pouco e tente de novo."),
+  email_address_invalid: t("E-mail inválido."),
+  validation_failed: t("Confira os dados informados."),
+  signup_disabled: t("Novos cadastros estão desativados no momento."),
   session_not_found: SESSAO_EXPIRADA,
   session_expired: SESSAO_EXPIRADA,
   refresh_token_not_found: SESSAO_EXPIRADA,
   bad_jwt: SESSAO_EXPIRADA,
-  otp_expired: "O link expirou ou já foi usado. Peça um novo.",
-  user_not_found: "Conta não encontrada.",
-  email_address_not_authorized: "Não foi possível enviar e-mail para este endereço agora.",
+  otp_expired: t("O link expirou ou já foi usado. Peça um novo."),
+  user_not_found: t("Conta não encontrada."),
+  email_address_not_authorized: t("Não foi possível enviar e-mail para este endereço agora."),
 };
 
 function traduzirAuth(code: string | undefined, message: string): string {
@@ -179,11 +180,12 @@ function traduzirAuth(code: string | undefined, message: string): string {
 }
 
 function traduzirStorage(message: string): string {
-  if (/too large|maximum allowed size|payload/i.test(message)) return "Arquivo grande demais.";
-  if (/mime|content type|not supported/i.test(message)) return "Formato de arquivo não suportado.";
-  if (/already exists/i.test(message)) return "Esse arquivo já existe.";
+  if (/too large|maximum allowed size|payload/i.test(message)) return t("Arquivo grande demais.");
+  if (/mime|content type|not supported/i.test(message))
+    return t("Formato de arquivo não suportado.");
+  if (/already exists/i.test(message)) return t("Esse arquivo já existe.");
   if (/fetch|network/i.test(message)) return SEM_CONEXAO;
-  return "Não foi possível enviar o arquivo. Tente de novo.";
+  return t("Não foi possível enviar o arquivo. Tente de novo.");
 }
 
 /**
@@ -205,5 +207,5 @@ export function errorMessage(error: unknown): string {
     if (e.name === "TypeError" && /fetch|network|load failed/i.test(msg)) return SEM_CONEXAO;
     if (error instanceof Error) return msg || FALHA_GENERICA;
   }
-  return "Algo deu errado. Tente novamente.";
+  return t("Algo deu errado. Tente novamente.");
 }

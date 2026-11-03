@@ -8,6 +8,7 @@ import { useColor } from "@/theme/theme";
 import { Button } from "./button";
 import { Icon } from "./icon";
 import { Text } from "./text";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Controles do questionário — os mesmos do web
@@ -255,7 +256,7 @@ export function Stepper({
         textClassName="text-2xl"
         onPress={() => onChange(Math.max(min, value - 1))}
         disabled={value <= min}
-        accessibilityLabel="Diminuir"
+        accessibilityLabel={t("Diminuir")}
       >
         −
       </Button>
@@ -270,7 +271,7 @@ export function Stepper({
         textClassName="text-2xl"
         onPress={() => onChange(Math.min(max, value + 1))}
         disabled={value >= max}
-        accessibilityLabel="Aumentar"
+        accessibilityLabel={t("Aumentar")}
       >
         +
       </Button>
@@ -328,7 +329,7 @@ export function Feedback({ title, children }: { title?: ReactNode; children: Rea
 export function NextButton({
   onPress,
   disabled,
-  label = "Continuar",
+  label = t("Continuar"),
 }: {
   onPress: () => void;
   disabled?: boolean;
@@ -359,7 +360,7 @@ export function ProgressBar({ current, total }: { current: number; total: number
     <View
       className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted"
       accessibilityRole="progressbar"
-      accessibilityLabel="Progresso do questionário"
+      accessibilityLabel={t("Progresso do questionário")}
       accessibilityValue={{ min: 0, max: total, now: current }}
     >
       <View

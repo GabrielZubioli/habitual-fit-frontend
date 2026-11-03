@@ -6,6 +6,7 @@ import type {
   TrainingLevel,
 } from "@forja/domain";
 import type { Answers } from "./schema";
+import { t } from "../../i18n";
 
 /**
  * Opções do questionário e o que cada resposta significa para o gerador.
@@ -24,9 +25,9 @@ export interface Option<T extends string> {
 }
 
 export const SEX_OPTIONS: Option<"male" | "female" | "other">[] = [
-  { value: "male", label: "Masculino" },
-  { value: "female", label: "Feminino" },
-  { value: "other", label: "Prefiro não dizer" },
+  { value: "male", label: t("Masculino") },
+  { value: "female", label: t("Feminino") },
+  { value: "other", label: t("Prefiro não dizer") },
 ];
 
 /**
@@ -38,10 +39,15 @@ export const SEX_OPTIONS: Option<"male" | "female" | "other">[] = [
 export const EXPERIENCE_OPTIONS: (Option<"never" | "beginner" | "intermediate" | "advanced"> & {
   level: TrainingLevel;
 })[] = [
-  { value: "never", label: "Nunca treinei", hint: "Vou começar agora", level: "beginner" },
-  { value: "beginner", label: "Iniciante", hint: "Menos de 1 ano", level: "beginner" },
-  { value: "intermediate", label: "Intermediário", hint: "1 a 3 anos", level: "intermediate" },
-  { value: "advanced", label: "Avançado", hint: "Mais de 3 anos", level: "advanced" },
+  { value: "never", label: t("Nunca treinei"), hint: t("Vou começar agora"), level: "beginner" },
+  { value: "beginner", label: t("Iniciante"), hint: t("Menos de 1 ano"), level: "beginner" },
+  {
+    value: "intermediate",
+    label: t("Intermediário"),
+    hint: t("1 a 3 anos"),
+    level: "intermediate",
+  },
+  { value: "advanced", label: t("Avançado"), hint: t("Mais de 3 anos"), level: "advanced" },
 ];
 
 /**
@@ -56,26 +62,26 @@ export const CONSISTENCY_OPTIONS: (Option<"never" | "returning" | "irregular" | 
 })[] = [
   {
     value: "regular",
-    label: "Treino com regularidade",
-    hint: "2× ou mais por semana",
+    label: t("Treino com regularidade"),
+    hint: t("2× ou mais por semana"),
     forcesBeginner: false,
   },
   {
     value: "irregular",
-    label: "Treino de forma irregular",
-    hint: "Algumas semanas sim, outras não",
+    label: t("Treino de forma irregular"),
+    hint: t("Algumas semanas sim, outras não"),
     forcesBeginner: false,
   },
   {
     value: "returning",
-    label: "Estou voltando",
-    hint: "Parado há mais de 3 meses",
+    label: t("Estou voltando"),
+    hint: t("Parado há mais de 3 meses"),
     forcesBeginner: true,
   },
   {
     value: "never",
-    label: "Não treino",
-    hint: "Nunca treinei ou parei há muito tempo",
+    label: t("Não treino"),
+    hint: t("Nunca treinei ou parei há muito tempo"),
     forcesBeginner: true,
   },
 ];
@@ -88,40 +94,40 @@ export const OBJECTIVE_OPTIONS: (Option<
 })[] = [
   {
     value: "lose_fat",
-    label: "Perder gordura",
-    hint: "Emagrecer preservando músculo",
+    label: t("Perder gordura"),
+    hint: t("Emagrecer preservando músculo"),
     emoji: "🔥",
     goal: "hypertrophy",
     weightGoal: "lose",
   },
   {
     value: "build_muscle",
-    label: "Ganhar massa muscular",
-    hint: "Aumentar músculo e peso",
+    label: t("Ganhar massa muscular"),
+    hint: t("Aumentar músculo e peso"),
     emoji: "💪",
     goal: "hypertrophy",
     weightGoal: "gain",
   },
   {
     value: "recomp",
-    label: "Definir o corpo",
-    hint: "Perder gordura e ganhar músculo ao mesmo tempo",
+    label: t("Definir o corpo"),
+    hint: t("Perder gordura e ganhar músculo ao mesmo tempo"),
     emoji: "⚡",
     goal: "hypertrophy",
     weightGoal: "maintain",
   },
   {
     value: "strength",
-    label: "Ficar mais forte",
-    hint: "Cargas altas, poucas repetições",
+    label: t("Ficar mais forte"),
+    hint: t("Cargas altas, poucas repetições"),
     emoji: "🏋️",
     goal: "strength",
     weightGoal: "maintain",
   },
   {
     value: "health",
-    label: "Saúde e condicionamento",
-    hint: "Disposição no dia a dia",
+    label: t("Saúde e condicionamento"),
+    hint: t("Disposição no dia a dia"),
     emoji: "❤️",
     goal: "endurance",
     weightGoal: "maintain",
@@ -137,29 +143,29 @@ export const PLACE_OPTIONS: (Option<
 })[] = [
   {
     value: "full_gym",
-    label: "Academia completa",
-    hint: "Máquinas, polias, barras e halteres",
+    label: t("Academia completa"),
+    hint: t("Máquinas, polias, barras e halteres"),
     equipment: "full_gym",
     defaults: ["barbell", "dumbbell", "machine", "cable", "bodyweight", "kettlebell", "band"],
   },
   {
     value: "small_gym",
-    label: "Academia simples",
-    hint: "Pesos livres e o básico",
+    label: t("Academia simples"),
+    hint: t("Pesos livres e o básico"),
     equipment: "full_gym",
     defaults: ["barbell", "dumbbell", "bodyweight", "machine"],
   },
   {
     value: "home_equipped",
-    label: "Em casa, com equipamento",
-    hint: "Halteres, elásticos, barra",
+    label: t("Em casa, com equipamento"),
+    hint: t("Halteres, elásticos, barra"),
     equipment: "home_basic",
     defaults: ["dumbbell", "bodyweight", "band"],
   },
   {
     value: "home_bodyweight",
-    label: "Em casa, sem equipamento",
-    hint: "Só o peso do corpo",
+    label: t("Em casa, sem equipamento"),
+    hint: t("Só o peso do corpo"),
     equipment: "bodyweight",
     defaults: ["bodyweight"],
   },
@@ -167,14 +173,14 @@ export const PLACE_OPTIONS: (Option<
 
 /** Equipamentos marcáveis. Os valores espelham o enum `equipment_t` do banco. */
 export const EQUIPMENT_OPTIONS: Option<string>[] = [
-  { value: "barbell", label: "Barra" },
-  { value: "dumbbell", label: "Halteres" },
-  { value: "machine", label: "Máquinas" },
-  { value: "cable", label: "Polia" },
-  { value: "bodyweight", label: "Peso corporal" },
-  { value: "kettlebell", label: "Kettlebell" },
-  { value: "band", label: "Elásticos" },
-  { value: "other", label: "Outros acessórios" },
+  { value: "barbell", label: t("Barra") },
+  { value: "dumbbell", label: t("Halteres") },
+  { value: "machine", label: t("Máquinas") },
+  { value: "cable", label: t("Polia") },
+  { value: "bodyweight", label: t("Peso corporal") },
+  { value: "kettlebell", label: t("Kettlebell") },
+  { value: "band", label: t("Elásticos") },
+  { value: "other", label: t("Outros acessórios") },
 ];
 
 export const DURATION_OPTIONS: (Option<SessionDuration> & {
@@ -182,58 +188,63 @@ export const DURATION_OPTIONS: (Option<SessionDuration> & {
   exercises: string;
   recommended?: boolean;
 })[] = [
-  { value: "quick", label: "Rápido", minutes: "até 20 min", exercises: "3 exercícios" },
-  { value: "short", label: "Curto", minutes: "20–40 min", exercises: "4 a 6 exercícios" },
+  { value: "quick", label: t("Rápido"), minutes: t("até 20 min"), exercises: t("3 exercícios") },
+  { value: "short", label: t("Curto"), minutes: t("20–40 min"), exercises: t("4 a 6 exercícios") },
   {
     value: "average",
-    label: "Médio",
-    minutes: "40–60 min",
-    exercises: "5 a 7 exercícios",
+    label: t("Médio"),
+    minutes: t("40–60 min"),
+    exercises: t("5 a 7 exercícios"),
     recommended: true,
   },
-  { value: "long", label: "Longo", minutes: "mais de 60 min", exercises: "8 a 10 exercícios" },
+  {
+    value: "long",
+    label: t("Longo"),
+    minutes: t("mais de 60 min"),
+    exercises: t("8 a 10 exercícios"),
+  },
 ];
 
 export const FOCUS_OPTIONS: Option<FocusArea>[] = [
-  { value: "full_body", label: "Equilibrado" },
-  { value: "upper", label: "Membros superiores" },
-  { value: "legs", label: "Membros inferiores" },
-  { value: "chest", label: "Peito" },
-  { value: "back", label: "Costas" },
-  { value: "shoulders", label: "Ombros" },
-  { value: "arms", label: "Braços" },
-  { value: "glutes", label: "Glúteos" },
-  { value: "abs", label: "Abdômen" },
+  { value: "full_body", label: t("Equilibrado") },
+  { value: "upper", label: t("Membros superiores") },
+  { value: "legs", label: t("Membros inferiores") },
+  { value: "chest", label: t("Peito") },
+  { value: "back", label: t("Costas") },
+  { value: "shoulders", label: t("Ombros") },
+  { value: "arms", label: t("Braços") },
+  { value: "glutes", label: t("Glúteos") },
+  { value: "abs", label: t("Abdômen") },
 ];
 
 export const INJURY_OPTIONS: Option<string>[] = [
-  { value: "shoulder", label: "Ombro" },
-  { value: "elbow", label: "Cotovelo" },
-  { value: "wrist", label: "Punho" },
-  { value: "neck", label: "Pescoço" },
-  { value: "lower_back", label: "Lombar" },
-  { value: "hip", label: "Quadril" },
-  { value: "knee", label: "Joelho" },
-  { value: "ankle", label: "Tornozelo" },
+  { value: "shoulder", label: t("Ombro") },
+  { value: "elbow", label: t("Cotovelo") },
+  { value: "wrist", label: t("Punho") },
+  { value: "neck", label: t("Pescoço") },
+  { value: "lower_back", label: t("Lombar") },
+  { value: "hip", label: t("Quadril") },
+  { value: "knee", label: t("Joelho") },
+  { value: "ankle", label: t("Tornozelo") },
 ];
 
 export const DIET_OPTIONS: Option<string>[] = [
-  { value: "vegetarian", label: "Vegetariana", hint: "Sem carne" },
-  { value: "vegan", label: "Vegana", hint: "Sem nenhum produto animal" },
-  { value: "lactose_free", label: "Sem lactose" },
-  { value: "gluten_free", label: "Sem glúten" },
-  { value: "low_carb", label: "Baixo carboidrato" },
+  { value: "vegetarian", label: t("Vegetariana"), hint: t("Sem carne") },
+  { value: "vegan", label: t("Vegana"), hint: t("Sem nenhum produto animal") },
+  { value: "lactose_free", label: t("Sem lactose") },
+  { value: "gluten_free", label: t("Sem glúten") },
+  { value: "low_carb", label: t("Baixo carboidrato") },
 ];
 
 export const ALLERGEN_OPTIONS: Option<string>[] = [
-  { value: "lactose", label: "Leite e derivados" },
-  { value: "gluten", label: "Glúten" },
-  { value: "egg", label: "Ovo" },
-  { value: "peanut", label: "Amendoim" },
-  { value: "nuts", label: "Castanhas e nozes" },
-  { value: "seafood", label: "Frutos do mar" },
-  { value: "fish", label: "Peixe" },
-  { value: "soy", label: "Soja" },
+  { value: "lactose", label: t("Leite e derivados") },
+  { value: "gluten", label: t("Glúten") },
+  { value: "egg", label: t("Ovo") },
+  { value: "peanut", label: t("Amendoim") },
+  { value: "nuts", label: t("Castanhas e nozes") },
+  { value: "seafood", label: t("Frutos do mar") },
+  { value: "fish", label: t("Peixe") },
+  { value: "soy", label: t("Soja") },
 ];
 
 /**
@@ -244,38 +255,38 @@ export const ALLERGEN_OPTIONS: Option<string>[] = [
  * no cadastro seria transformar o questionário num inventário de despensa.
  */
 export const COMMON_FOODS = [
-  "Frango",
-  "Carne bovina",
-  "Peixe",
-  "Ovo",
-  "Arroz",
-  "Feijão",
-  "Batata",
-  "Macarrão",
-  "Pão",
-  "Aveia",
-  "Tapioca",
-  "Leite",
-  "Iogurte",
-  "Queijo",
-  "Banana",
-  "Maçã",
-  "Laranja",
-  "Mamão",
-  "Abacate",
-  "Brócolis",
-  "Alface",
-  "Tomate",
-  "Cenoura",
-  "Castanha",
-  "Azeite",
-  "Whey protein",
+  t("Frango"),
+  t("Carne bovina"),
+  t("Peixe"),
+  t("Ovo"),
+  t("Arroz"),
+  t("Feijão"),
+  t("Batata"),
+  t("Macarrão"),
+  t("Pão"),
+  t("Aveia"),
+  t("Tapioca"),
+  t("Leite"),
+  t("Iogurte"),
+  t("Queijo"),
+  t("Banana"),
+  t("Maçã"),
+  t("Laranja"),
+  t("Mamão"),
+  t("Abacate"),
+  t("Brócolis"),
+  t("Alface"),
+  t("Tomate"),
+  t("Cenoura"),
+  t("Castanha"),
+  t("Azeite"),
+  t("Whey protein"),
 ] as const;
 
 export const COOKING_OPTIONS: Option<"none" | "basic" | "confident">[] = [
-  { value: "none", label: "Não cozinho", hint: "Prefiro o mais simples possível" },
-  { value: "basic", label: "O básico", hint: "Grelhar, cozinhar, montar prato" },
-  { value: "confident", label: "Cozinho bem", hint: "Topo receitas mais elaboradas" },
+  { value: "none", label: t("Não cozinho"), hint: t("Prefiro o mais simples possível") },
+  { value: "basic", label: t("O básico"), hint: t("Grelhar, cozinhar, montar prato") },
+  { value: "confident", label: t("Cozinho bem"), hint: t("Topo receitas mais elaboradas") },
 ];
 
 /**
@@ -351,23 +362,29 @@ export function bmiFeedback(weightKg: number, heightCm: number): { bmi: number; 
   const bmi = m > 0 ? weightKg / (m * m) : 0;
   const rounded = Math.round(bmi * 10) / 10;
 
-  if (bmi < 18.5) return { bmi: rounded, text: "Abaixo do peso — o foco será construir massa." };
-  if (bmi < 25) return { bmi: rounded, text: "Faixa saudável. Vamos deixar você mais forte." };
+  if (bmi < 18.5) return { bmi: rounded, text: t("Abaixo do peso — o foco será construir massa.") };
+  if (bmi < 25) return { bmi: rounded, text: t("Faixa saudável. Vamos deixar você mais forte.") };
   if (bmi < 30)
-    return { bmi: rounded, text: "Acima do ideal — treino de força ajuda bastante aqui." };
-  return { bmi: rounded, text: "Vamos com consistência: os resultados vêm." };
+    return { bmi: rounded, text: t("Acima do ideal — treino de força ajuda bastante aqui.") };
+  return { bmi: rounded, text: t("Vamos com consistência: os resultados vêm.") };
 }
 
 /** Como descrever a meta de peso escolhida. */
 export function weightGoalFeedback(current: number, target: number): string {
   const diff = target - current;
-  if (Math.abs(diff) < 1) return "Manter o peso, com foco em composição corporal.";
+  if (Math.abs(diff) < 1) return t("Manter o peso, com foco em composição corporal.");
   if (diff < 0) {
     const semanas = Math.ceil(Math.abs(diff) / 0.5);
-    return `Perder ${Math.abs(diff).toFixed(1)} kg — cerca de ${semanas} semanas num ritmo sustentável.`;
+    return t("Perder {{v0}} kg — cerca de {{semanas}} semanas num ritmo sustentável.", {
+      v0: Math.abs(diff).toFixed(1),
+      semanas,
+    });
   }
   const semanas = Math.ceil(diff / 0.25);
-  return `Ganhar ${diff.toFixed(1)} kg — cerca de ${semanas} semanas priorizando músculo.`;
+  return t("Ganhar {{v0}} kg — cerca de {{semanas}} semanas priorizando músculo.", {
+    v0: diff.toFixed(1),
+    semanas,
+  });
 }
 
 /**

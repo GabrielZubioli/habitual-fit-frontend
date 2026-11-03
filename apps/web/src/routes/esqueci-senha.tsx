@@ -9,20 +9,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BrandLogo } from "@/components/brand-logo";
+import { t, tRich } from "@forja/app-core/i18n";
 
 /**
  * Recuperação de senha: pede o e-mail e manda o link que abre /nova-senha.
  */
 export const Route = createFileRoute("/esqueci-senha")({
   head: () => ({
-    meta: [{ title: "Recuperar senha — Habitual Fit" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: t("Recuperar senha — Habitual Fit") }, { name: "robots", content: "noindex" }],
   }),
   ssr: false,
   validateSearch: z.object({ email: z.string().optional() }),
   component: ForgotPasswordPage,
 });
 
-const emailSchema = z.string().trim().email("Informe um e-mail válido").max(255);
+const emailSchema = z.string().trim().email(t("Informe um e-mail válido")).max(255);
 
 function ForgotPasswordPage() {
   const search = Route.useSearch();
@@ -53,7 +54,11 @@ function ForgotPasswordPage() {
   return (
     <div className="grid min-h-dvh place-items-center bg-background px-6 py-10">
       <div className="w-full max-w-sm">
-        <Link to="/" className="mb-8 flex items-center justify-center" aria-label="Habitual Fit">
+        <Link
+          to="/"
+          className="mb-8 flex items-center justify-center"
+          aria-label={t("Habitual Fit")}
+        >
           <BrandLogo className="h-14" />
         </Link>
 
@@ -62,33 +67,39 @@ function ForgotPasswordPage() {
             <span className="mx-auto grid size-16 place-items-center rounded-2xl bg-primary/12 text-primary animate-in zoom-in-50 duration-500">
               <MailCheck className="size-8" aria-hidden />
             </span>
-            <h1 className="mt-6 text-2xl font-bold tracking-tight">Verifique seu e-mail</h1>
+            <h1 className="mt-6 text-2xl font-bold tracking-tight">{t("Verifique seu e-mail")}</h1>
             <p className="mt-3 text-pretty text-sm leading-relaxed text-muted-foreground">
-              Se houver uma conta com{" "}
-              <span className="font-medium text-foreground">{enviadoPara}</span>, enviamos um link
-              para criar uma nova senha. Ele vale por 1 hora.
+              {tRich(
+                t(
+                  "Se houver uma conta com <0>{{email}}</0>, enviamos um link para criar uma nova senha. Ele vale por 1 hora.",
+                ),
+                [(s) => <span className="font-medium text-foreground">{s}</span>],
+                { email: enviadoPara },
+              )}
             </p>
             <Button
               variant="outline"
               className="mt-8 h-12 w-full rounded-xl"
               onClick={() => setEnviadoPara(null)}
             >
-              Usar outro e-mail
+              {t("Usar outro e-mail")}
             </Button>
             <p className="mt-6 text-xs text-muted-foreground">
-              Não chegou? Verifique a caixa de spam ou de promoções.
+              {t("Não chegou? Verifique a caixa de spam ou de promoções.")}
             </p>
           </div>
         ) : (
           <>
-            <h1 className="text-center text-2xl font-bold tracking-tight">Esqueceu a senha?</h1>
+            <h1 className="text-center text-2xl font-bold tracking-tight">
+              {t("Esqueceu a senha?")}
+            </h1>
             <p className="mt-2 text-pretty text-center text-sm text-muted-foreground">
-              Informe o e-mail da sua conta e enviaremos um link para criar uma nova senha.
+              {t("Informe o e-mail da sua conta e enviaremos um link para criar uma nova senha.")}
             </p>
 
             <form onSubmit={submit} className="mt-8 space-y-3.5" noValidate>
               <div className="space-y-1.5">
-                <Label htmlFor="email">E-mail</Label>
+                <Label htmlFor="email">{t("E-mail")}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -115,7 +126,7 @@ function ForgotPasswordPage() {
                 disabled={loading}
               >
                 {loading && <Loader2 className="mr-2 size-4 animate-spin" />}
-                Enviar link
+                {t("Enviar link")}
               </Button>
             </form>
           </>
@@ -126,7 +137,7 @@ function ForgotPasswordPage() {
           className="mt-8 flex items-center justify-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-4" aria-hidden />
-          Voltar para o login
+          {t("Voltar para o login")}
         </Link>
       </div>
     </div>
