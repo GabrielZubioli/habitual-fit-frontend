@@ -1,5 +1,14 @@
 import { useMemo, useState, type ReactNode } from "react";
-import { Image, Modal, Pressable, ScrollView, TextInput, View } from "react-native";
+import {
+  Image,
+  Modal,
+  Pressable,
+  ScrollView,
+  TextInput,
+  useWindowDimensions,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { __iconNode as bookOpen } from "lucide-react/dist/esm/icons/book-open.js";
@@ -30,7 +39,8 @@ import { Button } from "@/ui/button";
 import { ErrorState } from "@/ui/card";
 import { ConfirmDialog } from "@/ui/dialog";
 import { Icon } from "@/ui/icon";
-import { PageHeader } from "@/ui/page-header";
+import { MacroTiles } from "@/ui/macro-rings";
+import { PageHeader, PageScroll } from "@/ui/page-header";
 import { Text } from "@/ui/text";
 
 /**
@@ -109,25 +119,30 @@ export default function RecipesPage() {
 
   return (
     <View className="flex-1 bg-background">
-      <ScrollView contentContainerClassName="pb-28" keyboardShouldPersistTaps="handled">
-        <PageHeader
-          title="Receitas"
-          description={
-            receitas.data
-              ? `${receitas.data.filter((r) => r.isSystem).length} receitas prontas`
-              : undefined
-          }
-          action={
-            <Button
-              onPress={() => criar.mutate()}
-              loading={criar.isPending}
-              className="rounded-full"
-            >
-              <Icon node={plus} color={branco} size={16} />
-              <Text className="text-sm font-medium text-primary-foreground">Nova</Text>
-            </Button>
-          }
-        />
+      <PageScroll
+        contentContainerClassName="pb-28"
+        keyboardShouldPersistTaps="handled"
+        header={
+          <PageHeader
+            title="Receitas"
+            description={
+              receitas.data
+                ? `${receitas.data.filter((r) => r.isSystem).length} receitas prontas`
+                : undefined
+            }
+            action={
+              <Button
+                onPress={() => criar.mutate()}
+                loading={criar.isPending}
+                className="rounded-full"
+              >
+                <Icon node={plus} color={branco} size={16} />
+                <Text className="text-sm font-medium text-primary-foreground">Nova</Text>
+              </Button>
+            }
+          />
+        }
+      >
         <View className="px-4">
           {erro ? (
             <Pressable
@@ -310,7 +325,7 @@ export default function RecipesPage() {
             ) : null}
           </>
         )}
-      </ScrollView>
+      </PageScroll>
 
       <DetalheReceita
         receita={aberta}
@@ -441,7 +456,8 @@ function DetalheReceita({
   copiando: boolean;
 }) {
   const texto = useColor("foreground");
-  const apagada = useColor("muted-foreground");
+  const { height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   return (
     <Modal
       visible={receita !== null}
@@ -450,96 +466,116 @@ function DetalheReceita({
       onRequestClose={onClose}
       statusBarTranslucent
     >
-      <Pressable className="flex-1 items-center justify-center bg-black/80 px-4" onPress={onClose}>
+      {/* O fundo é irmão do cartão, não pai: um Pressable em volta da rolagem
+          disputava o toque com ela e o conteúdo longo ficava preso. */}
+      <View className="flex-1 items-center justify-center px-4">
+        <Pressable
+          onPress={onClose}
+          accessibilityLabel="Fechar"
+          className="absolute inset-0 bg-black/80"
+        />
         {receita ? (
-          <Pressable
-            onPress={() => undefined}
-            className="max-h-[88%] w-full max-w-lg overflow-hidden rounded-3xl border border-border bg-background"
+          <View
+            className="w-full max-w-lg overflow-hidden rounded-3xl border border-border bg-background"
+            // Altura máxima em pixels: com porcentagem, a rolagem crescia junto
+            // com o conteúdo em vez de caber no cartão.
+            style={{ maxHeight: (height - insets.top - insets.bottom) * 0.9 }}
           >
-            {receita.imageUrl ? (
-              <Image
-                source={{ uri: urlDoSite(receita.imageUrl) }}
-                className="aspect-video w-full"
-              />
-            ) : null}
-            <Pressable
-              onPress={onClose}
-              accessibilityLabel="Fechar"
-              className="absolute right-3 top-3 h-8 w-8 items-center justify-center rounded-full bg-black/40"
+            <ScrollView
+              className="grow-0"
+              contentContainerClassName="gap-5 pb-5"
+              showsVerticalScrollIndicator
             >
-              <Icon node={x} color={receita.imageUrl ? "#fff" : apagada} size={18} />
-            </Pressable>
-            <View className="gap-1 px-5 pb-3 pt-5">
-              <Text className="pr-8 text-xl font-semibold leading-tight">
-                {receita.imageUrl ? "" : `${recipeCategoryOf(receita.category)?.emoji ?? ""} `}
-                {receita.name}
-              </Text>
-              <Text className="text-sm text-muted-foreground">
-                Rende {receita.servings} {receita.servings === 1 ? "porção" : "porções"}
-                {receita.prepMinutes ? ` · ${receita.prepMinutes} min` : ""}
-              </Text>
-            </View>
-            <ScrollView contentContainerClassName="gap-4 px-5 pb-5">
-              <View className="flex-row gap-2">
-                {(
-                  [
-                    ["kcal", receita.perServing.kcal],
-                    ["Prot.", receita.perServing.proteinG],
-                    ["Carbo", receita.perServing.carbsG],
-                    ["Gord.", receita.perServing.fatG],
-                  ] as const
-                ).map(([rotulo, valor]) => (
-                  <View
-                    key={rotulo}
-                    className="flex-1 items-center rounded-2xl bg-card px-1 py-2.5"
-                  >
-                    <Text className="font-bold">{Math.round(valor)}</Text>
-                    <Text className="text-[11px] text-muted-foreground">{rotulo} / porção</Text>
-                  </View>
-                ))}
+              {receita.imageUrl ? (
+                <Image
+                  source={{ uri: urlDoSite(receita.imageUrl) }}
+                  className="aspect-video w-full bg-elevated"
+                />
+              ) : null}
+              <View className={cn("gap-1 px-5", receita.imageUrl ? "pt-1" : "pt-5")}>
+                <Text className="pr-10 text-2xl font-extrabold leading-tight">
+                  {receita.imageUrl ? "" : `${recipeCategoryOf(receita.category)?.emoji ?? ""} `}
+                  {receita.name}
+                </Text>
+                <Text className="text-sm text-muted-foreground">
+                  Rende {receita.servings} {receita.servings === 1 ? "porção" : "porções"}
+                  {receita.prepMinutes ? ` · ${receita.prepMinutes} min` : ""}
+                </Text>
               </View>
-              <View>
-                <Text className="mb-2 text-sm font-semibold">Ingredientes (receita inteira)</Text>
-                <View className="rounded-2xl bg-card">
+
+              <View className="px-5">
+                <Text className="mb-2 text-xs font-bold uppercase tracking-[1.5px] text-muted-foreground">
+                  Por porção
+                </Text>
+                <MacroTiles
+                  kcal={receita.perServing.kcal}
+                  proteinG={receita.perServing.proteinG}
+                  carbsG={receita.perServing.carbsG}
+                  fatG={receita.perServing.fatG}
+                />
+              </View>
+
+              <View className="px-5">
+                <View className="mb-2 flex-row items-baseline justify-between">
+                  <Text className="text-xs font-bold uppercase tracking-[1.5px] text-muted-foreground">
+                    Ingredientes
+                  </Text>
+                  <Text className="text-xs text-muted-foreground">receita inteira</Text>
+                </View>
+                <View className="rounded-2xl bg-card px-4">
                   {receita.items.map((i, k) => (
                     <View
                       key={i.foodId + i.grams}
                       className={cn(
-                        "flex-row items-start justify-between gap-3 px-4 py-2.5",
+                        "flex-row items-center justify-between gap-3 py-3",
                         k > 0 && "border-t border-border/50",
                       )}
                     >
                       <Text className="min-w-0 flex-1 text-sm">{i.name}</Text>
-                      <Text className="text-sm text-muted-foreground">{i.grams} g</Text>
+                      <View className="rounded-full bg-elevated px-2.5 py-1">
+                        <Text className="text-xs font-semibold tabular-nums">{i.grams} g</Text>
+                      </View>
                     </View>
                   ))}
                 </View>
               </View>
+
               {receita.instructions ? (
-                <View>
-                  <Text className="mb-1 text-sm font-semibold">Modo de preparo</Text>
-                  <Text className="text-sm leading-relaxed text-muted-foreground">
-                    {receita.instructions}
+                <View className="px-5">
+                  <Text className="mb-2 text-xs font-bold uppercase tracking-[1.5px] text-muted-foreground">
+                    Modo de preparo
                   </Text>
+                  <Text className="text-sm leading-relaxed">{receita.instructions}</Text>
                 </View>
               ) : null}
-              <Text className="text-sm text-muted-foreground">
-                Para comer, use{" "}
-                <Text className="text-sm font-bold">Dieta → Adicionar → Receitas</Text> na refeição.
-              </Text>
-              <Button
-                variant="outline"
-                className="h-12 w-full"
-                onPress={() => onCopy(receita)}
-                loading={copiando}
-              >
-                <Icon node={copy} color={texto} size={16} />
-                <Text className="text-sm font-medium">Copiar para minhas receitas</Text>
-              </Button>
+
+              <View className="gap-3 px-5">
+                <Text className="text-sm text-muted-foreground">
+                  Para comer, use{" "}
+                  <Text className="text-sm font-bold">Dieta → Adicionar → Receitas</Text> na
+                  refeição.
+                </Text>
+                <Button
+                  variant="outline"
+                  className="h-12 w-full"
+                  onPress={() => onCopy(receita)}
+                  loading={copiando}
+                >
+                  <Icon node={copy} color={texto} size={16} />
+                  <Text className="text-sm font-medium">Copiar para minhas receitas</Text>
+                </Button>
+              </View>
             </ScrollView>
-          </Pressable>
+            <Pressable
+              onPress={onClose}
+              accessibilityLabel="Fechar"
+              className="absolute right-3 top-3 h-9 w-9 items-center justify-center rounded-full bg-black/45"
+            >
+              <Icon node={x} color="#fff" size={18} />
+            </Pressable>
+          </View>
         ) : null}
-      </Pressable>
+      </View>
     </Modal>
   );
 }

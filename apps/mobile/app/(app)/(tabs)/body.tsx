@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from "react";
-import { Pressable, ScrollView, TextInput, View } from "react-native";
+import { Pressable, TextInput, View } from "react-native";
 import { router } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { differenceInCalendarDays } from "date-fns";
@@ -41,7 +41,7 @@ import { Sparkline, WeightChart } from "@/ui/charts";
 import { DatePicker } from "@/ui/date-picker";
 import { ConfirmDialog } from "@/ui/dialog";
 import { Icon, type IconNode } from "@/ui/icon";
-import { PageHeader } from "@/ui/page-header";
+import { PageHeader, PageScroll } from "@/ui/page-header";
 import { Text } from "@/ui/text";
 
 /**
@@ -60,12 +60,12 @@ export default function BodyPage() {
   const avisar = (texto: string, erro = false) => setAviso({ texto, erro });
 
   return (
-    <ScrollView
+    <PageScroll
+      header={<PageHeader title="Progresso" description="Onde você está e para onde está indo." />}
       className="flex-1 bg-background"
       contentContainerClassName="pb-28"
       keyboardShouldPersistTaps="handled"
     >
-      <PageHeader title="Progresso" description="Onde você está e para onde está indo." />
       <View className="px-4">
         <View accessibilityRole="tablist" className="flex-row rounded-lg bg-muted p-1">
           {(
@@ -110,7 +110,7 @@ export default function BodyPage() {
           {aba === "measures" ? <MeasurementsPanel avisar={avisar} /> : null}
         </View>
       </View>
-    </ScrollView>
+    </PageScroll>
   );
 }
 

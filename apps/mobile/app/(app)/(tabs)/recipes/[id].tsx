@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, TextInput, View } from "react-native";
+import { Pressable, TextInput, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -33,6 +33,8 @@ import { Card, ErrorState } from "@/ui/card";
 import { ConfirmDialog, Dialog, MenuSheet } from "@/ui/dialog";
 import { FoodPicker } from "@/ui/food-picker";
 import { Icon } from "@/ui/icon";
+import { MACRO_COLORS, MacroTiles } from "@/ui/macro-rings";
+import { PageScroll } from "@/ui/page-header";
 import { Text } from "@/ui/text";
 
 /**
@@ -122,26 +124,29 @@ function RecipeEditor({ id }: { id: string }) {
 
   return (
     <View className="flex-1 bg-background">
-      <ScrollView
+      <PageScroll
+        header={
+          // Topo: voltar à esquerda, lançar no diário à direita.
+          <View
+            className="flex-row items-center justify-between gap-3 px-4 pb-3"
+            style={{ paddingTop: Math.max(24, insets.top) }}
+          >
+            <Pressable
+              onPress={voltar}
+              accessibilityLabel="Voltar para as receitas"
+              className="h-11 w-11 items-center justify-center rounded-full bg-card active:bg-elevated"
+            >
+              <Icon node={arrowLeft} color={texto} size={20} />
+            </Pressable>
+            <LogToDiary
+              disabled={list.length === 0 || lancar.isPending}
+              onLog={(meal, portions) => lancar.mutate({ meal, portions })}
+            />
+          </View>
+        }
         contentContainerClassName="px-4 pb-48"
-        contentContainerStyle={{ paddingTop: Math.max(24, insets.top) }}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Topo: voltar à esquerda, lançar no diário à direita. */}
-        <View className="flex-row items-center justify-between gap-3 pb-3">
-          <Pressable
-            onPress={voltar}
-            accessibilityLabel="Voltar para as receitas"
-            className="h-11 w-11 items-center justify-center rounded-full bg-card active:bg-elevated"
-          >
-            <Icon node={arrowLeft} color={texto} size={20} />
-          </Pressable>
-          <LogToDiary
-            disabled={list.length === 0 || lancar.isPending}
-            onLog={(meal, portions) => lancar.mutate({ meal, portions })}
-          />
-        </View>
-
         {recipe.isError ? (
           <ErrorState message={errorMessage(recipe.error)} onRetry={() => void recipe.refetch()} />
         ) : (
@@ -214,22 +219,22 @@ function RecipeEditor({ id }: { id: string }) {
                   />
                 </Campo>
 
-                <View className="rounded-lg border border-border p-3">
-                  <Text className="mb-2 text-sm font-semibold">Por porção</Text>
-                  {(
-                    [
-                      ["Calorias", `${Math.round(porPorcao.kcal)} kcal`],
-                      ["Proteína", `${porPorcao.proteinG.toFixed(1)} g`],
-                      ["Carboidrato", `${porPorcao.carbsG.toFixed(1)} g`],
-                      ["Gordura", `${porPorcao.fatG.toFixed(1)} g`],
-                      ["Fibra", `${porPorcao.fiberG.toFixed(1)} g`],
-                    ] as const
-                  ).map(([rotulo, valor]) => (
-                    <View key={rotulo} className="flex-row justify-between py-0.5">
-                      <Text className="text-xs text-muted-foreground">{rotulo}</Text>
-                      <Text className="text-xs font-medium">{items.isPending ? "—" : valor}</Text>
-                    </View>
-                  ))}
+                <View className="mt-1">
+                  <View className="mb-2 flex-row items-baseline justify-between">
+                    <Text className="text-xs font-bold uppercase tracking-[1.5px] text-muted-foreground">
+                      Por porção
+                    </Text>
+                    <Text className="text-xs text-muted-foreground">
+                      Fibra {items.isPending ? "—" : `${porPorcao.fiberG.toFixed(1)} g`}
+                    </Text>
+                  </View>
+                  <MacroTiles
+                    className={items.isPending ? "opacity-40" : undefined}
+                    kcal={porPorcao.kcal}
+                    proteinG={porPorcao.proteinG}
+                    carbsG={porPorcao.carbsG}
+                    fatG={porPorcao.fatG}
+                  />
                 </View>
               </View>
             </Card>
@@ -277,7 +282,7 @@ function RecipeEditor({ id }: { id: string }) {
             </Card>
           </>
         )}
-      </ScrollView>
+      </PageScroll>
 
       {/* Salvar fixo acima da barra de baixo, como no web. */}
       <View className="absolute inset-x-0 bottom-28 px-4" pointerEvents="box-none">
@@ -311,6 +316,15 @@ function Campo({ rotulo, children }: { rotulo: string; children: React.ReactNode
   );
 }
 
+function MacroChip({ valor, cor }: { valor: string; cor: string }) {
+  return (
+    <View className="flex-row items-center gap-1 rounded-full bg-elevated px-2 py-0.5">
+      <View className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: cor }} />
+      <Text className="text-[11px] font-semibold tabular-nums">{valor}</Text>
+    </View>
+  );
+}
+
 function Ingrediente({
   item,
   primeiro,
@@ -329,46 +343,59 @@ function Ingrediente({
   const texto = useColor("foreground");
   const apagada = useColor("muted-foreground");
   const macros = portionMacros(recipeItemPortion(item));
+  const kcalCor = useColor("primary");
+  const protCor = useColor(MACRO_COLORS.protein);
+  const carbCor = useColor(MACRO_COLORS.carbs);
+  const gordCor = useColor(MACRO_COLORS.fat);
   const nome = item.foods?.name ?? "Alimento removido";
   return (
-    <View className={cn("flex-row items-center gap-3 py-3", !primeiro && "border-t border-border")}>
-      <Icon node={utensils} color={apagada} size={16} />
-      <View className="min-w-0 flex-1">
-        <Text numberOfLines={1} className="font-medium">
+    <View className={cn("py-3", !primeiro && "border-t border-border")}>
+      <View className="flex-row items-center gap-3">
+        <View className="h-9 w-9 items-center justify-center rounded-xl bg-elevated">
+          <Icon node={utensils} color={apagada} size={16} />
+        </View>
+        <Text numberOfLines={2} className="min-w-0 flex-1 font-medium leading-tight">
           {nome}
         </Text>
-        <Text className="text-xs text-muted-foreground">
-          {Math.round(macros.kcal)} kcal · P {macros.proteinG.toFixed(1)} · C{" "}
-          {macros.carbsG.toFixed(1)} · G {macros.fatG.toFixed(1)}
-        </Text>
+        <View className="flex-row items-center gap-1">
+          <TextInput
+            value={rascunho}
+            onChangeText={setRascunho}
+            keyboardType="number-pad"
+            accessibilityLabel={`Gramas de ${item.foods?.name ?? "ingrediente"}`}
+            onBlur={() => {
+              const grams = Number(rascunho);
+              if (
+                !Number.isFinite(grams) ||
+                grams < 0 ||
+                grams > 10_000 ||
+                rascunho.trim() === ""
+              ) {
+                onInvalid();
+                setRascunho(String(num(item.grams)));
+                return;
+              }
+              if (grams !== num(item.grams)) onGrams(grams);
+            }}
+            className="h-10 w-16 rounded-xl border border-input bg-background px-2 text-center font-sans text-base"
+            style={{ color: texto }}
+          />
+          <Text className="text-xs text-muted-foreground">g</Text>
+        </View>
+        <Pressable
+          onPress={() => setConfirmar(true)}
+          accessibilityLabel={`Remover ${item.foods?.name ?? "ingrediente"} da receita`}
+          className="h-9 w-9 items-center justify-center rounded-full active:bg-elevated"
+        >
+          <Icon node={trash2} color={apagada} size={16} />
+        </Pressable>
       </View>
-      <View className="flex-row items-center gap-1">
-        <TextInput
-          value={rascunho}
-          onChangeText={setRascunho}
-          keyboardType="number-pad"
-          accessibilityLabel={`Gramas de ${item.foods?.name ?? "ingrediente"}`}
-          onBlur={() => {
-            const grams = Number(rascunho);
-            if (!Number.isFinite(grams) || grams < 0 || grams > 10_000 || rascunho.trim() === "") {
-              onInvalid();
-              setRascunho(String(num(item.grams)));
-              return;
-            }
-            if (grams !== num(item.grams)) onGrams(grams);
-          }}
-          className="h-10 w-20 rounded-md border border-input bg-background px-3 font-sans text-base"
-          style={{ color: texto }}
-        />
-        <Text className="text-xs text-muted-foreground">g</Text>
+      <View className="mt-2 flex-row flex-wrap gap-1.5 pl-12">
+        <MacroChip valor={`${Math.round(macros.kcal)} kcal`} cor={kcalCor} />
+        <MacroChip valor={`P ${macros.proteinG.toFixed(1)} g`} cor={protCor} />
+        <MacroChip valor={`C ${macros.carbsG.toFixed(1)} g`} cor={carbCor} />
+        <MacroChip valor={`G ${macros.fatG.toFixed(1)} g`} cor={gordCor} />
       </View>
-      <Pressable
-        onPress={() => setConfirmar(true)}
-        accessibilityLabel={`Remover ${item.foods?.name ?? "ingrediente"} da receita`}
-        className="h-9 w-9 items-center justify-center rounded-full active:bg-elevated"
-      >
-        <Icon node={trash2} color={apagada} size={16} />
-      </Pressable>
       <ConfirmDialog
         open={confirmar}
         onClose={() => setConfirmar(false)}

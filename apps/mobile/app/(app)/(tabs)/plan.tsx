@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Pressable, ScrollView, TextInput, View } from "react-native";
+import { Pressable, TextInput, View } from "react-native";
 import { router } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Animated, { FadeIn } from "react-native-reanimated";
@@ -47,7 +47,7 @@ import { ConfirmDialog, Dialog, MenuSheet, type OpcaoMenu } from "@/ui/dialog";
 import { ExerciseDemo } from "@/ui/exercise-demo";
 import { ExercisePicker } from "@/ui/exercise-picker";
 import { Icon } from "@/ui/icon";
-import { HeaderIconButton, PageHeader } from "@/ui/page-header";
+import { HeaderIconButton, PageHeader, PageScroll } from "@/ui/page-header";
 import { RoutineExerciseRow, estimarDuracao } from "@/ui/routine-exercise-row";
 import { RoutineIconPicker } from "@/ui/routine-icon";
 import { Text } from "@/ui/text";
@@ -169,8 +169,11 @@ export default function PlanPage() {
 
   if (!week.data) {
     return (
-      <ScrollView className="flex-1 bg-background" contentContainerClassName="pb-28">
-        {header}
+      <PageScroll
+        header={header}
+        className="flex-1 bg-background"
+        contentContainerClassName="pb-28"
+      >
         <View className="px-4 py-4">
           {avisoErro}
           {/* Sem plano nenhum: as mesmas duas saídas do fim do questionário. */}
@@ -204,7 +207,7 @@ export default function PlanPage() {
           </View>
           <AvisoProfissional tipos={["treino"]} className="mt-4" />
         </View>
-      </ScrollView>
+      </PageScroll>
     );
   }
 
@@ -226,8 +229,11 @@ export default function PlanPage() {
 
   return (
     <View className="flex-1 bg-background">
-      <ScrollView contentContainerClassName="pb-28" keyboardShouldPersistTaps="handled">
-        {header}
+      <PageScroll
+        header={header}
+        contentContainerClassName="pb-28"
+        keyboardShouldPersistTaps="handled"
+      >
         <View className="px-4 py-4">
           {avisoErro}
           <Segmented
@@ -471,7 +477,7 @@ export default function PlanPage() {
             </View>
           )}
         </View>
-      </ScrollView>
+      </PageScroll>
 
       <ConfirmDialog
         open={iniciar !== null}

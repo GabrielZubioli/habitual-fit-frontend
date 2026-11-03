@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -58,6 +58,7 @@ import { NoRoutineCard } from "@/ui/card";
 import { WeightChart } from "@/ui/charts";
 import { ReadinessCard, WaterCard } from "@/ui/home-cards";
 import { Icon } from "@/ui/icon";
+import { PageScroll } from "@/ui/page-header";
 import { CalorieRing } from "@/ui/macro-rings";
 import { Text } from "@/ui/text";
 
@@ -87,18 +88,18 @@ export default function Home() {
   const data = formatLongDate(today).toLowerCase();
 
   return (
-    <ScrollView
+    <PageScroll
       className="flex-1 bg-background"
-      contentContainerClassName="px-4 pb-28"
-      contentContainerStyle={{ paddingTop: Math.max(24, insets.top) }}
+      contentContainerClassName="px-4 pb-28 pt-3"
+      header={
+        <View className="items-center pb-3" style={{ paddingTop: Math.max(24, insets.top) }}>
+          <BrandLogo height={48} />
+          <Text className="mt-2 text-lg text-muted-foreground">
+            {data.charAt(0).toUpperCase() + data.slice(1)}
+          </Text>
+        </View>
+      }
     >
-      <View className="mb-6 items-center">
-        <BrandLogo height={48} />
-        <Text className="mt-2 text-lg text-muted-foreground">
-          {data.charAt(0).toUpperCase() + data.slice(1)}
-        </Text>
-      </View>
-
       {erro ? (
         <Pressable
           onPress={() => setErro(null)}
@@ -124,7 +125,7 @@ export default function Home() {
           onError={falhou}
         />
       </View>
-    </ScrollView>
+    </PageScroll>
   );
 }
 

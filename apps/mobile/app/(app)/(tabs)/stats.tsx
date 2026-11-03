@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { router } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { addDays, startOfWeek } from "date-fns";
@@ -35,7 +35,7 @@ import { ActivityHeatmap } from "@/ui/activity-heatmap";
 import { WeeklyChart } from "@/ui/charts";
 import { useCorRecuperacao } from "@/ui/home-cards";
 import { Icon, type IconNode } from "@/ui/icon";
-import { HeaderIconButton, PageHeader } from "@/ui/page-header";
+import { HeaderIconButton, PageHeader, PageScroll } from "@/ui/page-header";
 import { Text } from "@/ui/text";
 
 /**
@@ -104,18 +104,23 @@ export default function StatsPage() {
       : null;
 
   return (
-    <ScrollView className="flex-1 bg-background" contentContainerClassName="pb-28">
-      <PageHeader
-        title="Estatísticas"
-        description="Progresso e histórico"
-        action={
-          <HeaderIconButton
-            icon={history}
-            label="Calendário de treinos"
-            onPress={() => router.push("/workouts/calendar")}
-          />
-        }
-      />
+    <PageScroll
+      className="flex-1 bg-background"
+      contentContainerClassName="pb-28"
+      header={
+        <PageHeader
+          title="Estatísticas"
+          description="Progresso e histórico"
+          action={
+            <HeaderIconButton
+              icon={history}
+              label="Calendário de treinos"
+              onPress={() => router.push("/workouts/calendar")}
+            />
+          }
+        />
+      }
+    >
       <View className="px-4 pt-2">
         {/* Herói: a semana atual contra a meta e as últimas 12 semanas. */}
         <View className="flex-row items-start justify-between gap-3">
@@ -198,7 +203,7 @@ export default function StatsPage() {
 
         <Historico />
       </View>
-    </ScrollView>
+    </PageScroll>
   );
 }
 

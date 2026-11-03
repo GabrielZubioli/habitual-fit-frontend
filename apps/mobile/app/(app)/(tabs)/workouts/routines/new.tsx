@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useMutation, useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { Defs, LinearGradient, Rect, Stop, Svg } from "react-native-svg";
@@ -35,7 +35,7 @@ import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
 import { Card, ErrorState } from "@/ui/card";
 import { Icon } from "@/ui/icon";
-import { PageHeader } from "@/ui/page-header";
+import { PageHeader, PageScroll } from "@/ui/page-header";
 import { Text } from "@/ui/text";
 
 /**
@@ -136,22 +136,27 @@ export default function RoutineWizard() {
     (step === 4 && weekdays.length === daysPerWeek);
 
   return (
-    <ScrollView className="flex-1 bg-background" contentContainerClassName="pb-28">
-      <PageHeader
-        title="Montar meu plano"
-        description="Quatro perguntas e sua divisão de treino fica pronta."
-        topo={
-          <Button
-            variant="ghost"
-            size="sm"
-            className="rounded-full"
-            onPress={() => router.navigate("/plan")}
-          >
-            <Text className="text-xs font-medium text-muted-foreground">Agora não</Text>
-            <Icon node={xIcon} color={apagada} size={16} />
-          </Button>
-        }
-      />
+    <PageScroll
+      className="flex-1 bg-background"
+      contentContainerClassName="pb-28"
+      header={
+        <PageHeader
+          title="Montar meu plano"
+          description="Quatro perguntas e sua divisão de treino fica pronta."
+          topo={
+            <Button
+              variant="ghost"
+              size="sm"
+              className="rounded-full"
+              onPress={() => router.navigate("/plan")}
+            >
+              <Text className="text-xs font-medium text-muted-foreground">Agora não</Text>
+              <Icon node={xIcon} color={apagada} size={16} />
+            </Button>
+          }
+        />
+      }
+    >
       <View className="px-4 py-4">
         <View
           className="mb-6 flex-row items-center gap-2"
@@ -264,7 +269,7 @@ export default function RoutineWizard() {
           ) : null}
         </View>
       </View>
-    </ScrollView>
+    </PageScroll>
   );
 }
 

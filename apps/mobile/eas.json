@@ -6,8 +6,8 @@
   "build": {
     "base": {
       "env": {
-        "EXPO_PUBLIC_SUPABASE_URL": "https://ijeyizatjzsbgclwmtgp.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_IsVbcKA-tbc1n50aEMwl_g_IwWSBuGh",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://batdlbdifjuyhnexuvbx.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_uZ5GNCYEJ5IuYRNvNBBH3Q_oU9MbJJI",
         "EXPO_PUBLIC_SITE_URL": "https://habitualfit.vercel.app",
         "EXPO_PUBLIC_POWERSYNC_URL": "https://6ae8e8f5b0047aeb6df90c2b.powersync.journeyapps.com"
       }

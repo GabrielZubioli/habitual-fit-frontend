@@ -1,13 +1,5 @@
 import { useMemo, useState, type ReactElement } from "react";
-import {
-  ActivityIndicator,
-  FlatList,
-  Image,
-  Pressable,
-  ScrollView,
-  TextInput,
-  View,
-} from "react-native";
+import { ActivityIndicator, FlatList, Image, Pressable, TextInput, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
@@ -50,7 +42,7 @@ import { CreateExerciseDialog } from "@/ui/create-exercise-dialog";
 import { MenuSheet } from "@/ui/dialog";
 import { FavoriteButton } from "@/ui/favorite-button";
 import { Icon } from "@/ui/icon";
-import { PageHeader } from "@/ui/page-header";
+import { HeaderFrame, HeaderSpacer, PageHeader, PageScroll } from "@/ui/page-header";
 import { Text } from "@/ui/text";
 
 /**
@@ -92,28 +84,36 @@ export default function ExerciseLibrary() {
 
   const irPara = (a: Aba) => router.setParams({ aba: a === "musculos" ? undefined : a });
 
+  const topo = (
+    <PageHeader
+      title="Exercícios"
+      description={
+        contagem.data
+          ? `${contagem.data.total.toLocaleString("pt-BR")} exercícios com demonstração`
+          : undefined
+      }
+    />
+  );
   const cabecalho = (
-    <>
-      <PageHeader
-        title="Exercícios"
-        description={
-          contagem.data
-            ? `${contagem.data.total.toLocaleString("pt-BR")} exercícios com demonstração`
-            : undefined
-        }
-      />
-      <View className="px-4 pt-4">
-        <Busca term={term} setTerm={setTerm} />
-      </View>
-    </>
+    <View className="px-4 pt-4">
+      <Busca term={term} setTerm={setTerm} />
+    </View>
   );
 
   if (termo) {
-    return <BuscaComFiltros termo={termo} rotina={rotina.data ?? null} cabecalho={cabecalho} />;
+    return (
+      <BuscaComFiltros
+        termo={termo}
+        rotina={rotina.data ?? null}
+        topo={topo}
+        cabecalho={cabecalho}
+      />
+    );
   }
 
   return (
-    <ScrollView
+    <PageScroll
+      header={topo}
       className="flex-1 bg-background"
       contentContainerClassName="pb-28"
       keyboardShouldPersistTaps="handled"
@@ -154,7 +154,7 @@ export default function ExerciseLibrary() {
           {aba === "favoritos" ? <AbaFavoritos rotina={rotina.data ?? null} /> : null}
         </Animated.View>
       </View>
-    </ScrollView>
+    </PageScroll>
   );
 }
 
@@ -379,9 +379,9 @@ function TelaFiltrada({
     musculos ?? (grupo ? [...GRUPOS.find((g) => g.key === grupo)!.musculos] : undefined);
   const equipFiltro = equipamento ? [equipamento] : equip ? [equip] : undefined;
 
-  const cabecalho = (
-    <View className="px-4" style={{ paddingTop: Math.max(24, insets.top + 8) }}>
-      <View className="flex-row items-center gap-3 pb-3 pt-2">
+  const topo = (
+    <View className="px-4 pb-3" style={{ paddingTop: Math.max(24, insets.top + 8) }}>
+      <View className="flex-row items-center gap-3 pt-2">
         {/* Nas abas, trocar o filtro não cria histórico: voltar é limpar o filtro. */}
         <Pressable
           onPress={() => router.setParams({ grupo: undefined, equipamento: undefined })}
@@ -394,6 +394,10 @@ function TelaFiltrada({
           {titulo}
         </Text>
       </View>
+    </View>
+  );
+  const cabecalho = (
+    <View className="px-4 pt-2">
       <Busca term={term} setTerm={setTerm} />
       <View className="mt-3 flex-row gap-2">
         <Seletor rotulo="Nível" valor={nivel} onChange={setNivel} todos="Nível" opcoes={NIVEIS} />
@@ -420,6 +424,7 @@ function TelaFiltrada({
 
   return (
     <ListaExercicios
+      topo={topo}
       cabecalho={cabecalho}
       termo={termo}
       musculos={musculosFiltro}
@@ -434,10 +439,12 @@ function TelaFiltrada({
 function BuscaComFiltros({
   termo,
   rotina,
+  topo,
   cabecalho,
 }: {
   termo: string;
   rotina: ActiveRoutine | null;
+  topo: ReactElement;
   cabecalho: ReactElement;
 }) {
   const [nivel, setNivel] = useState<string | null>(null);
@@ -445,6 +452,7 @@ function BuscaComFiltros({
   const musculos = grupo ? [...GRUPOS.find((g) => g.key === grupo)!.musculos] : undefined;
   return (
     <ListaExercicios
+      topo={topo}
       cabecalho={
         <>
           {cabecalho}
@@ -476,6 +484,7 @@ function BuscaComFiltros({
 
 /** Lista paginada por rolagem (FlatList com `onEndReached`, o IntersectionObserver do web). */
 function ListaExercicios({
+  topo,
   cabecalho,
   termo,
   musculos,
@@ -483,6 +492,8 @@ function ListaExercicios({
   nivel,
   rotina,
 }: {
+  /** O cabeçalho fixo no topo; `cabecalho` rola com a lista. */
+  topo: ReactElement;
   cabecalho: ReactElement;
   termo: string;
   musculos?: string[];
@@ -527,32 +538,39 @@ function ListaExercicios({
   }
 
   return (
-    <FlatList
-      className="flex-1 bg-background"
-      data={vazio ? [] : exercicios}
-      keyExtractor={(ex) => ex.id}
-      ListHeaderComponent={<View className="pb-4">{cabecalho}</View>}
-      ListEmptyComponent={vazio ? <View className="px-4">{vazio}</View> : null}
-      renderItem={({ item }) => (
-        <View className="px-4 pb-2.5">
-          <ExerciseListRow exercise={item} rotina={rotina} />
-        </View>
-      )}
-      onEndReachedThreshold={0.6}
-      onEndReached={() => {
-        if (lista.hasNextPage && !lista.isFetchingNextPage) void lista.fetchNextPage();
-      }}
-      ListFooterComponent={
-        lista.isFetchingNextPage ? (
-          <View className="flex-row items-center justify-center gap-2 py-6">
-            <ActivityIndicator size="small" color={apagada} />
-            <Text className="text-sm text-muted-foreground">Carregando mais…</Text>
+    <HeaderFrame header={topo}>
+      <FlatList
+        className="flex-1 bg-background"
+        data={vazio ? [] : exercicios}
+        keyExtractor={(ex) => ex.id}
+        ListHeaderComponent={
+          <View className="pb-4">
+            <HeaderSpacer />
+            {cabecalho}
           </View>
-        ) : null
-      }
-      contentContainerClassName="pb-28"
-      keyboardShouldPersistTaps="handled"
-    />
+        }
+        ListEmptyComponent={vazio ? <View className="px-4">{vazio}</View> : null}
+        renderItem={({ item }) => (
+          <View className="px-4 pb-2.5">
+            <ExerciseListRow exercise={item} rotina={rotina} />
+          </View>
+        )}
+        onEndReachedThreshold={0.6}
+        onEndReached={() => {
+          if (lista.hasNextPage && !lista.isFetchingNextPage) void lista.fetchNextPage();
+        }}
+        ListFooterComponent={
+          lista.isFetchingNextPage ? (
+            <View className="flex-row items-center justify-center gap-2 py-6">
+              <ActivityIndicator size="small" color={apagada} />
+              <Text className="text-sm text-muted-foreground">Carregando mais…</Text>
+            </View>
+          ) : null
+        }
+        contentContainerClassName="pb-28"
+        keyboardShouldPersistTaps="handled"
+      />
+    </HeaderFrame>
   );
 }
 

@@ -1,6 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Sparkles } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Clock,
+  Dumbbell,
+  ShieldCheck,
+  SlidersHorizontal,
+  UtensilsCrossed,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -41,6 +49,7 @@ import {
 } from "@forja/app-core/lib/onboarding/options";
 import { WEEKDAY_LABELS, type Weekday } from "@forja/domain";
 import { BrandSymbol } from "@/components/brand-logo";
+import { Punho } from "@/components/train-launch";
 import { hasCompletedOnboarding } from "@forja/app-core/data/onboarding";
 
 /**
@@ -157,14 +166,15 @@ function OnboardingQuiz() {
 
   if (!hydrated || !step || logado === null) return <QuizSkeleton />;
 
+  if (step.id === "welcome") return <Welcome onStart={next} logado={logado} />;
+
   const level = derivedLevel(answers);
   const objective = derivedObjective(answers);
 
   return (
     <div className="min-h-dvh bg-background">
       <div className="mx-auto flex min-h-dvh max-w-lg flex-col px-5 pb-4 pt-5">
-        {/* Sem conta, só as boas-vindas: nada de progresso de questionário. */}
-        <header className={cn("mb-6 flex items-center gap-3", !logado && "invisible")}>
+        <header className="mb-6 flex items-center gap-3">
           {safeIndex > 0 ? (
             <Button
               size="icon"
@@ -185,8 +195,6 @@ function OnboardingQuiz() {
         </header>
 
         <main className="flex flex-1 flex-col">
-          {step.id === "welcome" && <Welcome onStart={next} logado={logado} />}
-
           {step.id === "objective" && (
             <Question
               title="Qual é o seu objetivo?"
@@ -482,55 +490,160 @@ function OnboardingQuiz() {
   );
 }
 
+/** As cores do painel verde do login (`--auth-brand` e `--auth-ink`). */
+const BRAND = "#3ad598";
+const INK = "#04261a";
+
+/**
+ * Boas-vindas: o painel verde da marca com a mão da tela Treinar ao fundo e
+ * dois cartões flutuando — o treino e a dieta que a pessoa vai receber —, e
+ * embaixo a promessa e um único botão. O mesmo desenho do app nativo.
+ */
 function Welcome({ onStart, logado }: { onStart: () => void; logado: boolean }) {
   const navigate = useNavigate();
   return (
-    <div className="flex flex-1 flex-col justify-center text-center">
-      <BrandSymbol className="mx-auto w-24 animate-in zoom-in-50 duration-500" />
-
-      <h1 className="mt-8 text-balance text-3xl font-bold leading-tight tracking-tight animate-in fade-in slide-in-from-bottom-2 duration-500">
-        Seu treino montado para você
-      </h1>
-      <p className="mt-3 text-pretty text-muted-foreground animate-in fade-in slide-in-from-bottom-2 fill-mode-backwards delay-100 duration-500">
-        {logado
-          ? "Responda algumas perguntas rápidas. No fim, seu treino da semana estará pronto e suas refeições organizadas para você preencher."
-          : "Crie sua conta e responda algumas perguntas rápidas. No fim, seu treino da semana estará pronto e suas refeições organizadas para você preencher."}
-      </p>
-
-      <ul className="mx-auto mt-8 space-y-3 text-left text-sm">
-        {[
-          "Leva cerca de 2 minutos",
-          "Seu plano fica salvo na sua conta",
-          "Você pode ajustar tudo depois",
-        ].map((t, i) => (
-          <li
-            key={t}
-            className="flex items-center gap-3 animate-in fade-in slide-in-from-left-2 fill-mode-backwards duration-500"
-            style={{ animationDelay: `${200 + i * 80}ms` }}
+    <div className="min-h-dvh bg-background">
+      <div className="mx-auto flex min-h-dvh max-w-lg flex-col pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <div
+          className="relative h-[clamp(280px,44dvh,440px)] shrink-0 overflow-hidden rounded-b-[2.5rem] sm:mt-4 sm:rounded-[2.5rem]"
+          style={{ backgroundColor: BRAND }}
+        >
+          <div
+            className="pointer-events-none absolute -left-[15%] -top-[75%] aspect-square w-[130%] rounded-full bg-white/45 blur-3xl"
+            aria-hidden
+          />
+          <div
+            className="pointer-events-none absolute inset-x-0 -bottom-[12%] opacity-[0.14] animate-in fade-in duration-1000"
+            style={{ color: INK }}
+            aria-hidden
           >
-            <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary/15 text-primary">
-              <Sparkles className="size-3.5" aria-hidden />
+            <Punho className="aspect-[1092/870] h-auto w-full" />
+          </div>
+
+          <div className="relative flex items-center justify-center gap-2 pt-[max(1rem,env(safe-area-inset-top))] animate-in fade-in slide-in-from-top-2 duration-500">
+            <BrandSymbol escuro className="w-9" />
+            <span className="text-lg font-extrabold tracking-tight" style={{ color: INK }}>
+              Habitual Fit
             </span>
-            {t}
-          </li>
-        ))}
-      </ul>
+          </div>
 
-      <NextButton
-        onClick={
-          logado ? onStart : () => void navigate({ to: "/auth", search: { modo: "cadastro" } })
-        }
-        label={logado ? "Começar" : "Criar conta"}
-      />
+          <CartaoFlutuante
+            icon={<Dumbbell className="size-5" aria-hidden />}
+            titulo="Treino A · Peito"
+            detalhe="6 exercícios · 45 min"
+            className="left-5 top-[36%] -rotate-[4deg] [animation-delay:250ms]"
+          />
+          <CartaoFlutuante
+            icon={<UtensilsCrossed className="size-5" aria-hidden />}
+            titulo="Dieta de hoje"
+            detalhe="5 refeições · 2.150 kcal"
+            className="right-5 top-[62%] rotate-[3deg] [animation-delay:420ms]"
+          />
+        </div>
 
-      {!logado && (
-        <p className="pb-2 text-center text-sm text-muted-foreground">
-          Já tem conta?{" "}
-          <Link to="/auth" className="font-medium text-primary underline-offset-4 hover:underline">
-            Entrar
-          </Link>
-        </p>
+        <div className="flex flex-1 flex-col justify-between px-6 pt-8">
+          <div className="animate-in fade-in slide-in-from-bottom-2 fill-mode-backwards delay-150 duration-500">
+            <p className="text-xs font-bold uppercase tracking-[0.15em] text-primary">
+              Seu plano em 2 minutos
+            </p>
+            <h1 className="mt-3 text-balance text-[2.125rem] font-extrabold leading-[1.1] tracking-tight">
+              Seu treino montado <span className="text-primary">para você.</span>
+            </h1>
+            <p className="mt-3 text-pretty text-base leading-6 text-muted-foreground">
+              {logado
+                ? "Responda algumas perguntas rápidas e receba o treino da semana pronto e suas refeições organizadas."
+                : "Crie sua conta, responda algumas perguntas rápidas e receba o treino da semana pronto e suas refeições organizadas."}
+            </p>
+
+            <ul className="mt-5 flex flex-wrap gap-2">
+              {(
+                [
+                  [Clock, "Cerca de 2 min"],
+                  [ShieldCheck, "Salvo na sua conta"],
+                  [SlidersHorizontal, "Ajuste quando quiser"],
+                ] as const
+              ).map(([Icone, texto]) => (
+                <li
+                  key={texto}
+                  className="flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-2 text-xs font-semibold"
+                >
+                  <Icone className="size-3.5 text-primary" aria-hidden />
+                  {texto}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="mt-8 space-y-3 animate-in fade-in slide-in-from-bottom-2 fill-mode-backwards delay-300 duration-500">
+            <button
+              type="button"
+              onClick={
+                logado
+                  ? onStart
+                  : () => void navigate({ to: "/auth", search: { modo: "cadastro" } })
+              }
+              className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl text-base font-bold shadow-[0_8px_24px_-6px_#3ad598] transition-transform active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              style={{ backgroundColor: BRAND, color: INK }}
+            >
+              {logado ? "Montar meu plano" : "Criar minha conta"}
+              <ArrowRight className="size-[18px]" aria-hidden />
+            </button>
+
+            {logado ? (
+              <p className="text-center text-xs text-muted-foreground">
+                Você pode mudar tudo depois.
+              </p>
+            ) : (
+              <p className="py-2 text-center text-sm text-muted-foreground">
+                Já tem conta?{" "}
+                <Link
+                  to="/auth"
+                  className="font-bold text-primary underline-offset-4 hover:underline"
+                >
+                  Entrar
+                </Link>
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Um cartão branco que flutua sobre o verde: o que a pessoa vai receber. */
+function CartaoFlutuante({
+  icon,
+  titulo,
+  detalhe,
+  className,
+}: {
+  icon: ReactNode;
+  titulo: string;
+  detalhe: string;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "absolute flex items-center gap-3 rounded-2xl bg-white py-3 pl-3 pr-4 shadow-[0_10px_30px_-8px_rgba(4,38,26,0.45)] animate-in fade-in slide-in-from-bottom-4 fill-mode-backwards duration-700",
+        className,
       )}
+    >
+      <span
+        className="grid size-10 shrink-0 place-items-center rounded-xl"
+        style={{ backgroundColor: INK, color: BRAND }}
+      >
+        {icon}
+      </span>
+      <span className="text-left">
+        <span className="block text-sm font-bold" style={{ color: INK }}>
+          {titulo}
+        </span>
+        <span className="block text-xs" style={{ color: "#04261a99" }}>
+          {detalhe}
+        </span>
+      </span>
     </div>
   );
 }

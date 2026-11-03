@@ -74,17 +74,25 @@
             ]
           }
         }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 120,
+          "resizeMode": "contain",
+          "backgroundColor": "#020306",
+          "dark": {
+            "image": "./assets/splash-icon.png",
+            "backgroundColor": "#020306"
+          }
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true
     },
     "icon": "./assets/icon.png",
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#020306"
-    },
     "extra": {
       "router": {},
       "eas": {

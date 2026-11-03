@@ -210,3 +210,57 @@ export function MacroRing({
     </View>
   );
 }
+
+/**
+ * Calorias e macros em blocos de duas colunas: o número grande, a unidade ao
+ * lado e a cor do macro num ponto — legível mesmo na tela estreita, onde quatro
+ * colunas quebravam o rótulo.
+ */
+export function MacroTiles({
+  kcal,
+  proteinG,
+  carbsG,
+  fatG,
+  className,
+}: {
+  kcal: number;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
+  className?: string;
+}) {
+  const cores = {
+    kcal: useColor("primary"),
+    protein: useColor(MACRO_COLORS.protein),
+    carbs: useColor(MACRO_COLORS.carbs),
+    fat: useColor(MACRO_COLORS.fat),
+  };
+  const itens = [
+    { rotulo: "Calorias", valor: Math.round(kcal), unidade: "kcal", cor: cores.kcal },
+    { rotulo: "Proteína", valor: Math.round(proteinG), unidade: "g", cor: cores.protein },
+    { rotulo: "Carboidrato", valor: Math.round(carbsG), unidade: "g", cor: cores.carbs },
+    { rotulo: "Gordura", valor: Math.round(fatG), unidade: "g", cor: cores.fat },
+  ];
+  return (
+    <View className={cn("flex-row flex-wrap gap-2", className)}>
+      {itens.map((i) => (
+        <View
+          key={i.rotulo}
+          className="rounded-2xl bg-card px-3.5 py-3"
+          style={{ flexGrow: 1, flexBasis: "40%" }}
+        >
+          <View className="flex-row items-center gap-1.5">
+            <View className="h-2 w-2 rounded-full" style={{ backgroundColor: i.cor }} />
+            <Text numberOfLines={1} className="text-xs font-medium text-muted-foreground">
+              {i.rotulo}
+            </Text>
+          </View>
+          <Text className="mt-1 text-2xl font-extrabold tabular-nums">
+            {i.valor}
+            <Text className="text-sm font-semibold text-muted-foreground"> {i.unidade}</Text>
+          </Text>
+        </View>
+      ))}
+    </View>
+  );
+}

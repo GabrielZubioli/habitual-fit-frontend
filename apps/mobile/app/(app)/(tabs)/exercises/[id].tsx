@@ -39,7 +39,7 @@ import { ExerciseMediaView } from "@/ui/exercise-demo";
 import { ExerciseHowTo } from "@/ui/exercise-how-to";
 import { FavoriteButton } from "@/ui/favorite-button";
 import { Icon } from "@/ui/icon";
-import { BackButton } from "@/ui/page-header";
+import { BackButton, PageScroll } from "@/ui/page-header";
 import { Text } from "@/ui/text";
 
 /** A ficha do exercício — o `exercises_.$id.tsx` do web: como fazer e o seu histórico. */
@@ -71,23 +71,27 @@ function ExerciseDetail({ id }: { id: string }) {
   const secundarios = ex?.secondary_muscles ?? [];
 
   return (
-    <ScrollView className="flex-1 bg-background" contentContainerClassName="px-4 pb-28">
-      <View
-        className="flex-row items-center justify-between gap-3 pb-3"
-        style={{ paddingTop: Math.max(24, insets.top) }}
-      >
-        {/* Volta para onde a pessoa estava: a biblioteca, uma rotina do Plano… */}
-        <BackButton fallback="/exercises" />
-        <Text className="text-xs font-bold uppercase tracking-[1.7px] text-muted-foreground">
-          Exercício
-        </Text>
-        {ex ? (
-          <FavoriteButton exerciseId={ex.id} nome={ex.name} className="h-11 w-11 bg-card" />
-        ) : (
-          <View className="h-11 w-11" />
-        )}
-      </View>
-
+    <PageScroll
+      className="flex-1 bg-background"
+      contentContainerClassName="px-4 pb-28"
+      header={
+        <View
+          className="flex-row items-center justify-between gap-3 px-4 pb-3"
+          style={{ paddingTop: Math.max(24, insets.top) }}
+        >
+          {/* Volta para onde a pessoa estava: a biblioteca, uma rotina do Plano… */}
+          <BackButton fallback="/exercises" />
+          <Text className="text-xs font-bold uppercase tracking-[1.7px] text-muted-foreground">
+            Exercício
+          </Text>
+          {ex ? (
+            <FavoriteButton exerciseId={ex.id} nome={ex.name} className="h-11 w-11 bg-card" />
+          ) : (
+            <View className="h-11 w-11" />
+          )}
+        </View>
+      }
+    >
       {exercise.isError ? (
         <ErrorState
           message={errorMessage(exercise.error)}
@@ -260,7 +264,7 @@ function ExerciseDetail({ id }: { id: string }) {
           </View>
         </>
       )}
-    </ScrollView>
+    </PageScroll>
   );
 }
 

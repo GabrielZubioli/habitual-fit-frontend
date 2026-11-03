@@ -1,9 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { Pressable, ScrollView, useWindowDimensions, View } from "react-native";
+import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
+import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { __iconNode as arrowLeft } from "lucide-react/dist/esm/icons/arrow-left.js";
-import { __iconNode as sparkles } from "lucide-react/dist/esm/icons/sparkles.js";
+import { __iconNode as arrowRight } from "lucide-react/dist/esm/icons/arrow-right.js";
+import { __iconNode as clock } from "lucide-react/dist/esm/icons/clock.js";
+import { __iconNode as dumbbell } from "lucide-react/dist/esm/icons/dumbbell.js";
+import { __iconNode as shieldCheck } from "lucide-react/dist/esm/icons/shield-check.js";
+import { __iconNode as sliders } from "lucide-react/dist/esm/icons/sliders-horizontal.js";
+import { __iconNode as utensils } from "lucide-react/dist/esm/icons/utensils-crossed.js";
 import { answersSchema, type Answers } from "@forja/app-core/lib/onboarding/schema";
 import { visibleSteps } from "@forja/app-core/lib/onboarding/steps";
 import {
@@ -33,7 +40,9 @@ import { loadDraft, loadStep, saveDraft, saveStep } from "@/lib/onboarding-stora
 import { cn } from "@/lib/cn";
 import { useColor } from "@/theme/theme";
 import { BrandSymbol } from "@/ui/brand-symbol";
-import { Icon } from "@/ui/icon";
+import { Glow } from "@/ui/glow";
+import { Icon, type IconNode } from "@/ui/icon";
+import { Punho } from "@/ui/punho";
 import { Text } from "@/ui/text";
 import {
   ChipGroup,
@@ -132,6 +141,8 @@ export default function OnboardingQuiz() {
 
   if (!hydrated || !step || logado === null) return <QuizSkeleton />;
 
+  if (step.id === "welcome") return <Welcome onStart={next} logado={logado} />;
+
   const level = derivedLevel(answers);
   const objective = derivedObjective(answers);
 
@@ -143,8 +154,7 @@ export default function OnboardingQuiz() {
         contentContainerStyle={{ paddingBottom: insets.bottom }}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Sem conta, só as boas-vindas: nada de progresso de questionário. */}
-        <View className={cn("mb-6 flex-row items-center gap-3", !logado && "opacity-0")}>
+        <View className="mb-6 flex-row items-center gap-3">
           {safeIndex > 0 ? (
             <Pressable
               onPress={back}
@@ -163,8 +173,6 @@ export default function OnboardingQuiz() {
         </View>
 
         <View className="flex-1">
-          {step.id === "welcome" && <Welcome onStart={next} logado={logado} />}
-
           {step.id === "objective" && (
             <Question
               title="Qual é o seu objetivo?"
@@ -483,53 +491,213 @@ function Badge({
   );
 }
 
+/** As cores do painel verde do login (`BRAND` e `INK` em auth.tsx). */
+const BRAND = "#3ad598";
+const INK = "#04261a";
+
+/**
+ * Boas-vindas: o painel verde da marca com a mão da tela Treinar ao fundo e
+ * dois cartões flutuando — o treino e a dieta que a pessoa vai receber —, e
+ * embaixo a promessa e um único botão.
+ */
 function Welcome({ onStart, logado }: { onStart: () => void; logado: boolean }) {
+  const insets = useSafeAreaInsets();
+  const { width, height } = useWindowDimensions();
   const primaria = useColor("primary");
+  const alturaHero = Math.min(440, Math.max(280, Math.round(height * 0.44)));
+  const alturaMao = (width * 870) / 1092;
+
   return (
-    <View className="flex-1 justify-center">
-      <View className="items-center">
-        <BrandSymbol width={96} />
-      </View>
-      <Text
-        textBreakStrategy="balanced"
-        className="mt-8 text-center text-3xl font-bold leading-tight tracking-tight"
+    <View className="flex-1 bg-background">
+      {/* Ícones escuros sobre o verde. */}
+      <StatusBar style="dark" />
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 12 }}
+        bounces={false}
+        showsVerticalScrollIndicator={false}
       >
-        Seu treino montado para você
-      </Text>
-      <Text className="mt-3 text-center text-muted-foreground">
-        {logado
-          ? "Responda algumas perguntas rápidas. No fim, seu treino da semana estará pronto e suas refeições organizadas para você preencher."
-          : "Crie sua conta e responda algumas perguntas rápidas. No fim, seu treino da semana estará pronto e suas refeições organizadas para você preencher."}
-      </Text>
+        <View
+          className="overflow-hidden rounded-b-[40px]"
+          style={{ height: alturaHero, backgroundColor: BRAND }}
+        >
+          <Glow
+            size={width * 1.3}
+            color="#ffffff"
+            opacity={0.45}
+            style={{ top: -width * 0.75, left: -width * 0.15 }}
+          />
+          <Animated.View
+            entering={FadeIn.duration(900)}
+            pointerEvents="none"
+            style={{ position: "absolute", left: 0, bottom: -alturaMao * 0.12, opacity: 0.14 }}
+          >
+            <Punho width={width} height={alturaMao} cor={INK} />
+          </Animated.View>
 
-      <View className="mx-auto mt-8 gap-3">
-        {[
-          "Leva cerca de 2 minutos",
-          "Seu plano fica salvo na sua conta",
-          "Você pode ajustar tudo depois",
-        ].map((t) => (
-          <View key={t} className="flex-row items-center gap-3">
-            <View className="h-6 w-6 items-center justify-center rounded-full bg-primary/15">
-              <Icon node={sparkles} color={primaria} size={14} />
-            </View>
-            <Text className="text-sm">{t}</Text>
+          <Animated.View
+            entering={FadeInDown.duration(500)}
+            className="flex-row items-center justify-center gap-2"
+            style={{ paddingTop: insets.top + 16 }}
+          >
+            <BrandSymbol width={34} escuro />
+            <Text className="text-lg font-extrabold tracking-tight" style={{ color: INK }}>
+              Habitual Fit
+            </Text>
+          </Animated.View>
+
+          <Animated.View
+            entering={FadeInDown.delay(250).duration(600).springify()}
+            style={{
+              position: "absolute",
+              left: 20,
+              top: alturaHero * 0.36,
+              transform: [{ rotate: "-4deg" }],
+            }}
+          >
+            <CartaoFlutuante
+              icon={dumbbell}
+              titulo="Treino A · Peito"
+              detalhe="6 exercícios · 45 min"
+            />
+          </Animated.View>
+          <Animated.View
+            entering={FadeInDown.delay(420).duration(600).springify()}
+            style={{
+              position: "absolute",
+              right: 20,
+              top: alturaHero * 0.62,
+              transform: [{ rotate: "3deg" }],
+            }}
+          >
+            <CartaoFlutuante
+              icon={utensils}
+              titulo="Dieta de hoje"
+              detalhe="5 refeições · 2.150 kcal"
+            />
+          </Animated.View>
+        </View>
+
+        <View className="flex-1 justify-between px-6 pt-8">
+          <View>
+            <Animated.View entering={FadeInDown.delay(150).duration(500)}>
+              <Text className="text-xs font-bold uppercase tracking-[2px] text-primary">
+                Seu plano em 2 minutos
+              </Text>
+              <Text
+                textBreakStrategy="balanced"
+                className="mt-3 text-[34px] font-extrabold leading-[38px] tracking-tight"
+              >
+                Seu treino montado{" "}
+                <Text className="text-[34px] font-extrabold leading-[38px] text-primary">
+                  para você.
+                </Text>
+              </Text>
+              <Text className="mt-3 text-base leading-6 text-muted-foreground">
+                {logado
+                  ? "Responda algumas perguntas rápidas e receba o treino da semana pronto e suas refeições organizadas."
+                  : "Crie sua conta, responda algumas perguntas rápidas e receba o treino da semana pronto e suas refeições organizadas."}
+              </Text>
+            </Animated.View>
+
+            <Animated.View
+              entering={FadeInDown.delay(300).duration(500)}
+              className="mt-5 flex-row flex-wrap gap-2"
+            >
+              {(
+                [
+                  [clock, "Cerca de 2 min"],
+                  [shieldCheck, "Salvo na sua conta"],
+                  [sliders, "Ajuste quando quiser"],
+                ] as const
+              ).map(([icone, texto]) => (
+                <View
+                  key={texto}
+                  className="flex-row items-center gap-1.5 rounded-full border border-border bg-card px-3 py-2"
+                >
+                  <Icon node={icone} color={primaria} size={14} />
+                  <Text className="text-xs font-semibold">{texto}</Text>
+                </View>
+              ))}
+            </Animated.View>
           </View>
-        ))}
+
+          <Animated.View entering={FadeInDown.delay(450).duration(500)} className="mt-8 gap-3">
+            <Pressable
+              onPress={logado ? onStart : () => router.push("/auth?modo=cadastro")}
+              accessibilityRole="button"
+              className="h-14 w-full flex-row items-center justify-center gap-2 rounded-2xl active:scale-[0.98]"
+              style={{
+                backgroundColor: BRAND,
+                shadowColor: BRAND,
+                shadowOpacity: 0.6,
+                shadowRadius: 16,
+                shadowOffset: { width: 0, height: 8 },
+                elevation: 8,
+              }}
+            >
+              <Text className="text-base font-bold" style={{ color: INK }}>
+                {logado ? "Montar meu plano" : "Criar minha conta"}
+              </Text>
+              <Icon node={arrowRight} color={INK} size={18} />
+            </Pressable>
+
+            {logado ? (
+              <Text className="text-center text-xs text-muted-foreground">
+                Você pode mudar tudo depois.
+              </Text>
+            ) : (
+              <Pressable
+                onPress={() => router.push("/auth")}
+                accessibilityRole="link"
+                className="h-11 items-center justify-center"
+              >
+                <Text className="text-sm text-muted-foreground">
+                  Já tem conta? <Text className="text-sm font-bold text-primary">Entrar</Text>
+                </Text>
+              </Pressable>
+            )}
+          </Animated.View>
+        </View>
+      </ScrollView>
+    </View>
+  );
+}
+
+/** Um cartão branco que flutua sobre o verde: o que a pessoa vai receber. */
+function CartaoFlutuante({
+  icon,
+  titulo,
+  detalhe,
+}: {
+  icon: IconNode;
+  titulo: string;
+  detalhe: string;
+}) {
+  return (
+    <View
+      className="flex-row items-center gap-3 rounded-2xl bg-white py-3 pl-3 pr-4"
+      style={{
+        shadowColor: INK,
+        shadowOpacity: 0.25,
+        shadowRadius: 18,
+        shadowOffset: { width: 0, height: 10 },
+        elevation: 10,
+      }}
+    >
+      <View
+        className="h-10 w-10 items-center justify-center rounded-xl"
+        style={{ backgroundColor: INK }}
+      >
+        <Icon node={icon} color={BRAND} size={20} />
       </View>
-
-      <NextButton
-        onPress={logado ? onStart : () => router.push("/auth?modo=cadastro")}
-        label={logado ? "Começar" : "Criar conta"}
-      />
-
-      {!logado ? (
-        <Text className="pb-2 text-center text-sm text-muted-foreground">
-          Já tem conta?{" "}
-          <Text className="text-sm font-medium text-primary" onPress={() => router.push("/auth")}>
-            Entrar
-          </Text>
+      <View>
+        <Text className="text-sm font-bold" style={{ color: INK }}>
+          {titulo}
         </Text>
-      ) : null}
+        <Text className="text-xs" style={{ color: "#04261a99" }}>
+          {detalhe}
+        </Text>
+      </View>
     </View>
   );
 }

@@ -16,6 +16,7 @@ import {
 } from "@forja/app-core/data/recipes";
 import { useCurrentUserId } from "@/hooks/use-current-user";
 import { PageBody, PageHeader } from "@/components/page-header";
+import { MACRO_COLORS } from "@/components/home/macro-rings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -281,7 +282,9 @@ function RecipesPage() {
       <Dialog open={aberta !== null} onOpenChange={(o) => !o && setAberta(null)}>
         <DialogContent className="flex max-h-[min(calc(88dvh-var(--teclado,0px)),44rem)] flex-col gap-0 overflow-hidden rounded-[1.5rem] p-0 sm:p-0">
           {aberta && (
-            <>
+            // Tudo rola junto, foto inclusive: numa tela baixa a foto e o título
+            // fixos deixavam quase nada de espaço para a receita.
+            <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain">
               {aberta.imageUrl && (
                 <img
                   src={aberta.imageUrl}
@@ -306,30 +309,52 @@ function RecipesPage() {
                   )}
                 </DialogDescription>
               </DialogHeader>
-              <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overflow-x-hidden px-5 pb-5">
-                <div className="grid grid-cols-4 gap-2 text-center">
-                  {[
-                    ["kcal", aberta.perServing.kcal],
-                    ["Prot.", aberta.perServing.proteinG],
-                    ["Carbo", aberta.perServing.carbsG],
-                    ["Gord.", aberta.perServing.fatG],
-                  ].map(([rotulo, valor]) => (
-                    <div key={rotulo as string} className="rounded-2xl bg-card px-1 py-2.5">
-                      <p className="font-bold tabular-nums">{Math.round(valor as number)}</p>
-                      <p className="text-[11px] text-muted-foreground">{rotulo} / porção</p>
-                    </div>
-                  ))}
+              <div className="space-y-5 px-5 pb-5">
+                <div>
+                  <p className="mb-2 text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">
+                    Por porção
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {(
+                      [
+                        ["Calorias", aberta.perServing.kcal, "kcal", "var(--primary)"],
+                        ["Proteína", aberta.perServing.proteinG, "g", MACRO_COLORS.protein],
+                        ["Carboidrato", aberta.perServing.carbsG, "g", MACRO_COLORS.carbs],
+                        ["Gordura", aberta.perServing.fatG, "g", MACRO_COLORS.fat],
+                      ] as const
+                    ).map(([rotulo, valor, unidade, cor]) => (
+                      <div key={rotulo} className="rounded-2xl bg-card px-3.5 py-3">
+                        <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                          <span
+                            className="size-2 shrink-0 rounded-full"
+                            style={{ background: cor }}
+                            aria-hidden
+                          />
+                          {rotulo}
+                        </p>
+                        <p className="mt-1 text-2xl font-extrabold tabular-nums">
+                          {Math.round(valor)}
+                          <span className="ml-1 text-sm font-semibold text-muted-foreground">
+                            {unidade}
+                          </span>
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
                 <div>
-                  <p className="mb-2 text-sm font-semibold">Ingredientes (receita inteira)</p>
-                  <ul className="divide-y divide-border/50 rounded-2xl bg-card">
+                  <p className="mb-2 flex items-baseline justify-between text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">
+                    Ingredientes
+                    <span className="font-normal normal-case tracking-normal">receita inteira</span>
+                  </p>
+                  <ul className="divide-y divide-border/50 rounded-2xl bg-card px-4">
                     {aberta.items.map((i) => (
                       <li
                         key={i.foodId + i.grams}
-                        className="flex items-start justify-between gap-3 px-4 py-2.5 text-sm"
+                        className="flex items-center justify-between gap-3 py-3 text-sm"
                       >
                         <span className="min-w-0 break-words">{i.name}</span>
-                        <span className="shrink-0 tabular-nums text-muted-foreground">
+                        <span className="shrink-0 rounded-full bg-elevated px-2.5 py-1 text-xs font-semibold tabular-nums">
                           {i.grams} g
                         </span>
                       </li>
@@ -338,10 +363,10 @@ function RecipesPage() {
                 </div>
                 {aberta.instructions && (
                   <div>
-                    <p className="mb-1 text-sm font-semibold">Modo de preparo</p>
-                    <p className="text-sm leading-relaxed text-muted-foreground">
-                      {aberta.instructions}
+                    <p className="mb-2 text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">
+                      Modo de preparo
                     </p>
+                    <p className="text-sm leading-relaxed">{aberta.instructions}</p>
                   </div>
                 )}
                 <p className="text-sm text-muted-foreground">
@@ -361,7 +386,7 @@ function RecipesPage() {
                   Copiar para minhas receitas
                 </Button>
               </div>
-            </>
+            </div>
           )}
         </DialogContent>
       </Dialog>

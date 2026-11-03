@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Image, Pressable, ScrollView, TextInput, View } from "react-native";
+import { Image, Pressable, TextInput, View } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { addDays, startOfWeek } from "date-fns";
 import { __iconNode as check } from "lucide-react/dist/esm/icons/check.js";
@@ -46,7 +46,7 @@ import { DatePicker } from "@/ui/date-picker";
 import { AlertDialog, Dialog, MenuSheet } from "@/ui/dialog";
 import { Icon } from "@/ui/icon";
 import { CalorieRing, MACRO_COLORS, MacroRing } from "@/ui/macro-rings";
-import { PageHeader } from "@/ui/page-header";
+import { PageHeader, PageScroll } from "@/ui/page-header";
 import { SubstituteFoodDialog } from "@/ui/substitute-food-dialog";
 import { Text } from "@/ui/text";
 import { WeeklyMenu } from "@/ui/weekly-menu";
@@ -145,33 +145,36 @@ export default function DietPage() {
   });
 
   return (
-    <ScrollView
+    <PageScroll
+      header={
+        <PageHeader
+          title="Dieta"
+          description={
+            // Mesma altura nas duas abas: o cabeçalho não muda de tamanho ao trocar.
+            aba === "cardapio" ? (
+              <View className="h-8 justify-center">
+                <Text className="text-base text-muted-foreground">Cardápio da semana</Text>
+              </View>
+            ) : (
+              <View className="h-8 justify-center">
+                <DatePicker
+                  simples
+                  value={date}
+                  onChange={setDate}
+                  accessibilityLabel="Data do diário"
+                />
+              </View>
+            )
+          }
+          action={
+            aba === "diario" ? <SemanaDias date={date} hoje={hoje} onChange={setDate} /> : null
+          }
+        />
+      }
       className="flex-1 bg-background"
       contentContainerClassName="pb-28"
       keyboardShouldPersistTaps="handled"
     >
-      <PageHeader
-        title="Dieta"
-        description={
-          // Mesma altura nas duas abas: o cabeçalho não muda de tamanho ao trocar.
-          aba === "cardapio" ? (
-            <View className="h-8 justify-center">
-              <Text className="text-base text-muted-foreground">Cardápio da semana</Text>
-            </View>
-          ) : (
-            <View className="h-8 justify-center">
-              <DatePicker
-                simples
-                value={date}
-                onChange={setDate}
-                accessibilityLabel="Data do diário"
-              />
-            </View>
-          )
-        }
-        action={aba === "diario" ? <SemanaDias date={date} hoje={hoje} onChange={setDate} /> : null}
-      />
-
       <View className="px-4">
         <View accessibilityRole="tablist" className="mb-6 flex-row rounded-full bg-card p-1">
           {(
@@ -341,7 +344,7 @@ export default function DietPage() {
           </>
         )}
       </View>
-    </ScrollView>
+    </PageScroll>
   );
 }
 

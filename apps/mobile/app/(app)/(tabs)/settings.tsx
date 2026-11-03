@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Pressable, ScrollView, TextInput, View } from "react-native";
+import { Pressable, TextInput, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { Directory, File } from "expo-file-system";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -59,7 +59,7 @@ import { Button } from "@/ui/button";
 import { Card, ErrorState } from "@/ui/card";
 import { Dialog } from "@/ui/dialog";
 import { Icon, type IconNode } from "@/ui/icon";
-import { PageHeader } from "@/ui/page-header";
+import { PageHeader, PageScroll } from "@/ui/page-header";
 import { Text } from "@/ui/text";
 
 /**
@@ -127,12 +127,12 @@ export default function SettingsPage() {
 
   return (
     <View className="flex-1 bg-background">
-      <ScrollView
+      <PageScroll
+        header={<PageHeader title={titulo} />}
         key={secao ?? "todas"}
         contentContainerClassName={cn("pb-28", prefsTouched && "pb-48")}
         keyboardShouldPersistTaps="handled"
       >
-        <PageHeader title={titulo} />
         <View className="gap-8 px-4">
           {aviso ? (
             <Pressable
@@ -302,7 +302,7 @@ export default function SettingsPage() {
             </>
           )}
         </View>
-      </ScrollView>
+      </PageScroll>
 
       {/* Um só botão de salvar, acima da barra, visível só quando há mudança. */}
       {editaPreferencias && prefsTouched ? (

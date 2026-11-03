@@ -9,6 +9,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import "@/lib/supabase"; // registra o cliente no @forja/app-core
 import { iniciarPowerSync } from "@/lib/powersync";
 import { ThemeProvider, useTheme } from "@/theme/theme";
+import { Abertura } from "@/ui/abertura";
 
 function Barra() {
   const { scheme } = useTheme();
@@ -26,6 +27,7 @@ export default function RootLayout() {
           <ThemeProvider>
             <Barra />
             <Stack screenOptions={{ headerShown: false }} />
+            <Abertura />
           </ThemeProvider>
         </QueryClientProvider>
       </SafeAreaProvider>

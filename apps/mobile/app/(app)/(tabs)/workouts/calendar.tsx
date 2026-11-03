@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { router } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -26,7 +26,7 @@ import { useColor } from "@/theme/theme";
 import { Button } from "@/ui/button";
 import { Card, EmptyState, ErrorState } from "@/ui/card";
 import { Icon } from "@/ui/icon";
-import { BackButton, PageHeader } from "@/ui/page-header";
+import { BackButton, PageHeader, PageScroll } from "@/ui/page-header";
 import { RoutineIcon, routineIconOf } from "@/ui/routine-icon";
 import { Text } from "@/ui/text";
 
@@ -76,12 +76,17 @@ export default function WorkoutCalendar() {
   const semanas = Array.from({ length: dias.length / 7 }, (_, i) => dias.slice(i * 7, i * 7 + 7));
 
   return (
-    <ScrollView className="flex-1 bg-background" contentContainerClassName="pb-28">
-      <PageHeader
-        title="Calendário"
-        description="Seus treinos por mês."
-        action={<BackButton fallback="/plan" />}
-      />
+    <PageScroll
+      className="flex-1 bg-background"
+      contentContainerClassName="pb-28"
+      header={
+        <PageHeader
+          title="Calendário"
+          description="Seus treinos por mês."
+          action={<BackButton fallback="/plan" />}
+        />
+      }
+    >
       <View className="px-4 py-4">
         <Card>
           <View className="flex-row items-center justify-between p-4 pb-3">
@@ -266,6 +271,6 @@ export default function WorkoutCalendar() {
           </View>
         ) : null}
       </View>
-    </ScrollView>
+    </PageScroll>
   );
 }
