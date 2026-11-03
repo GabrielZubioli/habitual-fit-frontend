@@ -1,4 +1,4 @@
-import { WEEKDAY_LABELS } from "@forja/app-core/lib/labels";
+import { WEEKDAY_LABELS, WEEKDAY_SHORT } from "@forja/app-core/lib/labels";
 import { useMemo, useState } from "react";
 import { Pressable, View } from "react-native";
 import { router } from "expo-router";
@@ -24,7 +24,6 @@ import {
   todaysWorkout,
   weekStart,
   weekdayOf,
-  type Weekday,
 } from "@forja/domain";
 import { queryKeys } from "@forja/app-core/data/query-keys";
 import { errorMessage, num } from "@forja/app-core/data/supabase-helpers";
@@ -62,21 +61,14 @@ import { PageScroll } from "@/ui/page-header";
 import { CalorieRing } from "@/ui/macro-rings";
 import { Text } from "@/ui/text";
 import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Início — o `dashboard.tsx` do web: a sequência, a semana com o treino de
  * hoje, a prontidão, o peso contra a meta, a dieta do dia e a água. Gráficos
  * longos e histórico ficam em Estatísticas.
  */
-const INICIAIS: Record<Weekday, string> = {
-  0: "DOM",
-  1: "SEG",
-  2: "TER",
-  3: "QUA",
-  4: "QUI",
-  5: "SEX",
-  6: "SÁB",
-};
+const INICIAIS = WEEKDAY_SHORT;
 const LARANJA = "#FF7A1F";
 const semLetra = (nome: string) => nome.replace(/^[A-Z]\s*—\s*/, "");
 
@@ -188,12 +180,12 @@ function SemanaCard({ onError }: { onError: (e: unknown) => void }) {
 
   const titulo =
     offset === 0
-      ? "Esta semana"
+      ? t("Esta semana")
       : offset === -1
-        ? "Semana passada"
+        ? t("Semana passada")
         : offset === 1
-          ? "Próxima semana"
-          : `${formatDate(dias[0]!, "d MMM")} – ${formatDate(dias[6]!, "d MMM")}`;
+          ? t("Próxima semana")
+          : `${formatDate(dias[0]!, t("d MMM"))} – ${formatDate(dias[6]!, t("d MMM"))}`;
 
   const previsto = (() => {
     const i = projectSchedule([selecionado], today, entrada, feitos)[0]?.splitIndex;
@@ -205,7 +197,7 @@ function SemanaCard({ onError }: { onError: (e: unknown) => void }) {
       <View className="mb-4 flex-row items-center justify-between">
         <Pressable
           onPress={() => setOffset((o) => o - 1)}
-          accessibilityLabel="Semana anterior"
+          accessibilityLabel={t("Semana anterior")}
           className="h-9 w-9 items-center justify-center rounded-full active:bg-elevated"
         >
           <Icon node={chevronLeft} color={texto} size={20} />
@@ -213,7 +205,7 @@ function SemanaCard({ onError }: { onError: (e: unknown) => void }) {
         <Text className="text-lg text-muted-foreground">{titulo}</Text>
         <Pressable
           onPress={() => setOffset((o) => o + 1)}
-          accessibilityLabel="Próxima semana"
+          accessibilityLabel={t("Próxima semana")}
           className="h-9 w-9 items-center justify-center rounded-full active:bg-elevated"
         >
           <Icon node={chevronRight} color={texto} size={20} />
@@ -257,7 +249,7 @@ function SemanaCard({ onError }: { onError: (e: unknown) => void }) {
       {selecionado !== today ? (
         <View className="mt-4 rounded-2xl bg-elevated p-4">
           <Text className="text-sm uppercase tracking-wide text-muted-foreground">
-            {formatDate(selecionado, "EEEE, d 'de' MMM")}
+            {formatDate(selecionado, t("EEEE, d 'de' MMM"))}
           </Text>
           {feitos.filter((w) => w.date === selecionado).length > 0 ? (
             <View className="mt-2 gap-2">
@@ -281,7 +273,7 @@ function SemanaCard({ onError }: { onError: (e: unknown) => void }) {
                       <Text numberOfLines={1} className="text-lg">
                         {semLetra(w.name)}
                       </Text>
-                      <Text className="text-sm text-muted-foreground">Treino concluído</Text>
+                      <Text className="text-sm text-muted-foreground">{t("Treino concluído")}</Text>
                     </View>
                     <Icon node={chevronRight} color={apagada} size={20} />
                   </Pressable>
@@ -299,11 +291,11 @@ function SemanaCard({ onError }: { onError: (e: unknown) => void }) {
               <Text numberOfLines={1} className="min-w-0 flex-1 text-lg">
                 {selecionado < today
                   ? previsto
-                    ? `Não treinou · era ${previsto}`
-                    : "Descanso"
+                    ? t("Não treinou · era {{previsto}}", { previsto })
+                    : t("Descanso")
                   : previsto
-                    ? `Previsto: ${previsto}`
-                    : "Descanso"}
+                    ? t("Previsto: {{previsto}}", { previsto })
+                    : t("Descanso")}
               </Text>
             </View>
           )}
@@ -323,15 +315,19 @@ function SemanaCard({ onError }: { onError: (e: unknown) => void }) {
             />
           </View>
           <View className="min-w-0 flex-1">
-            <Text className="text-sm uppercase tracking-wide text-muted-foreground">Hoje</Text>
+            <Text className="text-sm uppercase tracking-wide text-muted-foreground">
+              {t("Hoje")}
+            </Text>
             <Text numberOfLines={1} className="text-xl">
               {alreadyDone
-                ? "Treino concluído"
+                ? t("Treino concluído")
                 : isPlannedDay && template
                   ? semLetra(template.name)
                   : proximo
-                    ? `Descanso · ${WEEKDAY_LABELS[proximo.weekday].toLowerCase()} tem treino`
-                    : "Descanso"}
+                    ? t("Descanso · {{v0}} tem treino", {
+                        v0: WEEKDAY_LABELS[proximo.weekday].toLowerCase(),
+                      })
+                    : t("Descanso")}
             </Text>
           </View>
           {template && !alreadyDone ? (
@@ -344,7 +340,7 @@ function SemanaCard({ onError }: { onError: (e: unknown) => void }) {
               )}
             >
               <Text className="text-lg font-medium text-primary-soft-foreground">
-                {isPlannedDay ? "Começar" : "Treinar"}
+                {isPlannedDay ? t("Começar") : t("Treinar")}
               </Text>
             </Pressable>
           ) : null}
@@ -391,7 +387,7 @@ function DietaCard({
   return (
     <Pressable
       onPress={() => router.push("/diet")}
-      accessibilityLabel="Abrir a dieta de hoje"
+      accessibilityLabel={t("Abrir a dieta de hoje")}
       className="flex-row items-center gap-4 rounded-3xl bg-card p-4 active:bg-elevated"
     >
       {diario.isPending || loadingProfile ? (
@@ -409,29 +405,32 @@ function DietaCard({
         <View className="flex-row items-center gap-1.5">
           <Icon node={utensils} color={apagada} size={14} />
           <Text className="text-xs font-bold uppercase tracking-[1.7px] text-muted-foreground">
-            Dieta de hoje
+            {t("Dieta de hoje")}
           </Text>
         </View>
         <Text className="mt-1 text-lg font-extrabold">
           {Math.round(totais.kcal).toLocaleString(LOCALE)}
           <Text className="text-sm font-medium text-muted-foreground">
-            {semMeta ? " kcal hoje" : ` / ${Math.round(kcalTarget).toLocaleString(LOCALE)} kcal`}
+            {semMeta ? t(" kcal hoje") : ` / ${Math.round(kcalTarget).toLocaleString(LOCALE)} kcal`}
           </Text>
         </Text>
         {vazio ? (
           <Text className="mt-1.5 text-sm text-muted-foreground">
-            Nada registrado ainda. Monte suas refeições e adicione o que comer.
+            {t("Nada registrado ainda. Monte suas refeições e adicione o que comer.")}
           </Text>
         ) : semMeta ? (
           <Text className="mt-1.5 text-sm text-muted-foreground">
-            Proteína: {Math.round(totais.proteinG)} g
+            {t("Proteína: {{v0}} g", { v0: Math.round(totais.proteinG) })}
           </Text>
         ) : (
           <View className="mt-2">
             <View className="flex-row justify-between">
-              <Text className="text-xs text-muted-foreground">Proteína</Text>
+              <Text className="text-xs text-muted-foreground">{t("Proteína")}</Text>
               <Text className="text-xs text-muted-foreground">
-                {Math.round(totais.proteinG)}/{Math.round(proteinTarget)} g
+                {t("{{v0}}/{{v1}} g", {
+                  v0: Math.round(totais.proteinG),
+                  v1: Math.round(proteinTarget),
+                })}
               </Text>
             </View>
             <View className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
@@ -444,8 +443,10 @@ function DietaCard({
         )}
         {!diario.isPending && pendentes > 0 ? (
           <Text className="mt-1.5 text-xs text-muted-foreground">
-            {!semMeta && restante > 0 ? `Faltam ${restante.toLocaleString(LOCALE)} kcal · ` : ""}
-            {pendentes} {pendentes === 1 ? "item" : "itens"} a marcar
+            {!semMeta && restante > 0
+              ? t("Faltam {{v0}} kcal · ", { v0: restante.toLocaleString(LOCALE) })
+              : ""}
+            {pendentes} {pendentes === 1 ? "item" : "itens"} {t("a marcar")}
           </Text>
         ) : null}
       </View>
@@ -481,7 +482,7 @@ function PesoCard() {
   return (
     <View className="rounded-3xl bg-card p-5">
       <View className="flex-row items-center justify-between">
-        <Text className="text-lg text-muted-foreground">Peso corporal</Text>
+        <Text className="text-lg text-muted-foreground">{t("Peso corporal")}</Text>
         <View className="flex-row items-center gap-4">
           {meta.data ? (
             <View className="flex-row items-center gap-1">
@@ -491,7 +492,7 @@ function PesoCard() {
           ) : null}
           <Pressable onPress={() => router.push("/body")} className="flex-row items-center gap-1">
             <Icon node={plus} color={primaria} size={20} />
-            <Text className="text-lg text-primary">Registrar</Text>
+            <Text className="text-lg text-primary">{t("Registrar")}</Text>
           </Pressable>
         </View>
       </View>
@@ -500,14 +501,14 @@ function PesoCard() {
         <View className="mt-3 h-40 w-full rounded-md bg-muted" />
       ) : !atual ? (
         <Text className="mt-3 text-muted-foreground">
-          Registre seu peso para acompanhar a tendência.
+          {t("Registre seu peso para acompanhar a tendência.")}
         </Text>
       ) : (
         <>
           <View className="mt-2 flex-row items-end justify-between gap-3">
             <View className="flex-row items-baseline gap-2">
               <Text className="text-5xl font-extrabold">{fmt(atual.kg)}</Text>
-              <Text className="text-2xl font-bold text-muted-foreground">kg</Text>
+              <Text className="text-2xl font-bold text-muted-foreground">{t("kg")}</Text>
               {delta !== null && Math.abs(delta) >= 0.05 ? (
                 <View className="flex-row items-center">
                   <Icon node={delta < 0 ? arrowDown : arrowUp} color={primaria} size={16} />
@@ -516,14 +517,14 @@ function PesoCard() {
               ) : null}
             </View>
             <Text className="pb-1 text-muted-foreground">
-              {formatDate(atual.date, "EEE d MMM")}
+              {formatDate(atual.date, t("EEE d MMM"))}
             </Text>
           </View>
           {meta.data && falta !== null ? (
             <View className="mt-1 flex-row items-center gap-1.5">
               <Icon node={target} color={aviso} size={20} />
               <Text className="text-lg text-warning">
-                Meta {fmt(meta.data)} kg
+                {t("Meta {{v0}} kg", { v0: fmt(meta.data) })}
                 {Math.abs(falta) >= 0.1
                   ? ` · ${fmt(Math.abs(falta))} kg para ${falta > 0 ? "perder" : "ganhar"}`
                   : ""}
@@ -536,7 +537,7 @@ function PesoCard() {
                 height={176}
                 goal={meta.data}
                 data={lista.map((p, i) => ({
-                  label: formatDate(p.date, "d MMM"),
+                  label: formatDate(p.date, t("d MMM")),
                   peso: p.kg,
                   tendencia: Math.round(tendencia[i]! * 10) / 10,
                 }))}
@@ -563,7 +564,10 @@ function SequenciaCard() {
   return (
     <Pressable
       onPress={() => router.push("/workouts/calendar")}
-      accessibilityLabel={`${dias} ${dias === 1 ? "dia seguido" : "dias seguidos"} de treino. Ver calendário`}
+      accessibilityLabel={t("{{dias}} {{v1}} de treino. Ver calendário", {
+        dias,
+        v1: dias === 1 ? "dia seguido" : "dias seguidos",
+      })}
       className="rounded-3xl border border-border bg-card p-5 active:bg-elevated"
     >
       <View className="absolute right-4 top-4">
@@ -580,7 +584,7 @@ function SequenciaCard() {
         <View className="min-w-0">
           <Text className="text-6xl font-extrabold leading-none">{dias}</Text>
           <Text className="text-lg font-semibold">
-            {dias === 1 ? "dia seguido" : "dias seguidos"}
+            {dias === 1 ? t("dia seguido") : t("dias seguidos")}
           </Text>
         </View>
       </View>

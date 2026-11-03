@@ -14,6 +14,7 @@ import { queryKeys } from "@forja/app-core/data/query-keys";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Metas nutricionais **manuais** e opcionais.
@@ -37,7 +38,7 @@ export function ManualNutritionTargets({ profile }: { profile: Perfil }) {
       updateProfile(profile.id, patch, "salvar metas nutricionais"),
     onSuccess: (_, patch) => {
       toast.success(
-        Object.values(patch).every((v) => v === null) ? "Metas removidas" : "Metas salvas",
+        Object.values(patch).every((v) => v === null) ? t("Metas removidas") : t("Metas salvas"),
       );
       void qc.invalidateQueries({ queryKey: queryKeys.profile() });
     },
@@ -56,16 +57,18 @@ export function ManualNutritionTargets({ profile }: { profile: Perfil }) {
   return (
     <form onSubmit={enviar} className="rounded-[1.25rem] bg-card p-4" noValidate>
       <p className="text-pretty text-sm text-muted-foreground">
-        Opcional. Se você tem acompanhamento, preencha com as metas definidas pelo seu
-        nutricionista. Deixe em branco para não usar metas — as telas mostram só o que você
-        consumiu.
+        {t(
+          "Opcional. Se você tem acompanhamento, preencha com as metas definidas pelo seu nutricionista. Deixe em branco para não usar metas — as telas mostram só o que você consumiu.",
+        )}
       </p>
       <div className="mt-4 grid grid-cols-2 gap-3">
         {CAMPOS.map((c) => (
           <div key={c.key} className={c.key === "daily_kcal_target" ? "col-span-2" : undefined}>
             <Label htmlFor={c.key}>
               {c.rotulo}{" "}
-              <span className="font-normal text-muted-foreground">({c.unidade}/dia)</span>
+              <span className="font-normal text-muted-foreground">
+                {t("({{unidade}}/dia)", { unidade: c.unidade })}
+              </span>
             </Label>
             <Input
               id={c.key}
@@ -73,7 +76,7 @@ export function ManualNutritionTargets({ profile }: { profile: Perfil }) {
               inputMode="numeric"
               min={c.min}
               max={c.max}
-              placeholder="Sem meta"
+              placeholder={t("Sem meta")}
               value={valores[c.key]}
               onChange={(e) => setValores((v) => ({ ...v, [c.key]: e.target.value }))}
               aria-invalid={!!erros[c.key]}
@@ -109,7 +112,7 @@ export function ManualNutritionTargets({ profile }: { profile: Perfil }) {
               );
             }}
           >
-            Remover metas
+            {t("Remover metas")}
           </Button>
         )}
       </div>

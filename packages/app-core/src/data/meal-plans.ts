@@ -15,6 +15,7 @@ import {
   type MealSlot,
   type ToleranceStatus,
 } from "@forja/domain";
+import { t } from "../i18n";
 
 /**
  * Plano alimentar — a estrutura que a pessoa preenche, sem geração automática.
@@ -336,7 +337,7 @@ export async function fetchActiveMealPlan(): Promise<ActiveMealPlan | null> {
         .map((i) => ({
           id: i.id,
           foodId: i.food_id,
-          name: i.foods?.name ?? "Alimento",
+          name: i.foods?.name ?? t("Alimento"),
           grams: num(i.grams),
           position: i.position,
           prepNotes: i.prep_notes,
@@ -430,7 +431,7 @@ async function planoAtivoLocal(): Promise<ActiveMealPlan | null> {
         .map((i) => ({
           id: i.id,
           foodId: i.food_id,
-          name: i.name ?? "Alimento",
+          name: i.name ?? t("Alimento"),
           grams: num(i.grams),
           position: i.position,
           prepNotes: i.prep_notes,

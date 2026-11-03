@@ -51,12 +51,13 @@ import {
 import { formatDate, formatDayMonth } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
 import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 export const Route = createFileRoute("/_authenticated/exercises_/$id")({
   head: () => ({
     meta: [
-      { title: "Histórico do exercício — Habitual Fit" },
-      { name: "description", content: "Progressão de carga, volume e recordes por exercício." },
+      { title: t("Histórico do exercício — Habitual Fit") },
+      { name: "description", content: t("Progressão de carga, volume e recordes por exercício.") },
     ],
   }),
   component: ExerciseDetail,
@@ -112,7 +113,7 @@ function ExerciseDetail() {
       <div className="flex items-center justify-between gap-3 pb-3 pt-2">
         {voltar}
         <span className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
-          Exercício
+          {t("Exercício")}
         </span>
         {ex ? (
           <FavoriteButton exerciseId={ex.id} nome={ex.name} className="size-11 bg-card" />
@@ -157,12 +158,12 @@ function ExerciseDetail() {
               ex.level ? label(EXERCISE_LEVEL_LABELS, ex.level) : null,
             ]
               .filter(Boolean)
-              .map((t) => (
+              .map((item) => (
                 <span
-                  key={t}
+                  key={item}
                   className="rounded-full border border-border px-3 py-1 text-sm font-medium text-muted-foreground"
                 >
-                  {t}
+                  {item}
                 </span>
               ))}
           </div>
@@ -172,8 +173,8 @@ function ExerciseDetail() {
       <div role="tablist" className="mt-6 flex rounded-2xl bg-card p-1">
         {(
           [
-            ["como", "Como fazer"],
-            ["historico", "Seu histórico"],
+            ["como", t("Como fazer")],
+            ["historico", t("Seu histórico")],
           ] as const
         ).map(([valor, rotulo]) => (
           <button
@@ -204,7 +205,7 @@ function ExerciseDetail() {
               <section className="mb-3 rounded-[1.25rem] bg-card p-4">
                 <h3 className="mb-3 flex items-center gap-2 font-bold">
                   <Target className="size-4" aria-hidden />
-                  Músculos trabalhados
+                  {t("Músculos trabalhados")}
                 </h3>
                 <div className="flex items-center gap-4">
                   <BodyMap
@@ -222,7 +223,7 @@ function ExerciseDetail() {
                   <dl className="min-w-0 space-y-3 text-sm">
                     <div>
                       <dt className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                        Principal
+                        {t("Principal")}
                       </dt>
                       <dd className="mt-0.5">
                         <span className="rounded-full bg-primary px-2.5 py-0.5 text-sm font-bold text-primary-foreground">
@@ -233,7 +234,7 @@ function ExerciseDetail() {
                     {secundarios.length > 0 && (
                       <div>
                         <dt className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                          Secundários
+                          {t("Secundários")}
                         </dt>
                         <dd className="mt-1 flex flex-wrap gap-1.5">
                           {secundarios.map((m) => (
@@ -259,7 +260,7 @@ function ExerciseDetail() {
               >
                 <span className="flex items-center gap-2.5">
                   <PlayCircle className="size-5 text-primary" aria-hidden />
-                  Ver vídeos de execução
+                  {t("Ver vídeos de execução")}
                 </span>
                 <ExternalLink className="size-4 text-muted-foreground" aria-hidden />
               </a>
@@ -329,8 +330,10 @@ function Historico({
       ) : sessions.length === 0 ? (
         <EmptyState
           icon={<TrendingUp className="size-6" />}
-          title="Sem registros neste período"
-          description="Assim que você registrar séries deste exercício, a progressão de carga aparece aqui."
+          title={t("Sem registros neste período")}
+          description={t(
+            "Assim que você registrar séries deste exercício, a progressão de carga aparece aqui.",
+          )}
           action={
             <Button asChild>
               <Link to="/plan">Ir para o plano</Link>
@@ -342,26 +345,26 @@ function Historico({
           <div className="grid grid-cols-3 gap-2">
             <Stat
               destaque
-              label="Recorde"
+              label={t("Recorde")}
               value={recorde ? `${Math.round(recorde.bestE1rm)}` : "—"}
               unit="kg"
               sub={recorde?.bestSet ? `${recorde.bestSet.weight} × ${recorde.bestSet.reps}` : ""}
             />
             <Stat
-              label="Sessões"
+              label={t("Sessões")}
               value={String(sessions.length)}
-              sub={`${sessions.reduce((n, s) => n + s.workingSets, 0)} séries`}
+              sub={t("{{v0}} séries", { v0: sessions.reduce((n, s) => n + s.workingSets, 0) })}
             />
             <Stat
-              label="Evolução"
+              label={t("Evolução")}
               value={ganho === null ? "—" : `${ganho >= 0 ? "+" : ""}${ganho.toFixed(0)}%`}
-              sub="1RM estimado"
+              sub={t("1RM estimado")}
             />
           </div>
 
           <section className="rounded-[1.25rem] bg-card p-4">
-            <h3 className="font-bold">Progressão de carga</h3>
-            <p className="text-xs text-muted-foreground">1RM estimado por sessão</p>
+            <h3 className="font-bold">{t("Progressão de carga")}</h3>
+            <p className="text-xs text-muted-foreground">{t("1RM estimado por sessão")}</p>
             <div className="mt-3 h-52">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
@@ -372,7 +375,7 @@ function Historico({
                     contentStyle={CHART_TOOLTIP_STYLE}
                     labelStyle={CHART_TOOLTIP_LABEL_STYLE}
                     cursor={{ stroke: "var(--border)" }}
-                    formatter={(value: number) => [`${value} kg`, "1RM estimado"]}
+                    formatter={(value: number) => [t("{{value}} kg", { value }), t("1RM estimado")]}
                   />
                   <Area
                     type="monotone"
@@ -390,8 +393,8 @@ function Historico({
           </section>
 
           <section className="rounded-[1.25rem] bg-card p-4">
-            <h3 className="font-bold">Volume por sessão</h3>
-            <p className="text-xs text-muted-foreground">peso × repetições, em kg</p>
+            <h3 className="font-bold">{t("Volume por sessão")}</h3>
+            <p className="text-xs text-muted-foreground">{t("peso × repetições, em kg")}</p>
             <div className="mt-3 h-44">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
@@ -402,7 +405,10 @@ function Historico({
                     cursor={{ fill: "var(--muted)" }}
                     contentStyle={CHART_TOOLTIP_STYLE}
                     labelStyle={CHART_TOOLTIP_LABEL_STYLE}
-                    formatter={(value: number) => [`${value.toLocaleString(LOCALE)} kg`, "Volume"]}
+                    formatter={(value: number) => [
+                      t("{{v0}} kg", { v0: value.toLocaleString(LOCALE) }),
+                      t("Volume"),
+                    ]}
                   />
                   <Bar dataKey="volume" fill="var(--chart-1)" radius={[6, 6, 2, 2]} />
                 </BarChart>
@@ -411,7 +417,7 @@ function Historico({
           </section>
 
           <section className="overflow-hidden rounded-[1.25rem] bg-card">
-            <h3 className="px-4 pb-1 pt-4 font-bold">Sessões</h3>
+            <h3 className="px-4 pb-1 pt-4 font-bold">{t("Sessões")}</h3>
             <ul className="divide-y divide-border/60">
               {[...sessions].reverse().map((s) => (
                 <li key={s.sessionId}>
@@ -428,24 +434,33 @@ function Historico({
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="flex items-center gap-2 font-semibold">
-                        {s.bestSet ? `${s.bestSet.weight} kg × ${s.bestSet.reps}` : "—"}
+                        {s.bestSet
+                          ? t("{{weight}} kg × {{reps}}", {
+                              weight: s.bestSet.weight,
+                              reps: s.bestSet.reps,
+                            })
+                          : "—"}
                         {s.hasPr && (
                           <span className="flex items-center gap-1 rounded-full bg-warning/15 px-2 py-0.5 text-[11px] font-bold text-warning">
                             <Flag className="size-3" aria-hidden />
-                            Recorde
+                            {t("Recorde")}
                           </span>
                         )}
                       </span>
                       <span className="block text-xs text-muted-foreground">
-                        {s.workingSets} {s.workingSets === 1 ? "série" : "séries"} ·{" "}
-                        {Math.round(s.volume).toLocaleString(LOCALE)} kg de volume
+                        {s.workingSets} {s.workingSets === 1 ? t("série") : t("séries")}{" "}
+                        {t("· {{v0}} kg de volume", {
+                          v0: Math.round(s.volume).toLocaleString(LOCALE),
+                        })}
                       </span>
                     </span>
                     <span className="shrink-0 text-right">
                       <span className="block font-extrabold tabular-nums">
                         {Math.round(s.bestE1rm)}
                       </span>
-                      <span className="text-[10px] uppercase text-muted-foreground">1RM kg</span>
+                      <span className="text-[10px] uppercase text-muted-foreground">
+                        {t("1RM kg")}
+                      </span>
                     </span>
                   </Link>
                 </li>

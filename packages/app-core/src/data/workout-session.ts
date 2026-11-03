@@ -13,6 +13,7 @@ import {
   type ExerciseComparison,
   type SimpleSet,
 } from "@forja/domain";
+import { t } from "../i18n";
 
 /**
  * A sessão de treino como o usuário a executa.
@@ -140,7 +141,7 @@ export async function fetchWorkoutBoard(sessionId: string): Promise<WorkoutBoard
 
     if (!grupo) {
       const ex = row.exercises;
-      const nome = ex?.name ?? "Exercício";
+      const nome = ex?.name ?? t("Exercício");
       const p = prescricao.get(row.exercise_id);
 
       grupo = {
@@ -834,7 +835,7 @@ export async function fetchOpenSession(): Promise<{
       "SELECT rest_seconds FROM workout_sets WHERE session_id = ?",
       [aberta.id],
     );
-    const planned = series.reduce((t, s) => t + num(s.rest_seconds, 90) + 35, 0);
+    const planned = series.reduce((item, s) => item + num(s.rest_seconds, 90) + 35, 0);
     return {
       id: aberta.id,
       startedAt: aberta.started_at,
@@ -855,7 +856,7 @@ export async function fetchOpenSession(): Promise<{
   );
   if (!row) return null;
   const series = row.workout_sets ?? [];
-  const plannedSeconds = series.reduce((t, s) => t + num(s.rest_seconds, 90) + 35, 0);
+  const plannedSeconds = series.reduce((item, s) => item + num(s.rest_seconds, 90) + 35, 0);
   return {
     id: row.id,
     startedAt: row.started_at,

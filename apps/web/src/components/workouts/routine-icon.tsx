@@ -17,6 +17,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { guessRoutineIcon } from "@forja/app-core/lib/routine-icons";
+import { t } from "@forja/app-core/i18n";
 
 export { guessRoutineIcon };
 
@@ -64,21 +65,21 @@ function TorsoIcon(props: SVGProps<SVGSVGElement>) {
 type Icone = ComponentType<SVGProps<SVGSVGElement>>;
 
 export const ROUTINE_ICONS: { key: string; label: string; Icon: Icone }[] = [
-  { key: "braco", label: "Braço", Icon: BicepsFlexed },
-  { key: "perna", label: "Perna", Icon: LegIcon },
-  { key: "tronco", label: "Peito", Icon: TorsoIcon },
-  { key: "halter", label: "Halter", Icon: Dumbbell },
-  { key: "peso", label: "Peso", Icon: Weight },
-  { key: "punho", label: "Força", Icon: HandFist },
-  { key: "corpo", label: "Corpo todo", Icon: PersonStanding },
-  { key: "mobilidade", label: "Mobilidade", Icon: Accessibility },
-  { key: "corrida", label: "Corrida", Icon: Footprints },
-  { key: "cardio", label: "Cardio", Icon: HeartPulse },
-  { key: "queima", label: "Queima", Icon: Flame },
-  { key: "explosao", label: "Explosão", Icon: Zap },
-  { key: "foco", label: "Foco", Icon: Target },
-  { key: "desafio", label: "Desafio", Icon: Mountain },
-  { key: "meta", label: "Meta", Icon: Trophy },
+  { key: "braco", label: t("Braço"), Icon: BicepsFlexed },
+  { key: "perna", label: t("Perna"), Icon: LegIcon },
+  { key: "tronco", label: t("Peito"), Icon: TorsoIcon },
+  { key: "halter", label: t("Halter"), Icon: Dumbbell },
+  { key: "peso", label: t("Peso"), Icon: Weight },
+  { key: "punho", label: t("Força"), Icon: HandFist },
+  { key: "corpo", label: t("Corpo todo"), Icon: PersonStanding },
+  { key: "mobilidade", label: t("Mobilidade"), Icon: Accessibility },
+  { key: "corrida", label: t("Corrida"), Icon: Footprints },
+  { key: "cardio", label: t("Cardio"), Icon: HeartPulse },
+  { key: "queima", label: t("Queima"), Icon: Flame },
+  { key: "explosao", label: t("Explosão"), Icon: Zap },
+  { key: "foco", label: t("Foco"), Icon: Target },
+  { key: "desafio", label: t("Desafio"), Icon: Mountain },
+  { key: "meta", label: t("Meta"), Icon: Trophy },
 ];
 
 /** O componente do ícone de uma rotina (escolhido ou pelo nome). */
@@ -131,7 +132,7 @@ export function RoutineIconPicker({
       <PopoverTrigger asChild>
         <button
           type="button"
-          aria-label={`Trocar o ícone de ${name}`}
+          aria-label={t("Trocar o ícone de {{name}}", { name })}
           className="shrink-0 rounded-xl transition-transform active:scale-95"
         >
           <RoutineIcon icon={icon} name={name} />
@@ -141,8 +142,8 @@ export function RoutineIconPicker({
         align="start"
         className="w-auto rounded-[1.25rem] border-border bg-card p-3 shadow-xl"
       >
-        <p className="mb-2 px-1 text-sm font-semibold">Ícone da rotina</p>
-        <div role="radiogroup" aria-label="Ícone da rotina" className="grid grid-cols-5 gap-2">
+        <p className="mb-2 px-1 text-sm font-semibold">{t("Ícone da rotina")}</p>
+        <div role="radiogroup" aria-label={t("Ícone da rotina")} className="grid grid-cols-5 gap-2">
           {ROUTINE_ICONS.map(({ key, label, Icon }) => (
             <button
               key={key}

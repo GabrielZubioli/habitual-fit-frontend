@@ -70,6 +70,7 @@ import { CATEGORY_EMOJI } from "@forja/app-core/lib/food-emoji";
 import { WeeklyMenu } from "@/components/diet/weekly-menu";
 import { AvisoProfissional } from "@/components/aviso-profissional";
 import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * O diário alimentar — agora um **plano executável**, não um registro.
@@ -94,8 +95,8 @@ import { LOCALE } from "@forja/app-core/i18n";
 export const Route = createFileRoute("/_authenticated/diet")({
   head: () => ({
     meta: [
-      { title: "Dieta — Habitual Fit" },
-      { name: "description", content: "Seu cardápio do dia, com substituições inteligentes." },
+      { title: t("Dieta — Habitual Fit") },
+      { name: "description", content: t("Seu cardápio do dia, com substituições inteligentes.") },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -145,7 +146,7 @@ function DietPage() {
   const remove = useMutation({
     mutationFn: removeEntry,
     onSuccess: () => {
-      toast.success("Item removido");
+      toast.success(t("Item removido"));
       void invalidate();
     },
     onError: (e) => toast.error(errorMessage(e)),
@@ -154,7 +155,7 @@ function DietPage() {
   const copyPreviousDay = useMutation({
     mutationFn: () => copiarDiaAnterior(userId, date),
     onSuccess: (n) => {
-      toast.success(`${n} ${n === 1 ? "item copiado" : "itens copiados"}`);
+      toast.success(`${n} ${n === 1 ? t("item copiado") : t("itens copiados")}`);
       void invalidate();
     },
     onError: (e) => toast.error(errorMessage(e)),
@@ -210,7 +211,9 @@ function DietPage() {
     },
     onSuccess: (_, { escopo }) => {
       toast.success(
-        escopo === "semana" ? "Refeição renomeada na semana toda" : "Refeição renomeada neste dia",
+        escopo === "semana"
+          ? t("Refeição renomeada na semana toda")
+          : t("Refeição renomeada neste dia"),
       );
       void qc.invalidateQueries({ queryKey: queryKeys.diet.activePlan() });
       void qc.invalidateQueries({ queryKey: [...queryKeys.diet.log(date), "nomes"] });
@@ -221,19 +224,19 @@ function DietPage() {
   return (
     <>
       <PageHeader
-        title="Dieta"
+        title={t("Dieta")}
         description={
           // Mesma altura nas duas abas (h-8, a do "Hoje ⌄"): o cabeçalho não
           // muda de tamanho e as abas abaixo não saem do lugar ao trocar.
           aba === "cardapio" ? (
-            <span className="flex h-8 items-center">Cardápio da semana</span>
+            <span className="flex h-8 items-center">{t("Cardápio da semana")}</span>
           ) : (
             <DatePicker
               simples
               value={date}
               onChange={setDate}
               className="h-8 w-auto gap-1 border-0 bg-transparent px-0 text-base text-muted-foreground hover:bg-transparent hover:text-foreground"
-              aria-label="Data do diário"
+              aria-label={t("Data do diário")}
             />
           )
         }
@@ -243,13 +246,13 @@ function DietPage() {
       <PageBody>
         <div
           role="tablist"
-          aria-label="Seção da dieta"
+          aria-label={t("Seção da dieta")}
           className="mb-6 flex rounded-full bg-card p-1"
         >
           {(
             [
-              ["diario", "Diário"],
-              ["cardapio", "Cardápio da semana"],
+              ["diario", t("Diário")],
+              ["cardapio", t("Cardápio da semana")],
             ] as const
           ).map(([v, rotulo]) => (
             <button
@@ -274,7 +277,7 @@ function DietPage() {
         ) : (
           <>
             {/* Resumo do dia direto no fundo: a caloria em destaque, os macros abaixo. */}
-            <section className="mb-6" aria-label="Resumo do dia">
+            <section className="mb-6" aria-label={t("Resumo do dia")}>
               {entries.isPending || profile.isPending ? (
                 <>
                   <Skeleton className="mx-auto size-[230px] rounded-full" />
@@ -296,7 +299,7 @@ function DietPage() {
                   </div>
                   <div className="mt-7 grid grid-cols-4 gap-2">
                     <MacroRing
-                      nome="Proteína"
+                      nome={t("Proteína")}
                       icone="🥩"
                       valor={totaisConsumidos.proteinG}
                       meta={num(profile.data?.protein_g_target)}
@@ -304,7 +307,7 @@ function DietPage() {
                       cor={MACRO_COLORS.protein}
                     />
                     <MacroRing
-                      nome="Carbo"
+                      nome={t("Carbo")}
                       icone="🫘"
                       valor={totaisConsumidos.carbsG}
                       meta={num(profile.data?.carbs_g_target)}
@@ -312,7 +315,7 @@ function DietPage() {
                       cor={MACRO_COLORS.carbs}
                     />
                     <MacroRing
-                      nome="Gordura"
+                      nome={t("Gordura")}
                       icone="🥑"
                       valor={totaisConsumidos.fatG}
                       meta={num(profile.data?.fat_g_target)}
@@ -320,7 +323,7 @@ function DietPage() {
                       cor={MACRO_COLORS.fat}
                     />
                     <MacroRing
-                      nome="Fibra"
+                      nome={t("Fibra")}
                       icone="🥦"
                       valor={totaisConsumidos.fiberG}
                       meta={num(profile.data?.fiber_g_target)}
@@ -332,7 +335,9 @@ function DietPage() {
                     <p className="mt-5 text-center text-xs text-muted-foreground">
                       Planejado para o dia:{" "}
                       <span className="font-semibold tabular-nums text-foreground">
-                        {Math.round(totaisPlanejados.kcal).toLocaleString(LOCALE)} kcal
+                        {t("{{v0}} kcal", {
+                          v0: Math.round(totaisPlanejados.kcal).toLocaleString(LOCALE),
+                        })}
                       </span>{" "}
                       · P {Math.round(totaisPlanejados.proteinG)} g
                     </p>
@@ -343,15 +348,15 @@ function DietPage() {
 
             {rows.length === 0 && !entries.isPending && !entries.isError && (
               <section className="mb-4 rounded-[1.25rem] border border-dashed border-primary/40 bg-primary/5 p-5">
-                <h2 className="text-lg font-bold">Monte suas refeições</h2>
+                <h2 className="text-lg font-bold">{t("Monte suas refeições")}</h2>
                 <p className="mt-1 text-pretty text-sm text-muted-foreground">
                   Suas refeições estão vazias. Os alimentos de cada refeição são montados no{" "}
-                  <b className="text-foreground">Cardápio da semana</b> e aparecem aqui, no dia,
-                  para você marcar o que comeu. Monte por conta própria ou siga a orientação do seu
-                  nutricionista.
+                  <b className="text-foreground">{t("Cardápio da semana")}</b> e aparecem aqui, no
+                  dia, para você marcar o que comeu. Monte por conta própria ou siga a orientação do
+                  seu nutricionista.
                 </p>
                 <Button className="mt-4 h-11 rounded-xl" onClick={() => setAba("cardapio")}>
-                  Abrir o Cardápio da semana
+                  {t("Abrir o Cardápio da semana")}
                 </Button>
               </section>
             )}
@@ -386,7 +391,7 @@ function DietPage() {
                 disabled={copyPreviousDay.isPending}
               >
                 <CopyPlus className="mr-1.5 size-4" />
-                Copiar o dia anterior
+                {t("Copiar o dia anterior")}
               </Button>
             )}
 
@@ -460,8 +465,8 @@ function MealCard({
       const dia = qc.getQueryData<DayEntry[]>(queryKeys.diet.log(date)) ?? [];
       const daRefeicao = dia.filter((e) => e.slot === slot);
       if (consumed && daRefeicao.length > 0 && daRefeicao.every((e) => e.consumed)) {
-        toast.success(`${nome} concluída`, {
-          description: "Suas calorias e macros do dia já foram atualizados.",
+        toast.success(t("{{nome}} concluída", { nome }), {
+          description: t("Suas calorias e macros do dia já foram atualizados."),
         });
       }
     },
@@ -475,7 +480,7 @@ function MealCard({
   const concluirRefeicao = useMutation({
     mutationFn: (consumed: boolean) => setMealConsumed(date, slot, consumed),
     onSuccess: (_r, consumed) => {
-      if (consumed) toast.success(`${nome} concluída`);
+      if (consumed) toast.success(t("{{nome}} concluída", { nome }));
       void onChanged();
     },
     onError: (e) => toast.error(errorMessage(e)),
@@ -488,7 +493,7 @@ function MealCard({
       await recordSubstitutionPreference(userId, p.entry.foodId, p.foodId);
     },
     onSuccess: () => {
-      toast.success("Alimento substituído");
+      toast.success(t("Alimento substituído"));
       void onChanged();
     },
     onError: (e) => toast.error(errorMessage(e)),
@@ -497,7 +502,7 @@ function MealCard({
   const ajustarQuantidade = useMutation({
     mutationFn: ({ id, grams }: { id: string; grams: number }) => setEntryGrams(id, grams),
     onSuccess: () => {
-      toast.success("Quantidade atualizada");
+      toast.success(t("Quantidade atualizada"));
       void onChanged();
     },
     onError: (e) => toast.error(errorMessage(e)),
@@ -525,7 +530,7 @@ function MealCard({
                 <Check
                   className="size-4 shrink-0 text-primary"
                   strokeWidth={3}
-                  aria-label="concluída"
+                  aria-label={t("concluída")}
                 />
               )}
             </h3>
@@ -535,7 +540,10 @@ function MealCard({
                   {items.length} {items.length === 1 ? "alimento" : "alimentos"}
                 </span>
                 <span className="whitespace-nowrap rounded-full bg-primary/15 px-2 py-0.5 font-bold tabular-nums text-primary">
-                  {Math.round(totals.kcal)} kcal · P {Math.round(totals.proteinG)} g
+                  {t("{{v0}} kcal · P {{v1}} g", {
+                    v0: Math.round(totals.kcal),
+                    v1: Math.round(totals.proteinG),
+                  })}
                 </span>
               </p>
             )}
@@ -546,7 +554,7 @@ function MealCard({
               type="button"
               onClick={() => setAberta((v) => !v)}
               aria-expanded={aberta}
-              aria-label={aberta ? `Fechar ${nome}` : `Abrir ${nome}`}
+              aria-label={aberta ? t("Fechar {{nome}}", { nome }) : t("Abrir {{nome}}", { nome })}
               className="grid size-10 shrink-0 place-items-center rounded-full bg-primary/15 text-primary transition-colors hover:bg-primary/25"
             >
               <ChevronDown
@@ -563,7 +571,7 @@ function MealCard({
           </div>
         ) : items.length === 0 ? (
           <p className="py-3 text-center text-sm text-muted-foreground">
-            Refeição vazia — adicione alimentos no Cardápio da semana.
+            {t("Refeição vazia — adicione alimentos no Cardápio da semana.")}
           </p>
         ) : (
           <>
@@ -590,7 +598,7 @@ function MealCard({
                 disabled={concluirRefeicao.isPending}
               >
                 <Check className="mr-1.5 size-4" />
-                Concluir refeição
+                {t("Concluir refeição")}
               </Button>
             )}
           </>
@@ -661,7 +669,7 @@ function FoodRow({
         <Checkbox
           checked={item.consumed}
           onCheckedChange={(v) => onToggle(v === true)}
-          aria-label={`Marcar ${item.name} como consumido`}
+          aria-label={t("Marcar {{name}} como consumido", { name: item.name })}
           className="size-5 shrink-0"
         />
 
@@ -672,20 +680,26 @@ function FoodRow({
             {item.name}
           </p>
           <p className="text-[13px] tabular-nums text-muted-foreground">
-            {Math.round(macros.kcal)} kcal · P {macros.proteinG.toFixed(0)} g
+            {t("{{v0}} kcal · P {{v1}} g", {
+              v0: Math.round(macros.kcal),
+              v1: macros.proteinG.toFixed(0),
+            })}
           </p>
           <p className="text-[11px] tabular-nums text-muted-foreground">
             <button
               type="button"
               onClick={() => setEditando((v) => !v)}
               className="font-medium text-foreground underline decoration-dotted underline-offset-2"
-              aria-label={`Alterar a quantidade de ${item.name}`}
+              aria-label={t("Alterar a quantidade de {{name}}", { name: item.name })}
             >
-              {Math.round(item.grams)} g
+              {t("{{v0}} g", { v0: Math.round(item.grams) })}
             </button>
             {medida && <span className="ml-1">({medida})</span>}
             <span className="ml-1">
-              · C {macros.carbsG.toFixed(0)} g · G {macros.fatG.toFixed(0)} g
+              {t("· C {{v0}} g · G {{v1}} g", {
+                v0: macros.carbsG.toFixed(0),
+                v1: macros.fatG.toFixed(0),
+              })}
             </span>
           </p>
         </div>
@@ -704,7 +718,7 @@ function FoodRow({
               className="hidden h-8 shrink-0 px-2 text-xs sm:inline-flex"
             >
               <Repeat className="mr-1 size-3.5" />
-              Substituir
+              {t("Substituir")}
             </Button>
           }
         />
@@ -715,7 +729,7 @@ function FoodRow({
               size="icon"
               variant="ghost"
               className="size-8 shrink-0"
-              aria-label={`Opções de ${item.name}`}
+              aria-label={t("Opções de {{name}}", { name: item.name })}
             >
               <MoreVertical className="size-4" />
             </Button>
@@ -728,20 +742,20 @@ function FoodRow({
               trigger={
                 <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="sm:hidden">
                   <Repeat className="mr-2 size-4" />
-                  Substituir
+                  {t("Substituir")}
                 </DropdownMenuItem>
               }
             />
             <DropdownMenuItem onSelect={() => setEditando(true)}>
               <Pencil className="mr-2 size-4" />
-              Alterar quantidade
+              {t("Alterar quantidade")}
             </DropdownMenuItem>
             <DropdownMenuItem
               onSelect={onRemove}
               className="text-destructive focus:text-destructive"
             >
               <Trash2 className="mr-2 size-4" />
-              Remover
+              {t("Remover")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -791,7 +805,7 @@ function GramsEditor({
         variant="outline"
         className="size-9 shrink-0"
         onClick={() => setValor(String(Math.max(1, numero - 10)))}
-        aria-label="Diminuir 10 gramas"
+        aria-label={t("Diminuir 10 gramas")}
       >
         <Minus className="size-4" />
       </Button>
@@ -803,7 +817,7 @@ function GramsEditor({
         value={valor}
         onChange={(e) => setValor(e.target.value)}
         className="h-9 flex-1 tabular-nums"
-        aria-label={`Quantidade de ${name} em gramas`}
+        aria-label={t("Quantidade de {{name}} em gramas", { name })}
         autoFocus
       />
 
@@ -812,16 +826,16 @@ function GramsEditor({
         variant="outline"
         className="size-9 shrink-0"
         onClick={() => setValor(String(numero + 10))}
-        aria-label="Aumentar 10 gramas"
+        aria-label={t("Aumentar 10 gramas")}
       >
         <Plus className="size-4" />
       </Button>
 
       <Button size="sm" className="h-9 shrink-0" onClick={() => onSave(numero)}>
-        Salvar
+        {t("Salvar")}
       </Button>
       <Button size="sm" variant="ghost" className="h-9 shrink-0" onClick={onCancel}>
-        Cancelar
+        {t("Cancelar")}
       </Button>
     </div>
   );
@@ -873,7 +887,7 @@ function RenomearRefeicao({
       <DialogTrigger asChild>
         <button
           type="button"
-          aria-label={`Renomear ${atual}`}
+          aria-label={t("Renomear {{atual}}", { atual })}
           className="grid size-7 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-elevated hover:text-foreground"
         >
           <Pencil className="size-3.5" />
@@ -883,8 +897,10 @@ function RenomearRefeicao({
         {etapa === "nome" ? (
           <>
             <DialogHeader>
-              <DialogTitle>Nome da refeição</DialogTitle>
-              <DialogDescription>Deixe em branco para voltar a “{padrao}”.</DialogDescription>
+              <DialogTitle>{t("Nome da refeição")}</DialogTitle>
+              <DialogDescription>
+                {t("Deixe em branco para voltar a “{{padrao}}”.", { padrao })}
+              </DialogDescription>
             </DialogHeader>
             <form
               onSubmit={(e) => {
@@ -901,19 +917,21 @@ function RenomearRefeicao({
                 onChange={(e) => setNome(e.target.value)}
                 placeholder={padrao}
                 className="h-12 text-lg"
-                aria-label="Nome da refeição"
+                aria-label={t("Nome da refeição")}
               />
               <Button type="submit" className="h-12 w-full">
-                Continuar
+                {t("Continuar")}
               </Button>
             </form>
           </>
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle>Renomear para “{novo}”</DialogTitle>
+              <DialogTitle>{t("Renomear para “{{novo}}”", { novo })}</DialogTitle>
               <DialogDescription>
-                Deseja alterar o nome de todas as refeições correspondentes no cardápio da semana?
+                {t(
+                  "Deseja alterar o nome de todas as refeições correspondentes no cardápio da semana?",
+                )}
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-2">
@@ -932,7 +950,7 @@ function RenomearRefeicao({
                 onClick={() => void salvar("dia")}
               >
                 {salvando === "dia" && <Loader2 className="mr-2 size-4 animate-spin" />}
-                {diaHoje ? "Não, somente hoje" : "Não, somente neste dia"}
+                {diaHoje ? t("Não, somente hoje") : t("Não, somente neste dia")}
               </Button>
               <Button
                 variant="ghost"
@@ -940,7 +958,7 @@ function RenomearRefeicao({
                 disabled={salvando !== null}
                 onClick={() => setAberto(false)}
               >
-                Cancelar
+                {t("Cancelar")}
               </Button>
             </div>
           </>
@@ -965,7 +983,7 @@ function SemanaDias({
 }) {
   const inicio = startOfWeek(fromISODate(date), { weekStartsOn: 1 });
   return (
-    <div role="radiogroup" aria-label="Dia da semana" className="flex">
+    <div role="radiogroup" aria-label={t("Dia da semana")} className="flex">
       {Array.from({ length: 7 }, (_, i) => {
         const iso = toISODate(addDays(inicio, i));
         const ativo = iso === date;
@@ -975,7 +993,7 @@ function SemanaDias({
             type="button"
             role="radio"
             aria-checked={ativo}
-            aria-label={`${formatDate(iso, "EEEE, d 'de' MMMM")}${iso === hoje ? ", hoje" : ""}`}
+            aria-label={`${formatDate(iso, t("EEEE, d 'de' MMMM"))}${iso === hoje ? ", hoje" : ""}`}
             onClick={() => onChange(iso)}
             className={cn(
               "flex w-7 flex-col items-center rounded-xl py-1.5 leading-tight transition-colors min-[380px]:w-8",

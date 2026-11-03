@@ -5,6 +5,7 @@ import { deleteById, updateById } from "./rows";
 import { addDays } from "date-fns";
 import { weekdayOf, type FoodCandidate, type MealSlot } from "@forja/domain";
 import { fromISODate, toISODate } from "../lib/date";
+import { t } from "../i18n";
 
 /**
  * O dia do diário.
@@ -334,7 +335,7 @@ export async function fetchDayEntries(date: string): Promise<DayEntry[]> {
     id: r.id,
     slot: r.meal_slot as MealSlot,
     foodId: r.food_id,
-    name: r.foods?.name ?? "Alimento removido",
+    name: r.foods?.name ?? t("Alimento removido"),
     // `grams` é nulo quando o registro veio por porções; converter aqui evita
     // espalhar a regra `grams ?? servings * serving_size` por toda a UI.
     grams: r.grams !== null ? num(r.grams) : num(r.servings, 1) * num(r.foods?.serving_size_g, 100),
@@ -375,7 +376,7 @@ export async function setEntryGrams(entryId: string, grams: number): Promise<voi
 /** Marca ou desmarca um item como consumido. */
 export async function setConsumed(entryId: string, consumed: boolean): Promise<void> {
   await updateById(
-    consumed ? "marcar como consumido" : "desmarcar item",
+    consumed ? t("marcar como consumido") : t("desmarcar item"),
     "food_log_entries",
     entryId,
     { consumed, consumed_at: consumed ? new Date().toISOString() : null },

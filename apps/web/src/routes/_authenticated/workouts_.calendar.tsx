@@ -28,12 +28,13 @@ import { queryKeys } from "@forja/app-core/data/query-keys";
 import { formatDate, formatDuration, toISODate, todayISO } from "@forja/app-core/lib/date";
 import { type Weekday } from "@forja/domain";
 import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 export const Route = createFileRoute("/_authenticated/workouts_/calendar")({
   head: () => ({
     meta: [
-      { title: "Calendário de treinos — Habitual Fit" },
-      { name: "description", content: "Veja seus treinos por mês e acompanhe a constância." },
+      { title: t("Calendário de treinos — Habitual Fit") },
+      { name: "description", content: t("Veja seus treinos por mês e acompanhe a constância.") },
     ],
   }),
   component: WorkoutCalendar,
@@ -95,22 +96,22 @@ function WorkoutCalendar() {
   return (
     <>
       <PageHeader
-        title="Calendário"
-        description="Seus treinos por mês."
+        title={t("Calendário")}
+        description={t("Seus treinos por mês.")}
         action={<BackButton fallback="/plan" />}
       />
       <PageBody>
         <Card className="mx-auto max-w-2xl">
           <CardHeader className="flex-row items-center justify-between space-y-0 pb-3">
             <CardTitle className="text-base capitalize">
-              {formatDate(monthCursor, "MMMM 'de' yyyy")}
+              {formatDate(monthCursor, t("MMMM 'de' yyyy"))}
             </CardTitle>
             <div className="flex items-center gap-1">
               <Button
                 size="icon"
                 variant="ghost"
                 onClick={() => setMonthCursor((m) => subMonths(m, 1))}
-                aria-label="Mês anterior"
+                aria-label={t("Mês anterior")}
               >
                 <ChevronLeft className="size-4" />
               </Button>
@@ -119,13 +120,13 @@ function WorkoutCalendar() {
                 variant="ghost"
                 onClick={() => setMonthCursor(startOfMonth(new Date()))}
               >
-                Hoje
+                {t("Hoje")}
               </Button>
               <Button
                 size="icon"
                 variant="ghost"
                 onClick={() => setMonthCursor((m) => addMonths(m, 1))}
-                aria-label="Próximo mês"
+                aria-label={t("Próximo mês")}
               >
                 <ChevronRight className="size-4" />
               </Button>
@@ -174,10 +175,13 @@ function WorkoutCalendar() {
                           type="button"
                           onClick={() => setSelectedDate(temTreino ? iso : null)}
                           disabled={!temTreino}
-                          aria-label={`${formatDate(iso, "dd 'de' MMMM")}: ${
+                          aria-label={`${formatDate(iso, t("dd 'de' MMMM"))}: ${
                             temTreino
-                              ? `${treinos.length} treino${treinos.length > 1 ? "s" : ""}`
-                              : "sem treino"
+                              ? t("{{length}} treino{{v1}}", {
+                                  length: treinos.length,
+                                  v1: treinos.length > 1 ? "s" : "",
+                                })
+                              : t("sem treino")
                           }`}
                           aria-pressed={selectedDate === iso}
                           className={cn(
@@ -207,12 +211,17 @@ function WorkoutCalendar() {
                 <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3 text-sm">
                   <span className="text-muted-foreground">
                     {doMes.length === 0
-                      ? "Nenhum treino neste mês"
-                      : `${doMes.length} ${doMes.length === 1 ? "treino" : "treinos"} neste mês`}
+                      ? t("Nenhum treino neste mês")
+                      : t("{{length}} {{v1}} neste mês", {
+                          length: doMes.length,
+                          v1: doMes.length === 1 ? "treino" : "treinos",
+                        })}
                   </span>
                   {volumeMes > 0 && (
                     <span className="text-muted-foreground">
-                      {Math.round(volumeMes).toLocaleString(LOCALE)} kg de volume
+                      {t("{{v0}} kg de volume", {
+                        v0: Math.round(volumeMes).toLocaleString(LOCALE),
+                      })}
                     </span>
                   )}
                 </div>
@@ -225,7 +234,7 @@ function WorkoutCalendar() {
           <Card className="mx-auto mt-4 max-w-2xl">
             <CardHeader className="pb-3">
               <CardTitle className="text-base">
-                {formatDate(selectedDate, "EEEE, dd 'de' MMMM")}
+                {formatDate(selectedDate, t("EEEE, dd 'de' MMMM"))}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
@@ -265,8 +274,8 @@ function WorkoutCalendar() {
           <div className="mx-auto mt-4 max-w-2xl">
             <EmptyState
               icon={<CalendarDays className="size-6" />}
-              title="Nenhum treino neste período"
-              description="Assim que você finalizar um treino, ele aparece aqui."
+              title={t("Nenhum treino neste período")}
+              description={t("Assim que você finalizar um treino, ele aparece aqui.")}
               action={
                 <Button asChild>
                   <Link to="/plan">Ir para treinos</Link>

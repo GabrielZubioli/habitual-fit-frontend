@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * A marca Habitual Fit. Os arquivos vêm de `brand/` (vetorizados da arte
@@ -28,7 +29,11 @@ export function BrandSymbol({
 /** Símbolo + nome. O nome é escuro no tema claro e branco no escuro. */
 export function BrandLogo({ className }: { className?: string }) {
   return (
-    <span role="img" aria-label="Habitual Fit" className={cn("inline-flex shrink-0", className)}>
+    <span
+      role="img"
+      aria-label={t("Habitual Fit")}
+      className={cn("inline-flex shrink-0", className)}
+    >
       <img
         src="/brand/habitual-fit-logo-horizontal-clara-ui.svg"
         alt=""

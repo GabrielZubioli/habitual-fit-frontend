@@ -1,5 +1,6 @@
 import { Apple, Dumbbell, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Avisos de orientação profissional — o que o app é e o que não é.
@@ -12,27 +13,31 @@ import { cn } from "@/lib/utils";
 const AVISOS = {
   treino: {
     icon: Dumbbell,
-    titulo: "O plano sugerido é uma referência geral",
-    texto:
+    titulo: t("O plano sugerido é uma referência geral"),
+    texto: t(
       "Ele é montado a partir das suas respostas e não substitui a orientação individualizada de um profissional de educação física.",
+    ),
   },
   dieta: {
     icon: Apple,
-    titulo: "O app não prescreve dietas",
-    texto:
+    titulo: t("O app não prescreve dietas"),
+    texto: t(
       "Monte e registre suas refeições aqui. O planejamento alimentar — o que, quanto e quando comer — deve ser orientado por um nutricionista.",
+    ),
   },
   lesao: {
     icon: Info,
-    titulo: "Você informou uma lesão ou dor",
-    texto:
+    titulo: t("Você informou uma lesão ou dor"),
+    texto: t(
       "Deixamos de fora os exercícios que carregam essa região, mas a seleção automática é só uma referência geral — não é avaliação clínica. Antes de treinar, procure orientação de um profissional de saúde e de educação física.",
+    ),
   },
   app: {
     icon: Info,
-    titulo: "Para que serve o Habitual Fit",
-    texto:
+    titulo: t("Para que serve o Habitual Fit"),
+    texto: t(
       "É uma ferramenta para organizar, acompanhar e gerenciar seus treinos e hábitos. Não é um serviço de consulta profissional.",
+    ),
   },
 } as const;
 
@@ -47,13 +52,13 @@ export function AvisoProfissional({
 }) {
   return (
     <section
-      aria-label="Avisos sobre orientação profissional"
+      aria-label={t("Avisos sobre orientação profissional")}
       className={cn("space-y-3 rounded-[1.25rem] border border-border bg-card p-4", className)}
     >
-      {tipos.map((t) => {
-        const { icon: Icon, titulo, texto } = AVISOS[t];
+      {tipos.map((item) => {
+        const { icon: Icon, titulo, texto } = AVISOS[item];
         return (
-          <div key={t} className="flex gap-3">
+          <div key={item} className="flex gap-3">
             <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/12 text-primary">
               <Icon className="size-4" aria-hidden />
             </span>

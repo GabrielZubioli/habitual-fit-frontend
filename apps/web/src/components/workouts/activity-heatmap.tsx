@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/query-boundary";
 import { formatDate, toISODate } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
+import { t } from "@forja/app-core/i18n";
 
 const WEEKS = 53;
 
@@ -32,14 +33,14 @@ export function ActivityHeatmap() {
   }
 
   const porDia = new Map<string, number>();
-  for (const t of treinos.data) porDia.set(t.date, (porDia.get(t.date) ?? 0) + 1);
+  for (const item of treinos.data) porDia.set(item.date, (porDia.get(item.date) ?? 0) + 1);
   const dias = Array.from({ length: WEEKS * 7 }, (_, i) => toISODate(addDays(inicio, i)));
   const total = treinos.data.length;
 
   const nDia = dia ? (porDia.get(dia) ?? 0) : 0;
   const semanasAtivas = new Set(
-    treinos.data.map((t) =>
-      toISODate(startOfWeek(new Date(`${t.date}T12:00:00`), { weekStartsOn: 1 })),
+    treinos.data.map((item) =>
+      toISODate(startOfWeek(new Date(`${item.date}T12:00:00`), { weekStartsOn: 1 })),
     ),
   ).size;
 
@@ -49,7 +50,8 @@ export function ActivityHeatmap() {
         <p>
           <span className="text-3xl font-extrabold tabular-nums text-primary">{total}</span>{" "}
           <span className="text-sm text-muted-foreground">
-            {total === 1 ? "treino" : "treinos"} · {semanasAtivas} semanas ativas
+            {total === 1 ? "treino" : "treinos"}{" "}
+            {t("· {{semanasAtivas}} semanas ativas", { semanasAtivas })}
           </span>
         </p>
         <span className="flex items-center gap-1 text-[10px] text-muted-foreground" aria-hidden>
@@ -66,7 +68,10 @@ export function ActivityHeatmap() {
           dir="ltr"
           className="grid w-max grid-flow-col grid-rows-7 gap-[3px]"
           role="img"
-          aria-label={`Mapa de treinos: ${total} treinos nas últimas ${WEEKS} semanas`}
+          aria-label={t("Mapa de treinos: {{total}} treinos nas últimas {{WEEKS}} semanas", {
+            total,
+            WEEKS,
+          })}
           onClick={(e) => {
             const d = (e.target as HTMLElement).dataset.dia;
             if (d) setDia(d === dia ? null : d);
@@ -78,7 +83,7 @@ export function ActivityHeatmap() {
               <span
                 key={d}
                 data-dia={d > ate ? undefined : d}
-                title={`${formatDate(d, "d 'de' MMM")}: ${n === 0 ? "sem treino" : `${n} treino${n > 1 ? "s" : ""}`}`}
+                title={`${formatDate(d, t("d 'de' MMM"))}: ${n === 0 ? t("sem treino") : t("{{n}} treino{{v1}}", { n, v1: n > 1 ? "s" : "" })}`}
                 className={cn(
                   "size-3 cursor-pointer rounded-[3px] transition-transform hover:scale-125",
                   d > ate
@@ -99,14 +104,21 @@ export function ActivityHeatmap() {
       <p className="mt-3 min-h-5 text-sm" aria-live="polite">
         {dia ? (
           <>
-            <span className="font-semibold capitalize">{formatDate(dia, "EEEE, d 'de' MMMM")}</span>
+            <span className="font-semibold capitalize">
+              {formatDate(dia, t("EEEE, d 'de' MMMM"))}
+            </span>
             <span className="text-muted-foreground">
               {" "}
-              · {nDia === 0 ? "sem treino" : `${nDia} treino${nDia > 1 ? "s" : ""}`}
+              ·{" "}
+              {nDia === 0
+                ? t("sem treino")
+                : t("{{nDia}} treino{{v1}}", { nDia, v1: nDia > 1 ? "s" : "" })}
             </span>
           </>
         ) : (
-          <span className="text-muted-foreground">Toque em um dia para ver os detalhes.</span>
+          <span className="text-muted-foreground">
+            {t("Toque em um dia para ver os detalhes.")}
+          </span>
         )}
       </p>
     </div>

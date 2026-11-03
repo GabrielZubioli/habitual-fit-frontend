@@ -17,6 +17,7 @@ import { MUSCLE_LABELS, label } from "@forja/app-core/lib/labels";
 import { todayISO } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
 import { weeklySetsByBodyPart, type BodyPart } from "@forja/domain";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Recuperação por músculo: o mapa mostra a fadiga, a lista diz quanto falta.
@@ -40,7 +41,7 @@ export function RecoveryCard() {
   if (musculos.length === 0) {
     return (
       <p className="px-1 text-sm text-muted-foreground">
-        Nenhum músculo treinado nos últimos dias — tudo descansado.
+        {t("Nenhum músculo treinado nos últimos dias — tudo descansado.")}
       </p>
     );
   }
@@ -61,7 +62,7 @@ export function RecoveryCard() {
           className="mx-auto"
         />
         <p className="mt-1 text-center text-xs text-muted-foreground">
-          Laranja: fadigado · verde: pronto
+          {t("Laranja: fadigado · verde: pronto")}
         </p>
       </div>
       <ul className="space-y-2.5">
@@ -79,7 +80,10 @@ export function RecoveryCard() {
               aria-valuemin={0}
               aria-valuemax={100}
               aria-valuenow={m.percent}
-              aria-label={`${label(MUSCLE_LABELS, m.muscle)}: ${m.percent}% recuperado`}
+              aria-label={t("{{v0}}: {{percent}}% recuperado", {
+                v0: label(MUSCLE_LABELS, m.muscle),
+                percent: m.percent,
+              })}
             >
               <div
                 className="h-full rounded-full"
@@ -94,12 +98,12 @@ export function RecoveryCard() {
 }
 
 const PART_LABELS: Record<BodyPart, string> = {
-  peito: "Peito",
-  costas: "Costas",
-  ombros: "Ombros",
-  bracos: "Braços",
-  pernas: "Pernas",
-  core: "Core",
+  peito: t("Peito"),
+  costas: t("Costas"),
+  ombros: t("Ombros"),
+  bracos: t("Braços"),
+  pernas: t("Pernas"),
+  core: t("Core"),
 };
 
 const WEEKS = 8;
@@ -123,7 +127,7 @@ export function BodyPartProgressCard() {
     <Card>
       <CardContent className="p-4">
         <p className="mb-3 text-xs text-muted-foreground">
-          Séries por semana, das últimas {WEEKS} até a atual
+          {t("Séries por semana, das últimas {{WEEKS}} até a atual", { WEEKS })}
         </p>
         <ul className="space-y-3">
           {partes.map(({ part, weekly }) => {
@@ -134,7 +138,10 @@ export function BodyPartProgressCard() {
                 <div
                   className="flex h-8 flex-1 items-end gap-1"
                   role="img"
-                  aria-label={`${PART_LABELS[part]}: ${weekly.map((v) => Math.round(v)).join(", ")} séries por semana`}
+                  aria-label={t("{{v0}}: {{v1}} séries por semana", {
+                    v0: PART_LABELS[part],
+                    v1: weekly.map((v) => Math.round(v)).join(", "),
+                  })}
                 >
                   {weekly.map((v, i) => (
                     <div

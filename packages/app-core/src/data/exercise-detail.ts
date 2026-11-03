@@ -5,6 +5,7 @@ import { found, num, unwrap, unwrapList } from "./supabase-helpers";
 import type { Enums } from "@gabrielzubioli/db/types";
 import { bool, jsonList, jsonValue, localDb } from "../local";
 import { toISODate } from "../lib/date";
+import { t } from "../i18n";
 
 /**
  * A ficha de um exercício: o cadastro e o histórico de quem está logado — as
@@ -12,10 +13,10 @@ import { toISODate } from "../lib/date";
  */
 
 export const PERIODS = [
-  { value: "90", label: "3 meses" },
-  { value: "180", label: "6 meses" },
-  { value: "365", label: "1 ano" },
-  { value: "all", label: "Tudo" },
+  { value: "90", label: t("3 meses") },
+  { value: "180", label: t("6 meses") },
+  { value: "365", label: t("1 ano") },
+  { value: "all", label: t("Tudo") },
 ] as const;
 
 export type Period = (typeof PERIODS)[number]["value"];

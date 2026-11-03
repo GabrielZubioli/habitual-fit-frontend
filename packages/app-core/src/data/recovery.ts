@@ -18,6 +18,7 @@ import {
   type MuscleStimulus,
 } from "@forja/domain";
 import { subDays } from "date-fns";
+import { t } from "../i18n";
 
 /**
  * Janela observada. Além de ~7 dias qualquer músculo já estaria recuperado
@@ -186,14 +187,14 @@ export function recoveryColor(status: MuscleRecovery["status"]): string {
 }
 
 export const RECOVERY_STATUS_LABELS: Record<MuscleRecovery["status"], string> = {
-  recovered: "Pronto",
-  recovering: "Em recuperação",
-  fatigued: "Fatigado",
+  recovered: t("Pronto"),
+  recovering: t("Em recuperação"),
+  fatigued: t("Fatigado"),
 };
 
 /** Descreve o tempo restante de forma apresentável. */
 export function describeRemaining(recovery: MuscleRecovery): string {
-  if (recovery.hoursRemaining <= 0) return "pronto para treinar";
+  if (recovery.hoursRemaining <= 0) return t("pronto para treinar");
   if (recovery.hoursRemaining < 24) return `~${recovery.hoursRemaining}h para recuperar`;
   const dias = Math.round(recovery.hoursRemaining / 24);
   return `~${dias} ${dias === 1 ? "dia" : "dias"} para recuperar`;

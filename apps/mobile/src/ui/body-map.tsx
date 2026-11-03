@@ -19,6 +19,7 @@ import { MUSCLE_LABELS, label } from "@forja/app-core/lib/labels";
 import { cn } from "@/lib/cn";
 import { useColor } from "@/theme/theme";
 import { Text } from "./text";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Mapa muscular — o `body-map.tsx` do web, com os mesmos desenhos (do
@@ -96,8 +97,10 @@ export function BodyMap({
           accessibilityRole="image"
           accessibilityLabel={
             destacados.length > 0
-              ? `Músculos trabalhados: ${destacados.map(([m]) => label(MUSCLE_LABELS, m)).join(", ")}`
-              : "Nenhum músculo destacado"
+              ? t("Músculos trabalhados: {{v0}}", {
+                  v0: destacados.map(([m]) => label(MUSCLE_LABELS, m)).join(", "),
+                })
+              : t("Nenhum músculo destacado")
           }
         >
           {SILHOUETTE_PARTS[view].map((d, i) => (
@@ -147,7 +150,7 @@ export function BodyMap({
                     className="text-xs font-medium"
                     style={{ color: view === v ? branco : contorno }}
                   >
-                    {v === "front" ? "Frente" : "Costas"}
+                    {v === "front" ? t("Frente") : t("Costas")}
                   </Text>
                 </Pressable>
               ))}

@@ -8,6 +8,7 @@ import { formatShortDate } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
 import type { PhotoSession, ProgressPhoto } from "@forja/app-core/data/progress-photos";
 import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Linha do tempo da evolução.
@@ -75,14 +76,18 @@ export function PhotoTimeline({
 
               {sessao.weightKg !== null && (
                 <span className="text-sm tabular-nums text-muted-foreground">
-                  {sessao.weightKg.toLocaleString(LOCALE, { maximumFractionDigits: 1 })} kg
+                  {t("{{v0}} kg", {
+                    v0: sessao.weightKg.toLocaleString(LOCALE, { maximumFractionDigits: 1 }),
+                  })}
                 </span>
               )}
 
               {delta !== null && delta !== 0 && (
                 <Badge variant={delta > 0 ? "soft" : "outline"} className="tabular-nums">
                   {delta > 0 ? "+" : ""}
-                  {delta.toLocaleString(LOCALE, { maximumFractionDigits: 1 })} kg
+                  {t("{{v0}} kg", {
+                    v0: delta.toLocaleString(LOCALE, { maximumFractionDigits: 1 }),
+                  })}
                 </Badge>
               )}
 
@@ -97,7 +102,7 @@ export function PhotoTimeline({
                     : "border-primary/40 text-primary hover:bg-primary/10",
                 )}
               >
-                {selecionada ? `Comparando ${ordemSelecao + 1}` : "Comparar"}
+                {selecionada ? t("Comparando {{v0}}", { v0: ordemSelecao + 1 }) : t("Comparar")}
               </button>
             </div>
 
@@ -117,7 +122,7 @@ export function PhotoTimeline({
                     {url ? (
                       <img
                         src={url}
-                        alt={`Foto de progresso — ${descricao}`}
+                        alt={t("Foto de progresso — {{descricao}}", { descricao })}
                         width={300}
                         height={400}
                         loading="lazy"
@@ -132,9 +137,9 @@ export function PhotoTimeline({
                         {label(PHOTO_ANGLE_LABELS, foto.angle)}
                       </span>
                       <ConfirmButton
-                        aria-label={`Excluir foto: ${descricao}`}
-                        title="Excluir esta foto?"
-                        description="A imagem é removida permanentemente do armazenamento."
+                        aria-label={t("Excluir foto: {{descricao}}", { descricao })}
+                        title={t("Excluir esta foto?")}
+                        description={t("A imagem é removida permanentemente do armazenamento.")}
                         className="size-6 shrink-0 text-white hover:bg-white/20 hover:text-white"
                         onConfirm={() => onDelete(foto)}
                       >

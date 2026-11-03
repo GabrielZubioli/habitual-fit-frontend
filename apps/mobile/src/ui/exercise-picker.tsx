@@ -26,6 +26,7 @@ import {
   SearchField,
 } from "./search-dialog";
 import { Text } from "./text";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Seletor de exercício — o `pickers/exercise-picker.tsx` do web: busca por nome
@@ -34,7 +35,7 @@ import { Text } from "./text";
 export function ExercisePicker({
   open,
   onClose,
-  title = "Adicionar exercício",
+  title = t("Adicionar exercício"),
   showMuscleFilter = true,
   muscle: initialMuscle,
   onPick,
@@ -80,7 +81,7 @@ export function ExercisePicker({
   };
 
   const rotuloMusculo =
-    muscle === "all" ? "Todos os músculos" : (MUSCLE_LABELS[muscle as MuscleValue] ?? muscle);
+    muscle === "all" ? t("Todos os músculos") : (MUSCLE_LABELS[muscle as MuscleValue] ?? muscle);
 
   return (
     <SearchDialog
@@ -92,13 +93,13 @@ export function ExercisePicker({
           <SearchField
             value={term}
             onChange={setTerm}
-            placeholder="Buscar exercício…"
+            placeholder={t("Buscar exercício…")}
             loading={exercises.isFetching}
           />
           {showMuscleFilter ? (
             <Pressable
               onPress={() => setEscolhendoMusculo(true)}
-              accessibilityLabel="Filtrar por músculo"
+              accessibilityLabel={t("Filtrar por músculo")}
               className={cn(
                 "h-11 flex-row items-center justify-between rounded-2xl border bg-card px-3",
                 muscle !== "all" ? "border-primary/50" : "border-transparent",
@@ -117,13 +118,15 @@ export function ExercisePicker({
         <ResultsLoading />
       ) : exercises.isError ? (
         <ErrorState
-          message="Falha ao buscar exercícios."
+          message={t("Falha ao buscar exercícios.")}
           onRetry={() => void exercises.refetch()}
           compact
         />
       ) : exercises.data.length === 0 ? (
         <ResultsEmpty>
-          {`Nenhum exercício encontrado${debouncedTerm ? ` para “${debouncedTerm}”` : ""}.`}
+          {t("Nenhum exercício encontrado{{v0}}.", {
+            v0: debouncedTerm ? ` para “${debouncedTerm}”` : "",
+          })}
         </ResultsEmpty>
       ) : (
         <View className="gap-2">
@@ -145,10 +148,10 @@ export function ExercisePicker({
       <MenuSheet
         open={escolhendoMusculo}
         onClose={() => setEscolhendoMusculo(false)}
-        title="Filtrar por músculo"
+        title={t("Filtrar por músculo")}
         corIcone={primaria}
         opcoes={[
-          { label: "Todos os músculos", onPress: () => setMuscle("all") },
+          { label: t("Todos os músculos"), onPress: () => setMuscle("all") },
           ...FILTERABLE_MUSCLES.map((m) => ({
             label: MUSCLE_LABELS[m],
             onPress: () => setMuscle(m),

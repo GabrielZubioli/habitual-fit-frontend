@@ -1,4 +1,5 @@
 import { LOCALE } from "../i18n";
+import { t } from "../i18n";
 /**
  * O que pode sair do app quando a pessoa compartilha o perfil.
  *
@@ -36,7 +37,7 @@ export const OPCOES_PADRAO: OpcoesCartao = {
   meta: false,
 };
 
-export const NOME_ANONIMO = "Atleta Habitual Fit";
+export const NOME_ANONIMO = t("Atleta Habitual Fit");
 
 export type ConteudoCartao = {
   nome: string;
@@ -73,15 +74,18 @@ export function numerosCartao(c: ConteudoCartao): { valor: string; rotulo: strin
     c.treinos !== null && { valor: n(c.treinos), rotulo: c.treinos === 1 ? "treino" : "treinos" },
     c.sequencia !== null && {
       valor: n(c.sequencia),
-      rotulo: c.sequencia === 1 ? "dia seguido" : "dias seguidos",
+      rotulo: c.sequencia === 1 ? t("dia seguido") : t("dias seguidos"),
     },
-    c.metaPercent !== null && { valor: `${Math.round(c.metaPercent)}%`, rotulo: "da meta de peso" },
+    c.metaPercent !== null && {
+      valor: `${Math.round(c.metaPercent)}%`,
+      rotulo: t("da meta de peso"),
+    },
   ].filter((v): v is { valor: string; rotulo: string } => Boolean(v));
 }
 
 /** O cartão em texto — o que o app nativo envia pelo compartilhamento do sistema. */
 export function textoCartao(c: ConteudoCartao): string {
-  const linhas = [`${c.nome} no Habitual Fit`];
+  const linhas = [t("{{nome}} no Habitual Fit", { nome: c.nome })];
   if (c.objetivo) linhas.push(c.objetivo);
   const numeros = numerosCartao(c);
   if (numeros.length) linhas.push(numeros.map((x) => `${x.valor} ${x.rotulo}`).join(" · "));

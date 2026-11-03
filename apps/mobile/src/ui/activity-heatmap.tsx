@@ -9,6 +9,7 @@ import { formatDate, toISODate } from "@forja/app-core/lib/date";
 import { useColor } from "@/theme/theme";
 import { ErrorState } from "./card";
 import { Text } from "./text";
+import { t } from "@forja/app-core/i18n";
 
 const WEEKS = 53;
 
@@ -38,12 +39,12 @@ export function ActivityHeatmap() {
   }
 
   const porDia = new Map<string, number>();
-  for (const t of treinos.data) porDia.set(t.date, (porDia.get(t.date) ?? 0) + 1);
+  for (const item of treinos.data) porDia.set(item.date, (porDia.get(item.date) ?? 0) + 1);
   const total = treinos.data.length;
   const nDia = dia ? (porDia.get(dia) ?? 0) : 0;
   const semanasAtivas = new Set(
-    treinos.data.map((t) =>
-      toISODate(startOfWeek(new Date(`${t.date}T12:00:00`), { weekStartsOn: 1 })),
+    treinos.data.map((item) =>
+      toISODate(startOfWeek(new Date(`${item.date}T12:00:00`), { weekStartsOn: 1 })),
     ),
   ).size;
   const cor = (n: number) => (n === 0 ? `${primaria}1A` : n === 1 ? `${primaria}8C` : primaria);
@@ -54,11 +55,12 @@ export function ActivityHeatmap() {
         <Text>
           <Text className="text-3xl font-extrabold text-primary">{total}</Text>{" "}
           <Text className="text-sm text-muted-foreground">
-            {total === 1 ? "treino" : "treinos"} · {semanasAtivas} semanas ativas
+            {total === 1 ? "treino" : "treinos"}{" "}
+            {t("· {{semanasAtivas}} semanas ativas", { semanasAtivas })}
           </Text>
         </Text>
         <View className="flex-row items-center gap-1">
-          <Text className="text-[10px] text-muted-foreground">menos</Text>
+          <Text className="text-[10px] text-muted-foreground">{t("menos")}</Text>
           {[0, 1, 2].map((n) => (
             <View
               key={n}
@@ -66,7 +68,7 @@ export function ActivityHeatmap() {
               style={{ backgroundColor: cor(n) }}
             />
           ))}
-          <Text className="text-[10px] text-muted-foreground">mais</Text>
+          <Text className="text-[10px] text-muted-foreground">{t("mais")}</Text>
         </View>
       </View>
       <ScrollView
@@ -75,7 +77,10 @@ export function ActivityHeatmap() {
         showsHorizontalScrollIndicator={false}
         className="grow-0"
         onContentSizeChange={() => rolagem.current?.scrollToEnd({ animated: false })}
-        accessibilityLabel={`Mapa de treinos: ${total} treinos nas últimas ${WEEKS} semanas`}
+        accessibilityLabel={t("Mapa de treinos: {{total}} treinos nas últimas {{WEEKS}} semanas", {
+          total,
+          WEEKS,
+        })}
       >
         <View className="flex-row gap-[3px] pb-1">
           {Array.from({ length: WEEKS }, (_, s) => (
@@ -109,16 +114,19 @@ export function ActivityHeatmap() {
         {dia ? (
           <>
             <Text className="text-sm font-semibold capitalize">
-              {formatDate(dia, "EEEE, d 'de' MMMM")}
+              {formatDate(dia, t("EEEE, d 'de' MMMM"))}
             </Text>
             <Text className="text-sm text-muted-foreground">
               {" "}
-              · {nDia === 0 ? "sem treino" : `${nDia} treino${nDia > 1 ? "s" : ""}`}
+              ·{" "}
+              {nDia === 0
+                ? t("sem treino")
+                : t("{{nDia}} treino{{v1}}", { nDia, v1: nDia > 1 ? "s" : "" })}
             </Text>
           </>
         ) : (
           <Text className="text-sm text-muted-foreground">
-            Toque em um dia para ver os detalhes.
+            {t("Toque em um dia para ver os detalhes.")}
           </Text>
         )}
       </Text>

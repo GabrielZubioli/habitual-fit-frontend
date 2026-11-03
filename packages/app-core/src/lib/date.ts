@@ -14,6 +14,7 @@
  */
 import { format, parseISO } from "date-fns";
 import { dateFnsLocale } from "../i18n";
+import { t } from "../i18n";
 
 /** Formato das colunas `DATE` do Postgres. */
 export const ISO_DATE = "yyyy-MM-dd";
@@ -72,12 +73,12 @@ export const formatShortDate = (v: string | Date) => formatDate(v, "dd/MM/yyyy")
 /** `29/07` — eixos de gráfico e listas densas */
 export const formatDayMonth = (v: string | Date) => formatDate(v, "dd/MM");
 /** `29 de julho, 14:30` */
-export const formatDateTime = (v: string | Date) => formatDate(v, "dd 'de' MMMM',' HH:mm");
+export const formatDateTime = (v: string | Date) => formatDate(v, t("dd 'de' MMMM',' HH:mm"));
 /** `quarta-feira, 29 de julho` */
-export const formatWeekday = (v: string | Date) => formatDate(v, "EEEE',' dd 'de' MMMM");
+export const formatWeekday = (v: string | Date) => formatDate(v, t("EEEE',' dd 'de' MMMM"));
 /** `quarta, 29 de julho` — cabeçalho da tela inicial, sem o "-feira" que ocupa linha */
 export const formatLongDate = (v: string | Date) =>
-  formatDate(v, "EEEE',' d 'de' MMMM").replace("-feira", "");
+  formatDate(v, t("EEEE',' d 'de' MMMM")).replace("-feira", "");
 /** `qua` — faixa compacta da semana */
 export const formatWeekdayShort = (v: string | Date) => formatDate(v, "EEEEEE");
 
@@ -89,7 +90,7 @@ export function formatDuration(seconds: number | null | undefined): string {
   if (minutes < 60) return `${minutes}min`;
   const hours = Math.floor(minutes / 60);
   const rest = minutes % 60;
-  return rest ? `${hours}h ${rest}min` : `${hours}h`;
+  return rest ? t("{{hours}}h {{rest}}min", { hours, rest }) : `${hours}h`;
 }
 
 /** Segundos → `mm:ss`, para cronômetros. */

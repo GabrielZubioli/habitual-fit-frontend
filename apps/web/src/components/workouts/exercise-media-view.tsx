@@ -4,6 +4,7 @@ import { ImageOff, Play } from "lucide-react";
 import { ExerciseDemo } from "@/components/workouts/exercise-demo-images";
 import type { ExerciseMedia } from "@forja/app-core/data/exercise-media";
 import { cn } from "@/lib/utils";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Mídia de um exercício, seja ela qual for.
@@ -142,14 +143,16 @@ function AnimatedMedia({
         onPointerEnter={pedir}
         onFocus={pedir}
         aria-label={
-          animando ? `Pausar demonstração de ${name}` : `Ver demonstração animada de ${name}`
+          animando
+            ? t("Pausar demonstração de {{name}}", { name })
+            : t("Ver demonstração animada de {{name}}", { name })
         }
         className="relative block aspect-square w-full cursor-pointer overflow-hidden rounded-xl bg-muted"
       >
         {estatica && (
           <img
             src={estatica}
-            alt={`${name} — demonstração`}
+            alt={t("{{name}} — demonstração", { name })}
             loading="lazy"
             decoding="async"
             onError={() => setFalhou(true)}

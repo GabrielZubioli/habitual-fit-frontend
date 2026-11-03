@@ -23,6 +23,7 @@ import {
   MUSCLE_LABELS,
   label,
 } from "@forja/app-core/lib/labels";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Ficha completa do exercício.
@@ -79,7 +80,9 @@ export function ExerciseDetailSheet({
         {exercise.isPending ? (
           <DetailSkeleton />
         ) : !ex ? (
-          <div className="py-12 text-center text-muted-foreground">Exercício não encontrado.</div>
+          <div className="py-12 text-center text-muted-foreground">
+            {t("Exercício não encontrado.")}
+          </div>
         ) : (
           <>
             <SheetHeader className="text-left">
@@ -116,7 +119,7 @@ export function ExerciseDetailSheet({
                   rel="noreferrer noopener"
                 >
                   <PlayCircle className="mr-1.5 size-4" aria-hidden />
-                  Ver vídeo da execução
+                  {t("Ver vídeo da execução")}
                 </a>
               </Button>
 
@@ -135,7 +138,7 @@ export function ExerciseDetailSheet({
                 )}
                 {ex.default_cadence && (
                   <Badge variant="outline" className="tabular-nums">
-                    Cadência {ex.default_cadence}
+                    {t("Cadência {{default_cadence}}", { default_cadence: ex.default_cadence })}
                   </Badge>
                 )}
               </div>
@@ -144,7 +147,7 @@ export function ExerciseDetailSheet({
                   "onde", a lista responde "quanto". */}
               <section>
                 <SectionTitle icon={<Target className="size-4" />}>
-                  Músculos trabalhados
+                  {t("Músculos trabalhados")}
                 </SectionTitle>
                 <div className="mt-3 flex flex-col items-center gap-4 sm:flex-row">
                   <BodyMap
@@ -161,14 +164,14 @@ export function ExerciseDetailSheet({
                   <dl className="w-full space-y-2 text-sm">
                     <div>
                       <dt className="text-xs uppercase tracking-wider text-muted-foreground">
-                        Principal
+                        {t("Principal")}
                       </dt>
                       <dd className="font-medium">{label(MUSCLE_LABELS, ex.primary_muscle)}</dd>
                     </div>
                     {(ex.secondary_muscles ?? []).length > 0 && (
                       <div>
                         <dt className="text-xs uppercase tracking-wider text-muted-foreground">
-                          Secundários
+                          {t("Secundários")}
                         </dt>
                         <dd className="font-medium">
                           {(ex.secondary_muscles ?? [])
@@ -191,11 +194,11 @@ export function ExerciseDetailSheet({
               {passos.length > 0 && (
                 <section>
                   <SectionTitle icon={<ListChecks className="size-4" />}>
-                    Execução correta
+                    {t("Execução correta")}
                   </SectionTitle>
                   {passosEmIngles && (
                     <Badge variant="warning" className="mt-2">
-                      Texto original em inglês
+                      {t("Texto original em inglês")}
                     </Badge>
                   )}
                   <ol className="mt-3 space-y-2.5">
@@ -215,7 +218,7 @@ export function ExerciseDetailSheet({
 
               {(ex.cues ?? []).length > 0 && (
                 <section>
-                  <SectionTitle>Pontos de atenção</SectionTitle>
+                  <SectionTitle>{t("Pontos de atenção")}</SectionTitle>
                   <ul className="mt-3 space-y-1.5">
                     {(ex.cues ?? []).map((c) => (
                       <li key={c} className="flex gap-2 text-sm leading-relaxed">
@@ -233,7 +236,7 @@ export function ExerciseDetailSheet({
               {(ex.common_mistakes ?? []).length > 0 && (
                 <section>
                   <SectionTitle icon={<AlertTriangle className="size-4 text-destructive" />}>
-                    Erros comuns
+                    {t("Erros comuns")}
                   </SectionTitle>
                   <ul className="mt-3 space-y-1.5">
                     {(ex.common_mistakes ?? []).map((m) => (
@@ -254,10 +257,11 @@ export function ExerciseDetailSheet({
                   automática ruim se passando por conteúdo próprio. */}
               {(ex.execution ?? []).length === 0 && ex.instructions && (
                 <section>
-                  <SectionTitle>Descrição original</SectionTitle>
+                  <SectionTitle>{t("Descrição original")}</SectionTitle>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Ainda sem versão em português para este exercício. O texto abaixo é o da base de
-                    origem, em inglês.
+                    {t(
+                      "Ainda sem versão em português para este exercício. O texto abaixo é o da base de origem, em inglês.",
+                    )}
                   </p>
                   <p className="mt-2 text-pretty text-sm leading-relaxed text-muted-foreground">
                     {ex.instructions}
@@ -267,11 +271,14 @@ export function ExerciseDetailSheet({
 
               {(ex.contraindications ?? []).length > 0 && (
                 <p className="rounded-xl bg-muted/50 p-3 text-xs leading-relaxed text-muted-foreground">
-                  Exige atenção em caso de lesão em{" "}
-                  {(ex.contraindications ?? [])
-                    .map((c) => label(MUSCLE_LABELS, c).toLowerCase())
-                    .join(", ")}
-                  . Na dúvida, procure orientação profissional.
+                  {t(
+                    "Exige atenção em caso de lesão em {{v0}} . Na dúvida, procure orientação profissional.",
+                    {
+                      v0: (ex.contraindications ?? [])
+                        .map((c) => label(MUSCLE_LABELS, c).toLowerCase())
+                        .join(", "),
+                    },
+                  )}
                 </p>
               )}
             </div>

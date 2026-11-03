@@ -36,6 +36,7 @@ import { Icon } from "@/ui/icon";
 import { MACRO_COLORS, MacroTiles } from "@/ui/macro-rings";
 import { PageScroll } from "@/ui/page-header";
 import { Text } from "@/ui/text";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Editor de receita — o `recipes_.$id.tsx` do web: nome, porções, notas,
@@ -83,7 +84,7 @@ function RecipeEditor({ id }: { id: string }) {
   const salvar = useMutation({
     mutationFn: () => saveRecipe(id, { name, servings, notes }),
     onSuccess: () => {
-      setAviso({ texto: "Receita salva", erro: false });
+      setAviso({ texto: t("Receita salva"), erro: false });
       void qc.invalidateQueries({ queryKey: queryKeys.recipes.all });
     },
     onError: falhou,
@@ -113,7 +114,7 @@ function RecipeEditor({ id }: { id: string }) {
     mutationFn: ({ meal, portions }: { meal: MealValue; portions: number }) =>
       logRecipeToDiary({ userId, date: todayISO(), meal, name, servings, portions, items: list }),
     onSuccess: (dia) => {
-      setAviso({ texto: "Adicionado ao diário de hoje", erro: false });
+      setAviso({ texto: t("Adicionado ao diário de hoje"), erro: false });
       void qc.invalidateQueries({ queryKey: queryKeys.diet.log(dia) });
       void qc.invalidateQueries({ queryKey: queryKeys.diet.all });
     },
@@ -133,7 +134,7 @@ function RecipeEditor({ id }: { id: string }) {
           >
             <Pressable
               onPress={voltar}
-              accessibilityLabel="Voltar para as receitas"
+              accessibilityLabel={t("Voltar para as receitas")}
               className="h-11 w-11 items-center justify-center rounded-full bg-card active:bg-elevated"
             >
               <Icon node={arrowLeft} color={texto} size={20} />
@@ -152,11 +153,13 @@ function RecipeEditor({ id }: { id: string }) {
         ) : (
           <>
             <Text className="text-[28px] font-extrabold leading-tight">
-              {recipe.isPending ? "Carregando…" : name || "Receita"}
+              {recipe.isPending ? t("Carregando…") : name || t("Receita")}
             </Text>
             <Text className="mb-4 mt-1 text-sm text-muted-foreground">
-              {list.length === 1 ? "1 ingrediente" : `${list.length} ingredientes`} ·{" "}
-              {servings === 1 ? "1 porção" : `${servings} porções`}
+              {list.length === 1
+                ? t("1 ingrediente")
+                : t("{{length}} ingredientes", { length: list.length })}{" "}
+              · {servings === 1 ? t("1 porção") : t("{{servings}} porções", { servings })}
             </Text>
 
             {aviso ? (
@@ -180,39 +183,39 @@ function RecipeEditor({ id }: { id: string }) {
 
             <Card>
               <View className="gap-3 p-4">
-                <Campo rotulo="Nome">
+                <Campo rotulo={t("Nome")}>
                   <TextInput
                     value={name}
                     onChangeText={setName}
-                    placeholder="Ex: Panqueca de banana"
+                    placeholder={t("Ex: Panqueca de banana")}
                     placeholderTextColor={apagada}
-                    accessibilityLabel="Nome"
+                    accessibilityLabel={t("Nome")}
                     className="h-10 rounded-md border border-input bg-background px-3 font-sans text-base"
                     style={{ color: texto }}
                   />
                 </Campo>
-                <Campo rotulo="Porções">
+                <Campo rotulo={t("Porções")}>
                   <TextInput
                     value={String(servings)}
                     onChangeText={(v) => setServings(Math.min(100, Math.max(1, Number(v) || 1)))}
                     keyboardType="number-pad"
-                    accessibilityLabel="Porções"
+                    accessibilityLabel={t("Porções")}
                     className="h-10 rounded-md border border-input bg-background px-3 font-sans text-base"
                     style={{ color: texto }}
                   />
                   <Text className="text-xs text-muted-foreground">
-                    Em quantas porções esta receita rende. Os macros abaixo são por porção.
+                    {t("Em quantas porções esta receita rende. Os macros abaixo são por porção.")}
                   </Text>
                 </Campo>
-                <Campo rotulo="Notas">
+                <Campo rotulo={t("Notas")}>
                   <TextInput
                     value={notes}
                     onChangeText={setNotes}
                     multiline
                     numberOfLines={3}
-                    placeholder="Modo de preparo, observações…"
+                    placeholder={t("Modo de preparo, observações…")}
                     placeholderTextColor={apagada}
-                    accessibilityLabel="Notas"
+                    accessibilityLabel={t("Notas")}
                     textAlignVertical="top"
                     className="min-h-[80px] rounded-md border border-input bg-background px-3 py-2 font-sans text-base"
                     style={{ color: texto }}
@@ -222,10 +225,11 @@ function RecipeEditor({ id }: { id: string }) {
                 <View className="mt-1">
                   <View className="mb-2 flex-row items-baseline justify-between">
                     <Text className="text-xs font-bold uppercase tracking-[1.5px] text-muted-foreground">
-                      Por porção
+                      {t("Por porção")}
                     </Text>
                     <Text className="text-xs text-muted-foreground">
-                      Fibra {items.isPending ? "—" : `${porPorcao.fiberG.toFixed(1)} g`}
+                      {t("Fibra")}{" "}
+                      {items.isPending ? "—" : t("{{v0}} g", { v0: porPorcao.fiberG.toFixed(1) })}
                     </Text>
                   </View>
                   <MacroTiles
@@ -242,10 +246,12 @@ function RecipeEditor({ id }: { id: string }) {
             <Card className="mt-4">
               <View className="p-4">
                 <View className="mb-3 flex-row items-center justify-between">
-                  <Text className="font-semibold">Ingredientes</Text>
+                  <Text className="font-semibold">{t("Ingredientes")}</Text>
                   <Button size="sm" onPress={() => setAdicionando(true)}>
                     <Icon node={plus} color={branco} size={16} />
-                    <Text className="text-xs font-medium text-primary-foreground">Ingrediente</Text>
+                    <Text className="text-xs font-medium text-primary-foreground">
+                      {t("Ingrediente")}
+                    </Text>
                   </Button>
                 </View>
                 {items.isPending ? (
@@ -262,7 +268,7 @@ function RecipeEditor({ id }: { id: string }) {
                   />
                 ) : list.length === 0 ? (
                   <Text className="py-8 text-center text-sm text-muted-foreground">
-                    Adicione ingredientes para calcular os macros automaticamente.
+                    {t("Adicione ingredientes para calcular os macros automaticamente.")}
                   </Text>
                 ) : (
                   list.map((it, k) => (
@@ -272,7 +278,7 @@ function RecipeEditor({ id }: { id: string }) {
                       primeiro={k === 0}
                       onGrams={(grams) => updateItem.mutate({ itemId: it.id, grams })}
                       onInvalid={() =>
-                        setAviso({ texto: "Informe um valor entre 0 e 10.000 g.", erro: true })
+                        setAviso({ texto: t("Informe um valor entre 0 e 10.000 g."), erro: true })
                       }
                       onRemove={() => removeItem.mutate(it.id)}
                     />
@@ -293,14 +299,14 @@ function RecipeEditor({ id }: { id: string }) {
           loading={salvar.isPending}
         >
           <Icon node={save} color={branco} size={20} />
-          <Text className="text-base font-bold text-primary-foreground">Salvar receita</Text>
+          <Text className="text-base font-bold text-primary-foreground">{t("Salvar receita")}</Text>
         </Button>
       </View>
 
       <FoodPicker
         open={adicionando}
         onClose={() => setAdicionando(false)}
-        title="Adicionar ingrediente"
+        title={t("Adicionar ingrediente")}
         onPick={(food, grams) => addItem.mutateAsync({ foodId: food.id, grams })}
       />
     </View>
@@ -347,7 +353,7 @@ function Ingrediente({
   const protCor = useColor(MACRO_COLORS.protein);
   const carbCor = useColor(MACRO_COLORS.carbs);
   const gordCor = useColor(MACRO_COLORS.fat);
-  const nome = item.foods?.name ?? "Alimento removido";
+  const nome = item.foods?.name ?? t("Alimento removido");
   return (
     <View className={cn("py-3", !primeiro && "border-t border-border")}>
       <View className="flex-row items-center gap-3">
@@ -362,7 +368,7 @@ function Ingrediente({
             value={rascunho}
             onChangeText={setRascunho}
             keyboardType="number-pad"
-            accessibilityLabel={`Gramas de ${item.foods?.name ?? "ingrediente"}`}
+            accessibilityLabel={t("Gramas de {{v0}}", { v0: item.foods?.name ?? "ingrediente" })}
             onBlur={() => {
               const grams = Number(rascunho);
               if (
@@ -380,28 +386,30 @@ function Ingrediente({
             className="h-10 w-16 rounded-xl border border-input bg-background px-2 text-center font-sans text-base"
             style={{ color: texto }}
           />
-          <Text className="text-xs text-muted-foreground">g</Text>
+          <Text className="text-xs text-muted-foreground">{t("g")}</Text>
         </View>
         <Pressable
           onPress={() => setConfirmar(true)}
-          accessibilityLabel={`Remover ${item.foods?.name ?? "ingrediente"} da receita`}
+          accessibilityLabel={t("Remover {{v0}} da receita", {
+            v0: item.foods?.name ?? "ingrediente",
+          })}
           className="h-9 w-9 items-center justify-center rounded-full active:bg-elevated"
         >
           <Icon node={trash2} color={apagada} size={16} />
         </Pressable>
       </View>
       <View className="mt-2 flex-row flex-wrap gap-1.5 pl-12">
-        <MacroChip valor={`${Math.round(macros.kcal)} kcal`} cor={kcalCor} />
-        <MacroChip valor={`P ${macros.proteinG.toFixed(1)} g`} cor={protCor} />
-        <MacroChip valor={`C ${macros.carbsG.toFixed(1)} g`} cor={carbCor} />
-        <MacroChip valor={`G ${macros.fatG.toFixed(1)} g`} cor={gordCor} />
+        <MacroChip valor={t("{{v0}} kcal", { v0: Math.round(macros.kcal) })} cor={kcalCor} />
+        <MacroChip valor={t("P {{v0}} g", { v0: macros.proteinG.toFixed(1) })} cor={protCor} />
+        <MacroChip valor={t("C {{v0}} g", { v0: macros.carbsG.toFixed(1) })} cor={carbCor} />
+        <MacroChip valor={t("G {{v0}} g", { v0: macros.fatG.toFixed(1) })} cor={gordCor} />
       </View>
       <ConfirmDialog
         open={confirmar}
         onClose={() => setConfirmar(false)}
-        title="Remover ingrediente?"
-        description="Os macros da receita serão recalculados."
-        confirmLabel="Remover"
+        title={t("Remover ingrediente?")}
+        description={t("Os macros da receita serão recalculados.")}
+        confirmLabel={t("Remover")}
         destructive
         onConfirm={onRemove}
       />
@@ -434,14 +442,14 @@ function LogToDiary({
         onPress={() => setOpen(true)}
       >
         <Icon node={plus} color={texto} size={16} />
-        <Text className="text-sm font-medium">Diário</Text>
+        <Text className="text-sm font-medium">{t("Diário")}</Text>
       </Button>
-      <Dialog open={open} onClose={() => setOpen(false)} title="Adicionar ao diário de hoje">
+      <Dialog open={open} onClose={() => setOpen(false)} title={t("Adicionar ao diário de hoje")}>
         <View className="gap-1.5">
-          <Text className="text-sm font-medium">Refeição</Text>
+          <Text className="text-sm font-medium">{t("Refeição")}</Text>
           <Pressable
             onPress={() => setEscolhendo(true)}
-            accessibilityLabel="Refeição"
+            accessibilityLabel={t("Refeição")}
             className="h-10 flex-row items-center justify-between rounded-md border border-input bg-background px-3"
           >
             <Text className="text-base">{label(MEAL_LABELS, meal)}</Text>
@@ -449,12 +457,12 @@ function LogToDiary({
           </Pressable>
         </View>
         <View className="gap-1.5">
-          <Text className="text-sm font-medium">Porções</Text>
+          <Text className="text-sm font-medium">{t("Porções")}</Text>
           <TextInput
             value={portions}
             onChangeText={setPortions}
             keyboardType="decimal-pad"
-            accessibilityLabel="Porções"
+            accessibilityLabel={t("Porções")}
             className={cn(
               "h-10 rounded-md border bg-background px-3 font-sans text-base",
               invalid ? "border-destructive" : "border-input",
@@ -462,7 +470,9 @@ function LogToDiary({
             style={{ color: texto }}
           />
           {invalid ? (
-            <Text className="text-xs text-destructive">Informe um valor entre 0,25 e 50.</Text>
+            <Text className="text-xs text-destructive">
+              {t("Informe um valor entre 0,25 e 50.")}
+            </Text>
           ) : null}
         </View>
         <Button
@@ -473,12 +483,12 @@ function LogToDiary({
             setOpen(false);
           }}
         >
-          Adicionar
+          {t("Adicionar")}
         </Button>
         <MenuSheet
           open={escolhendo}
           onClose={() => setEscolhendo(false)}
-          title="Refeição"
+          title={t("Refeição")}
           corIcone={texto}
           opcoes={MEALS.map((m) => ({ label: m.label, onPress: () => setMeal(m.key) }))}
         />

@@ -4,6 +4,7 @@ import { useFavoritos } from "@forja/app-core/data/exercise-favorites";
 import { cn } from "@/lib/cn";
 import { useColor } from "@/theme/theme";
 import { Icon } from "./icon";
+import { t } from "@forja/app-core/i18n";
 
 /** O coração de favoritar — o `favorite-button.tsx` do web. */
 const ROSA = "#FF4D6D";
@@ -24,7 +25,9 @@ export function FavoriteButton({
     <Pressable
       onPress={() => alternar(exerciseId)}
       accessibilityState={{ checked: ativo }}
-      accessibilityLabel={ativo ? `Tirar ${nome} dos favoritos` : `Favoritar ${nome}`}
+      accessibilityLabel={
+        ativo ? t("Tirar {{nome}} dos favoritos", { nome }) : t("Favoritar {{nome}}", { nome })
+      }
       className={cn(
         "h-10 w-10 items-center justify-center rounded-full active:scale-90",
         className,

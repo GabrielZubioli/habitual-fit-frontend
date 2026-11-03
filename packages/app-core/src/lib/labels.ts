@@ -274,3 +274,13 @@ export const WEEKDAY_INITIALS = Object.fromEntries(
     formatDate(new Date(2024, 0, 7 + d), "EEEEE").toUpperCase(),
   ]),
 ) as Record<Weekday, string>;
+
+/** Sigla em maiúsculas (DOM, SEG… / SUN, MON…), no idioma do app. */
+export const WEEKDAY_SHORT = Object.fromEntries(
+  [0, 1, 2, 3, 4, 5, 6].map((d) => [
+    d,
+    formatDate(new Date(2024, 0, 7 + d), "EEE")
+      .replace(".", "")
+      .toUpperCase(),
+  ]),
+) as Record<Weekday, string>;

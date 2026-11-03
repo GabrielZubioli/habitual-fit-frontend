@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { BrandSymbol } from "@/components/brand-logo";
 import { formatClock } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * O botão central de treinar e a transição que ele dispara.
@@ -39,7 +40,7 @@ export function useTrainLaunch() {
   const [cor, setCor] = useState<CorLancamento>("verde");
   const timers = useRef<number[]>([]);
 
-  useEffect(() => () => timers.current.forEach((t) => window.clearTimeout(t)), []);
+  useEffect(() => () => timers.current.forEach((item) => window.clearTimeout(item)), []);
 
   const lancar = useCallback(
     (ir: () => void, corDoDestino: CorLancamento) => {
@@ -146,7 +147,7 @@ export function TrainFab({
         >
           <BrandSymbol escuro className="w-9" />
         </span>
-        <span className="text-[12px] font-bold text-primary">Treinar</span>
+        <span className="text-[12px] font-bold text-primary">{t("Treinar")}</span>
       </>
     );
   }
@@ -212,8 +213,8 @@ function Gravando({
         {formatClock(decorrido)}
       </span>
       <span className="sr-only">
-        {naSessao ? "Terminar o treino. " : "Treino em andamento. "}
-        {Math.round(progresso * 100)}% do tempo previsto
+        {naSessao ? t("Terminar o treino. ") : t("Treino em andamento. ")}
+        {t("{{v0}}% do tempo previsto", { v0: Math.round(progresso * 100) })}
       </span>
     </>
   );

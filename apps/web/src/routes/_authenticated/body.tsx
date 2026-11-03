@@ -49,14 +49,15 @@ import { NewProgressDialog } from "@/components/progress/new-progress-dialog";
 import { PhotoCompare } from "@/components/progress/photo-compare";
 import { PhotoTimeline } from "@/components/progress/photo-timeline";
 import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 export const Route = createFileRoute("/_authenticated/body")({
   head: () => ({
     meta: [
-      { title: "Progresso — Habitual Fit" },
-      { name: "description", content: "Peso, medidas e progresso corporal." },
-      { property: "og:title", content: "Progresso — Habitual Fit" },
-      { property: "og:description", content: "Peso e medidas com média móvel." },
+      { title: t("Progresso — Habitual Fit") },
+      { name: "description", content: t("Peso, medidas e progresso corporal.") },
+      { property: "og:title", content: t("Progresso — Habitual Fit") },
+      { property: "og:description", content: t("Peso e medidas com média móvel.") },
     ],
   }),
   component: BodyPage,
@@ -81,27 +82,27 @@ const FOTOS_LIBERADAS = false;
 function BodyPage() {
   return (
     <>
-      <PageHeader title="Progresso" description="Onde você está e para onde está indo." />
+      <PageHeader title={t("Progresso")} description={t("Onde você está e para onde está indo.")} />
       <PageBody>
         <Tabs defaultValue="overview">
           {/* A faixa ocupa a largura toda e as abas a dividem por igual. */}
           <TabsList className="flex w-full">
             <TabsTrigger value="overview" className="flex-1 px-1.5 sm:px-3">
               <LineChart className="mr-1 size-4 sm:mr-1.5" aria-hidden />
-              Resumo
+              {t("Resumo")}
             </TabsTrigger>
             <TabsTrigger value="weight" className="flex-1 px-1.5 sm:px-3">
               <Scale className="mr-1 size-4 sm:mr-1.5" aria-hidden />
-              Peso
+              {t("Peso")}
             </TabsTrigger>
             <TabsTrigger value="measures" className="flex-1 px-1.5 sm:px-3">
               <Ruler className="mr-1 size-4 sm:mr-1.5" aria-hidden />
-              Medidas
+              {t("Medidas")}
             </TabsTrigger>
             {FOTOS_LIBERADAS && (
               <TabsTrigger value="photos" className="flex-1 px-1.5 sm:px-3">
                 <Camera className="mr-1 size-4 sm:mr-1.5" aria-hidden />
-                Fotos
+                {t("Fotos")}
               </TabsTrigger>
             )}
           </TabsList>
@@ -147,7 +148,7 @@ function WeightPanel() {
   const save = useMutation({
     mutationFn: () => saveBodyWeight(userId, logDate, value),
     onSuccess: () => {
-      toast.success("Peso registrado");
+      toast.success(t("Peso registrado"));
       setWeight("");
       // Invalida toda a árvore de corpo: histórico, último peso e a janela do dashboard.
       void qc.invalidateQueries({ queryKey: queryKeys.body.all });
@@ -174,7 +175,7 @@ function WeightPanel() {
     <div className="grid gap-4 lg:grid-cols-3">
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Registrar peso</CardTitle>
+          <CardTitle className="text-base">{t("Registrar peso")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {/*
@@ -191,23 +192,25 @@ function WeightPanel() {
                 aria-hidden
               />
               <p className="relative text-xs font-bold uppercase tracking-wider text-[#020306]/70">
-                Último registro
+                {t("Último registro")}
               </p>
               <p className="relative mt-0.5 flex items-baseline gap-1.5">
                 <span className="text-4xl font-extrabold tabular-nums tracking-tight">
                   {ultimo.peso.toLocaleString(LOCALE, { maximumFractionDigits: 1 })}
                 </span>
-                <span className="text-sm font-semibold text-[#020306]/70">kg · {ultimo.date}</span>
+                <span className="text-sm font-semibold text-[#020306]/70">
+                  {t("kg · {{date}}", { date: ultimo.date })}
+                </span>
               </p>
             </div>
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="weight-date">Data</Label>
+            <Label htmlFor="weight-date">{t("Data")}</Label>
             <DatePicker id="weight-date" value={logDate} max={todayISO()} onChange={setLogDate} />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="weight-value">Peso (kg)</Label>
+            <Label htmlFor="weight-value">{t("Peso (kg)")}</Label>
             <Input
               id="weight-value"
               type="number"
@@ -220,12 +223,12 @@ function WeightPanel() {
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !invalid) save.mutate();
               }}
-              placeholder="Ex: 75,4"
+              placeholder={t("Ex: 75,4")}
               aria-invalid={weight !== "" && invalid}
               aria-describedby="weight-hint"
             />
             <p id="weight-hint" className="text-xs text-muted-foreground">
-              Registrar de novo no mesmo dia atualiza o valor.
+              {t("Registrar de novo no mesmo dia atualiza o valor.")}
             </p>
           </div>
           <Button
@@ -235,18 +238,20 @@ function WeightPanel() {
             loadingLabel="Salvando peso"
             disabled={invalid}
           >
-            Adicionar peso
+            {t("Adicionar peso")}
           </Button>
         </CardContent>
       </Card>
 
       <Card className="border border-primary/25 bg-card lg:col-span-2">
         <CardHeader className="flex-row items-baseline justify-between gap-2 space-y-0">
-          <CardTitle className="text-base">Histórico — {HISTORY_DAYS} dias</CardTitle>
+          <CardTitle className="text-base">
+            {t("Histórico — {{HISTORY_DAYS}} dias", { HISTORY_DAYS })}
+          </CardTitle>
           {delta !== null && (
             <span className="rounded-full bg-primary/15 px-2.5 py-1 text-xs font-bold text-primary">
-              tendência {delta >= 0 ? "+" : ""}
-              {delta.toFixed(2)} kg
+              {t("tendência")} {delta >= 0 ? "+" : ""}
+              {t("{{v0}} kg", { v0: delta.toFixed(2) })}
             </span>
           )}
         </CardHeader>
@@ -256,7 +261,7 @@ function WeightPanel() {
             skeleton={<ChartSkeleton />}
             empty={
               <div className="grid h-full place-items-center text-sm text-muted-foreground">
-                Registre seu primeiro peso para ver a tendência.
+                {t("Registre seu primeiro peso para ver a tendência.")}
               </div>
             }
           >
@@ -285,7 +290,7 @@ function MeasurementsPanel() {
   const save = useMutation({
     mutationFn: () => saveMeasurements(userId, logDate, values),
     onSuccess: () => {
-      toast.success("Medidas registradas");
+      toast.success(t("Medidas registradas"));
       setValues({});
       void qc.invalidateQueries({ queryKey: queryKeys.body.measurements() });
     },
@@ -295,7 +300,7 @@ function MeasurementsPanel() {
   const remove = useMutation({
     mutationFn: deleteMeasurement,
     onSuccess: () => {
-      toast.success("Registro excluído");
+      toast.success(t("Registro excluído"));
       void qc.invalidateQueries({ queryKey: queryKeys.body.measurements() });
     },
     onError: (e) => toast.error(errorMessage(e)),
@@ -313,11 +318,11 @@ function MeasurementsPanel() {
     <div className="grid gap-4 lg:grid-cols-3">
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Registrar medidas</CardTitle>
+          <CardTitle className="text-base">{t("Registrar medidas")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="space-y-1.5">
-            <Label htmlFor="measure-date">Data</Label>
+            <Label htmlFor="measure-date">{t("Data")}</Label>
             <DatePicker id="measure-date" value={logDate} max={todayISO()} onChange={setLogDate} />
           </div>
           {/* Agrupado por região: onze caixas iguais em coluna única viram um
@@ -352,7 +357,11 @@ function MeasurementsPanel() {
                       />
                       {bad && (
                         <p id={`${f.key}-error`} className="text-xs text-destructive">
-                          Esperado entre {f.min} e {f.max} {f.unit}.
+                          {t("Esperado entre {{min}} e {{max}} {{unit}}.", {
+                            min: f.min,
+                            max: f.max,
+                            unit: f.unit,
+                          })}
                         </p>
                       )}
                     </div>
@@ -368,16 +377,18 @@ function MeasurementsPanel() {
             loadingLabel="Salvando medidas"
             disabled={preenchidos.length === 0 || invalidos.length > 0}
           >
-            Salvar
+            {t("Salvar")}
           </Button>
-          <p className="text-xs text-muted-foreground">Preencha só o que quiser acompanhar.</p>
+          <p className="text-xs text-muted-foreground">
+            {t("Preencha só o que quiser acompanhar.")}
+          </p>
         </CardContent>
       </Card>
 
       <div className="grid gap-4 lg:col-span-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Tendências</CardTitle>
+            <CardTitle className="text-base">{t("Tendências")}</CardTitle>
           </CardHeader>
           <CardContent>
             <QueryBoundary
@@ -391,7 +402,7 @@ function MeasurementsPanel() {
               }
               empty={
                 <p className="py-8 text-center text-sm text-muted-foreground">
-                  Registre suas medidas para ver a evolução.
+                  {t("Registre suas medidas para ver a evolução.")}
                 </p>
               }
             >
@@ -431,14 +442,16 @@ function MeasurementsPanel() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Histórico</CardTitle>
+            <CardTitle className="text-base">{t("Histórico")}</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <QueryBoundary
               query={measurements}
               skeleton={<ListSkeleton rows={3} />}
               empty={
-                <p className="py-8 text-center text-sm text-muted-foreground">Sem registros.</p>
+                <p className="py-8 text-center text-sm text-muted-foreground">
+                  {t("Sem registros.")}
+                </p>
               }
             >
               {(rows) => (
@@ -456,9 +469,11 @@ function MeasurementsPanel() {
                           <p className="text-xs text-muted-foreground">{resumo || "—"}</p>
                         </div>
                         <ConfirmButton
-                          aria-label={`Excluir medidas de ${formatShortDate(m.log_date)}`}
-                          title="Excluir este registro?"
-                          description="As medidas desta data são removidas permanentemente."
+                          aria-label={t("Excluir medidas de {{v0}}", {
+                            v0: formatShortDate(m.log_date),
+                          })}
+                          title={t("Excluir este registro?")}
+                          description={t("As medidas desta data são removidas permanentemente.")}
                           onConfirm={() => remove.mutate(m.id)}
                         >
                           <Trash2 className="size-4" />
@@ -520,7 +535,7 @@ function PhotosPanel() {
       assertOk("excluir foto", await supabase.from("progress_photos").delete().eq("id", p.id));
     },
     onSuccess: () => {
-      toast.success("Foto excluída");
+      toast.success(t("Foto excluída"));
       void qc.invalidateQueries({ queryKey: queryKeys.body.photos() });
     },
     onError: (e) => toast.error(errorMessage(e)),
@@ -559,16 +574,16 @@ function PhotosPanel() {
             <Camera className="size-7" aria-hidden />
           </span>
           <div className="min-w-0">
-            <h2 className="text-xl font-extrabold">Registro fotográfico</h2>
-            <p className="text-sm text-muted-foreground">Privado — visível só para você.</p>
+            <h2 className="text-xl font-extrabold">{t("Registro fotográfico")}</h2>
+            <p className="text-sm text-muted-foreground">{t("Privado — visível só para você.")}</p>
           </div>
         </div>
         <dl className="relative mt-4 grid grid-cols-3 gap-2 text-center">
           {[
-            { k: "Registros", v: sessoes.length },
-            { k: "Fotos", v: lista.length },
+            { k: t("Registros"), v: sessoes.length },
+            { k: t("Fotos"), v: lista.length },
             {
-              k: "Último",
+              k: t("Último"),
               v: sessoes[0] ? formatDayMonth(sessoes[0].date) : "—",
             },
           ].map((d) => (
@@ -584,7 +599,7 @@ function PhotosPanel() {
           className="relative mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#01D798] font-extrabold text-[#020306] transition active:scale-[0.98]"
         >
           <Camera className="size-5" aria-hidden />
-          Nova evolução
+          {t("Nova evolução")}
         </button>
       </section>
 
@@ -592,7 +607,8 @@ function PhotosPanel() {
         <Card className="border border-primary/40 animate-in fade-in zoom-in-95 duration-300">
           <CardHeader className="pb-3">
             <CardTitle className="text-base">
-              {formatShortDate(antes.date)} <span className="text-muted-foreground">vs.</span>{" "}
+              {formatShortDate(antes.date)}{" "}
+              <span className="text-muted-foreground">{t("vs.")}</span>{" "}
               {formatShortDate(depois.date)}
             </CardTitle>
           </CardHeader>
@@ -604,7 +620,7 @@ function PhotosPanel() {
 
       {selecao.length === 1 && (
         <p className="rounded-2xl border border-dashed border-primary/40 bg-primary/5 p-3 text-center text-sm text-primary">
-          Escolha uma segunda data na linha do tempo para comparar.
+          {t("Escolha uma segunda data na linha do tempo para comparar.")}
         </p>
       )}
 
@@ -627,8 +643,10 @@ function PhotosPanel() {
         empty={
           <EmptyState
             icon={<ImageIcon className="size-6" />}
-            title="Nenhuma foto ainda"
-            description="Fotos de progresso mostram mudanças que a balança não captura. O app ajuda a manter o mesmo enquadramento entre elas, para a comparação valer alguma coisa."
+            title={t("Nenhuma foto ainda")}
+            description={t(
+              "Fotos de progresso mostram mudanças que a balança não captura. O app ajuda a manter o mesmo enquadramento entre elas, para a comparação valer alguma coisa.",
+            )}
             action={
               <Button onClick={() => setNovaAberta(true)}>
                 <Camera aria-hidden />

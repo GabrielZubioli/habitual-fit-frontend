@@ -24,7 +24,7 @@ import {
 import { queryKeys } from "@forja/app-core/data/query-keys";
 import { errorMessage } from "@forja/app-core/data/supabase-helpers";
 import { CATEGORY_EMOJI } from "@forja/app-core/lib/food-emoji";
-import { MEAL_LABELS, label, WEEKDAY_LABELS } from "@forja/app-core/lib/labels";
+import { MEAL_LABELS, label, WEEKDAY_LABELS, WEEKDAY_SHORT } from "@forja/app-core/lib/labels";
 import { todayISO } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/cn";
 import { useCurrentUserId } from "@/lib/session";
@@ -36,6 +36,7 @@ import { Icon } from "./icon";
 import { MACRO_COLORS, MacroRing } from "./macro-rings";
 import { Text } from "./text";
 import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * O cardápio da semana — o `diet/weekly-menu.tsx` do web: um dia de cada vez.
@@ -43,15 +44,7 @@ import { LOCALE } from "@forja/app-core/i18n";
  * Mudanças valem dos próximos dias em diante.
  */
 const ORDEM: Weekday[] = [1, 2, 3, 4, 5, 6, 0];
-const SIGLA: Record<Weekday, string> = {
-  0: "DOM",
-  1: "SEG",
-  2: "TER",
-  3: "QUA",
-  4: "QUI",
-  5: "SEX",
-  6: "SÁB",
-};
+const SIGLA = WEEKDAY_SHORT;
 
 type Meal = ActiveMealPlan["meals"][number];
 type Item = Meal["items"][number];
@@ -70,11 +63,14 @@ function situacao(total: number, meta: number): { texto: string; tom: "ok" | "ne
   const sinal = d > 0 ? "+" : "";
   switch (toleranceStatus(total, meta)) {
     case "ideal":
-      return { texto: `Dentro da meta (±${KCAL_TOLERANCE.ideal} kcal)`, tom: "ok" };
+      return {
+        texto: t("Dentro da meta (±{{ideal}} kcal)", { ideal: KCAL_TOLERANCE.ideal }),
+        tom: "ok",
+      };
     case "acceptable":
-      return { texto: `Perto da meta: ${sinal}${d} kcal`, tom: "neutro" };
+      return { texto: t("Perto da meta: {{sinal}}{{d}} kcal", { sinal, d }), tom: "neutro" };
     default:
-      return { texto: `Fora da meta: ${sinal}${d} kcal`, tom: "fora" };
+      return { texto: t("Fora da meta: {{sinal}}{{d}} kcal", { sinal, d }), tom: "fora" };
   }
 }
 
@@ -115,10 +111,10 @@ export function WeeklyMenu({ onError }: { onError: (mensagem: string) => void })
   const p = plan.data;
   if (!p) return null;
 
-  const t = totais(p, dia);
+  const item2 = totais(p, dia);
   const metaKcal = p.kcalTarget;
   const semMeta = metaKcal <= 0;
-  const status = semMeta ? null : situacao(t.kcal, metaKcal);
+  const status = semMeta ? null : situacao(item2.kcal, metaKcal);
   const nomeDia = WEEKDAY_LABELS[dia];
   const nomeDe = (m: Meal) => m.label?.trim() || label(MEAL_LABELS, m.slot);
 
@@ -164,12 +160,12 @@ export function WeeklyMenu({ onError }: { onError: (mensagem: string) => void })
         <View className="flex-row items-start justify-between gap-3">
           <View className="min-w-0 flex-1">
             <Text className="text-xs font-bold uppercase tracking-[1.7px] text-muted-foreground">
-              {dia === hoje ? "Hoje · " : ""}
+              {dia === hoje ? t("Hoje · ") : ""}
               {nomeDia}
             </Text>
             <View className="mt-1 flex-row items-baseline gap-1.5">
               <Text className="text-4xl font-extrabold leading-none">
-                {Math.round(t.kcal).toLocaleString(LOCALE)}
+                {Math.round(item2.kcal).toLocaleString(LOCALE)}
               </Text>
               <Text className="text-sm text-muted-foreground">
                 {semMeta ? "kcal" : `/ ${Math.round(metaKcal).toLocaleString(LOCALE)} kcal`}
@@ -200,28 +196,28 @@ export function WeeklyMenu({ onError }: { onError: (mensagem: string) => void })
             className="flex-row items-center gap-1.5 rounded-full border border-border px-3 py-2 active:bg-elevated"
           >
             <Icon node={copy} color={texto} size={16} />
-            <Text className="text-sm font-semibold">Copiar</Text>
+            <Text className="text-sm font-semibold">{t("Copiar")}</Text>
           </Pressable>
         </View>
         <View className="mt-5 flex-row gap-2">
           <MacroRing
-            nome="Proteína"
+            nome={t("Proteína")}
             icone="🥩"
-            valor={t.proteinG}
+            valor={item2.proteinG}
             meta={p.proteinTarget}
             cor={MACRO_COLORS.protein}
           />
           <MacroRing
-            nome="Carbo"
+            nome={t("Carbo")}
             icone="🫘"
-            valor={t.carbsG}
+            valor={item2.carbsG}
             meta={p.carbsTarget}
             cor={MACRO_COLORS.carbs}
           />
           <MacroRing
-            nome="Gordura"
+            nome={t("Gordura")}
             icone="🥑"
-            valor={t.fatG}
+            valor={item2.fatG}
             meta={p.fatTarget}
             cor={MACRO_COLORS.fat}
           />
@@ -236,8 +232,9 @@ export function WeeklyMenu({ onError }: { onError: (mensagem: string) => void })
           </View>
         ) : null}
         <Text className="mt-3 text-[11px] text-muted-foreground">
-          O app não prescreve dietas: monte o cardápio por conta própria ou com a orientação de um
-          nutricionista.
+          {t(
+            "O app não prescreve dietas: monte o cardápio por conta própria ou com a orientação de um nutricionista.",
+          )}
         </Text>
       </View>
 
@@ -255,13 +252,16 @@ export function WeeklyMenu({ onError }: { onError: (mensagem: string) => void })
                     {nome}
                   </Text>
                   <Text className="text-xs text-muted-foreground">
-                    {Math.round(kcalRefeicao)} kcal
+                    {t("{{v0}} kcal", { v0: Math.round(kcalRefeicao) })}
                     {receita ? ` · ${receita}` : ""}
                   </Text>
                 </View>
                 <Pressable
                   onPress={() => setAdicionando(m)}
-                  accessibilityLabel={`Adicionar em ${nome} de ${nomeDia.toLowerCase()}`}
+                  accessibilityLabel={t("Adicionar em {{nome}} de {{v1}}", {
+                    nome,
+                    v1: nomeDia.toLowerCase(),
+                  })}
                   className="h-10 w-10 items-center justify-center rounded-full bg-primary/10 active:bg-primary/20"
                 >
                   <Icon node={plus} color={primaria} size={20} />
@@ -271,7 +271,10 @@ export function WeeklyMenu({ onError }: { onError: (mensagem: string) => void })
               {itens.length === 0 ? (
                 <View className="rounded-xl border border-dashed border-border px-3 py-4">
                   <Text className="text-center text-sm text-muted-foreground">
-                    Nada em {nome.toLowerCase()} na {nomeDia.toLowerCase()}.
+                    {t("Nada em {{v0}} na {{v1}}.", {
+                      v0: nome.toLowerCase(),
+                      v1: nomeDia.toLowerCase(),
+                    })}
                   </Text>
                 </View>
               ) : (
@@ -294,12 +297,15 @@ export function WeeklyMenu({ onError }: { onError: (mensagem: string) => void })
                       </Text>
                       <View className="flex-row items-center">
                         <Text className="text-xs text-muted-foreground">
-                          {Math.round(i.grams)} g · {Math.round(macrosDe(i).kcal)} kcal
+                          {t("{{v0}} g · {{v1}} kcal", {
+                            v0: Math.round(i.grams),
+                            v1: Math.round(macrosDe(i).kcal),
+                          })}
                         </Text>
                         {i.weekday !== null ? (
                           <View className="ml-1.5 rounded-full bg-primary/10 px-1.5">
                             <Text className="text-[10px] font-bold text-primary">
-                              só {SIGLA[i.weekday as Weekday].toLowerCase()}
+                              {t("só {{v0}}", { v0: SIGLA[i.weekday as Weekday].toLowerCase() })}
                             </Text>
                           </View>
                         ) : null}
@@ -314,7 +320,7 @@ export function WeeklyMenu({ onError }: { onError: (mensagem: string) => void })
                               afeta: dia,
                             })
                       }
-                      accessibilityLabel={`Tirar ${i.name}`}
+                      accessibilityLabel={t("Tirar {{name}}", { name: i.name })}
                       className="h-9 w-9 items-center justify-center rounded-full active:bg-elevated"
                     >
                       <Icon node={x} color={apagada} size={16} />
@@ -328,8 +334,9 @@ export function WeeklyMenu({ onError }: { onError: (mensagem: string) => void })
       </View>
 
       <Text className="mt-4 px-1 text-center text-xs text-muted-foreground">
-        Itens marcados com “só” valem apenas naquele dia; os demais, a semana toda. As mudanças
-        valem a partir de hoje — o que já foi marcado como comido não muda.
+        {t(
+          "Itens marcados com “só” valem apenas naquele dia; os demais, a semana toda. As mudanças valem a partir de hoje — o que já foi marcado como comido não muda.",
+        )}
       </Text>
 
       <FoodPicker
@@ -349,7 +356,7 @@ export function WeeklyMenu({ onError }: { onError: (mensagem: string) => void })
       <MenuSheet
         open={copiando}
         onClose={() => setCopiando(false)}
-        title={`Copiar ${nomeDia.toLowerCase()} para…`}
+        title={t("Copiar {{v0}} para…", { v0: nomeDia.toLowerCase() })}
         corIcone={texto}
         opcoes={ORDEM.filter((d) => d !== dia).map((d) => ({
           label: WEEKDAY_LABELS[d],
@@ -360,11 +367,11 @@ export function WeeklyMenu({ onError }: { onError: (mensagem: string) => void })
       <AlertDialog
         open={remover !== null}
         onClose={() => setRemover(null)}
-        title={`Tirar ${remover?.item.name ?? ""}?`}
-        description="Este alimento está no cardápio de toda a semana."
+        title={t("Tirar {{v0}}?", { v0: remover?.item.name ?? "" })}
+        description={t("Este alimento está no cardápio de toda a semana.")}
         acoes={[
           {
-            label: `Só de ${nomeDia.toLowerCase()}`,
+            label: t("Só de {{v0}}", { v0: nomeDia.toLowerCase() }),
             onPress: () =>
               remover &&
               salvar.mutate({
@@ -373,7 +380,7 @@ export function WeeklyMenu({ onError }: { onError: (mensagem: string) => void })
               }),
           },
           {
-            label: "Da semana toda",
+            label: t("Da semana toda"),
             variant: "outline",
             onPress: () =>
               remover &&

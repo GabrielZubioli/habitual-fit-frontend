@@ -80,7 +80,7 @@ export function found<T>(operation: string, row: T | null): T {
 
 function notFound(): PostgrestError {
   return {
-    message: "Registro não encontrado.",
+    message: t("Registro não encontrado."),
     details: "",
     hint: "",
     code: "PGRST116",

@@ -16,6 +16,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { t } from "@forja/app-core/i18n";
 
 export function SearchDialogContent({
   title,
@@ -141,7 +142,7 @@ export function ResultList({ children }: { children: ReactNode }) {
 
 export function ResultsLoading() {
   return (
-    <div className="space-y-2" role="status" aria-label="Carregando">
+    <div className="space-y-2" role="status" aria-label={t("Carregando")}>
       {[0, 1, 2, 3, 4].map((i) => (
         <Skeleton key={i} className="h-[4.5rem] w-full rounded-2xl" />
       ))}

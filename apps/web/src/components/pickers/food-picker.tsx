@@ -51,6 +51,7 @@ import { ErrorState } from "@/components/query-boundary";
 import { CATEGORY_EMOJI } from "@forja/app-core/lib/food-emoji";
 import { cn, searchWords } from "@/lib/utils";
 import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 export type { PickedFood };
 
@@ -63,8 +64,8 @@ const porcaoFmt = (n: number) => (n === 0.5 ? "½" : n.toLocaleString(LOCALE));
 
 export function FoodPicker({
   trigger,
-  title = "Adicionar alimento",
-  confirmLabel = "Adicionar alimento",
+  title = t("Adicionar alimento"),
+  confirmLabel = t("Adicionar alimento"),
   defaultGrams = 100,
   onPick,
   onPickRecipe,
@@ -169,7 +170,7 @@ export function FoodPicker({
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <SearchDialogContent
         title={titulo}
-        description={selected ? "Escolha a quantidade e confira os valores." : undefined}
+        description={selected ? t("Escolha a quantidade e confira os valores.") : undefined}
         srDescription="Busque um alimento ou uma receita e escolha a quantidade."
         top={
           lista && (
@@ -188,7 +189,7 @@ export function FoodPicker({
                         aba === a ? "bg-primary text-primary-foreground" : "text-muted-foreground",
                       )}
                     >
-                      {a === "alimentos" ? "Alimentos" : "Receitas"}
+                      {a === "alimentos" ? t("Alimentos") : t("Receitas")}
                     </button>
                   ))}
                 </div>
@@ -196,7 +197,9 @@ export function FoodPicker({
               <SearchField
                 value={term}
                 onChange={setTerm}
-                placeholder={aba === "alimentos" ? "Buscar alimento pelo nome…" : "Buscar receita…"}
+                placeholder={
+                  aba === "alimentos" ? t("Buscar alimento pelo nome…") : t("Buscar receita…")
+                }
                 loading={foods.isFetching || receitas.isFetching}
               />
               {aba === "receitas" && (
@@ -205,7 +208,7 @@ export function FoodPicker({
                   onValueChange={(v) => setCategoria(v === "todas" ? null : v)}
                 >
                   <SelectTrigger
-                    aria-label="Categoria"
+                    aria-label={t("Categoria")}
                     className={cn(
                       "h-11 w-full rounded-2xl border-transparent bg-card text-sm font-semibold",
                       categoria && "border-primary/50 text-primary",
@@ -214,13 +217,13 @@ export function FoodPicker({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="todas">Todas as categorias</SelectItem>
+                    <SelectItem value="todas">{t("Todas as categorias")}</SelectItem>
                     {RECIPE_CATEGORIES.map((c) => (
                       <SelectItem key={c.key} value={c.key}>
                         {c.emoji} {c.label}
                       </SelectItem>
                     ))}
-                    <SelectItem value="minhas">Minhas receitas</SelectItem>
+                    <SelectItem value="minhas">{t("Minhas receitas")}</SelectItem>
                   </SelectContent>
                 </Select>
               )}
@@ -254,7 +257,9 @@ export function FoodPicker({
             <ResultsLoading />
           ) : foods.isError ? (
             <ErrorState
-              message="Não foi possível buscar os alimentos. Verifique a conexão e tente de novo."
+              message={t(
+                "Não foi possível buscar os alimentos. Verifique a conexão e tente de novo.",
+              )}
               onRetry={foods.refetch}
               compact
             />
@@ -262,12 +267,12 @@ export function FoodPicker({
             <ResultsEmpty>
               {debouncedTerm ? (
                 <>
-                  Nenhum alimento encontrado para “{debouncedTerm}”.
+                  {t("Nenhum alimento encontrado para “{{debouncedTerm}}”.", { debouncedTerm })}
                   <br />
-                  Tente outro nome ou uma palavra mais curta.
+                  {t("Tente outro nome ou uma palavra mais curta.")}
                 </>
               ) : (
-                "Nenhum alimento no catálogo."
+                t("Nenhum alimento no catálogo.")
               )}
             </ResultsEmpty>
           ) : (
@@ -279,9 +284,11 @@ export function FoodPicker({
             >
               <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 {!debouncedTerm
-                  ? "Catálogo de alimentos"
+                  ? t("Catálogo de alimentos")
                   : foods.data.length >= LIMITE_RESULTADOS
-                    ? `Primeiros ${LIMITE_RESULTADOS} resultados — refine a busca`
+                    ? t("Primeiros {{LIMITE_RESULTADOS}} resultados — refine a busca", {
+                        LIMITE_RESULTADOS,
+                      })
                     : `${foods.data.length} ${foods.data.length === 1 ? "resultado" : "resultados"}`}
               </p>
               <ResultList>
@@ -293,7 +300,7 @@ export function FoodPicker({
                       detail={
                         <>
                           <span className="font-semibold text-foreground">
-                            {kcalFmt(f.kcal)} kcal
+                            {t("{{v0}} kcal", { v0: kcalFmt(f.kcal) })}
                           </span>{" "}
                           em {gFmt(f.servingSizeG)} g{f.brand ? ` · ${f.brand}` : ""}
                         </>
@@ -311,9 +318,13 @@ export function FoodPicker({
         ) : receitas.isPending ? (
           <ResultsLoading />
         ) : receitas.isError ? (
-          <ErrorState message="Falha ao carregar receitas." onRetry={receitas.refetch} compact />
+          <ErrorState
+            message={t("Falha ao carregar receitas.")}
+            onRetry={receitas.refetch}
+            compact
+          />
         ) : receitasFiltradas.length === 0 ? (
-          <ResultsEmpty>Nenhuma receita encontrada.</ResultsEmpty>
+          <ResultsEmpty>{t("Nenhuma receita encontrada.")}</ResultsEmpty>
         ) : (
           <ResultList>
             {receitasFiltradas.map((r) => (
@@ -336,9 +347,12 @@ export function FoodPicker({
                     )
                   }
                   title={r.name}
-                  detail={`${kcalFmt(r.perServing.kcal)} kcal · P ${Math.round(r.perServing.proteinG)} g${
-                    r.prepMinutes ? ` · ${r.prepMinutes} min` : ""
-                  }${!r.isSystem ? " · sua" : ""}`}
+                  detail={t("{{v0}} kcal · P {{v1}} g{{v2}}{{v3}}", {
+                    v0: kcalFmt(r.perServing.kcal),
+                    v1: Math.round(r.perServing.proteinG),
+                    v2: r.prepMinutes ? ` · ${r.prepMinutes} min` : "",
+                    v3: !r.isSystem ? " · sua" : "",
+                  })}
                   aside={<ChevronRight className="size-5 text-muted-foreground" aria-hidden />}
                   onClick={() => setReceita(r)}
                 />
@@ -394,7 +408,7 @@ function MacrosLinha({ food }: { food: FoodOption }) {
           key={rotulo}
           className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium tabular-nums text-muted-foreground"
         >
-          {rotulo} {gFmt(v)} g
+          {t("{{rotulo}} {{v1}} g", { rotulo, v1: gFmt(v) })}
         </span>
       ))}
     </span>
@@ -426,14 +440,22 @@ function EscolherGramas({
     setGrams(String(Math.min(10_000, Math.max(1, (invalid ? 0 : valor) + delta))));
   const atalhos = [
     ...(food.measure && food.measureG
-      ? [{ g: food.measureG, rotulo: `1 ${food.measure} · ${gFmt(food.measureG)} g` }]
+      ? [
+          {
+            g: food.measureG,
+            rotulo: t("1 {{measure}} · {{v1}} g", {
+              measure: food.measure,
+              v1: gFmt(food.measureG),
+            }),
+          },
+        ]
       : []),
-    ...QUICK_GRAMS.map((g) => ({ g, rotulo: `${g} g` })),
+    ...QUICK_GRAMS.map((g) => ({ g, rotulo: t("{{g}} g", { g }) })),
   ];
   const valores: [string, number | null][] = [
-    ["Proteína", food.proteinG],
-    ["Carbo", food.carbsG],
-    ["Gordura", food.fatG],
+    [t("Proteína"), food.proteinG],
+    [t("Carbo"), food.carbsG],
+    [t("Gordura"), food.fatG],
   ];
 
   return (
@@ -444,7 +466,7 @@ function EscolherGramas({
         <div className="min-w-0 flex-1">
           <p className="break-words font-bold leading-snug">{food.name}</p>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            {kcalFmt(food.kcal)} kcal em {gFmt(food.servingSizeG)} g
+            {t("{{v0}} kcal em {{v1}} g", { v0: kcalFmt(food.kcal), v1: gFmt(food.servingSizeG) })}
             {food.brand ? ` · ${food.brand}` : ""}
           </p>
         </div>
@@ -453,18 +475,18 @@ function EscolherGramas({
           onClick={onBack}
           className="shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/10"
         >
-          Trocar
+          {t("Trocar")}
         </button>
       </div>
 
       <div className="space-y-2.5">
-        <Label htmlFor="food-grams">Quantidade</Label>
+        <Label htmlFor="food-grams">{t("Quantidade")}</Label>
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => passo(-10)}
             disabled={invalid || valor <= 1}
-            aria-label="Diminuir 10 g"
+            aria-label={t("Diminuir 10 g")}
             className="grid size-14 shrink-0 place-items-center rounded-2xl bg-card transition-colors hover:bg-elevated disabled:opacity-40"
           >
             <Minus className="size-5" aria-hidden />
@@ -487,14 +509,14 @@ function EscolherGramas({
               autoFocus
             />
             <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">
-              g
+              {t("g")}
             </span>
           </div>
           <button
             type="button"
             onClick={() => passo(10)}
             disabled={!invalid && valor >= 10_000}
-            aria-label="Aumentar 10 g"
+            aria-label={t("Aumentar 10 g")}
             className="grid size-14 shrink-0 place-items-center rounded-2xl bg-card transition-colors hover:bg-elevated disabled:opacity-40"
           >
             <Plus className="size-5" aria-hidden />
@@ -502,7 +524,7 @@ function EscolherGramas({
         </div>
         {invalid && (
           <p id="food-grams-error" className="text-xs text-destructive">
-            Informe um valor entre 1 e 10.000 g.
+            {t("Informe um valor entre 1 e 10.000 g.")}
           </p>
         )}
         <div className="flex flex-wrap gap-1.5">
@@ -528,10 +550,10 @@ function EscolherGramas({
       {/* Os valores da quantidade escolhida. */}
       <div className="rounded-2xl bg-card p-4" aria-live="polite">
         <div className="flex items-baseline justify-between gap-3">
-          <span className="text-sm text-muted-foreground">Nesta quantidade</span>
+          <span className="text-sm text-muted-foreground">{t("Nesta quantidade")}</span>
           <span className="text-2xl font-extrabold tabular-nums text-primary">
             {invalid ? "—" : kcalFmt(food.kcal * fator)}
-            <span className="ml-1 text-sm font-semibold">kcal</span>
+            <span className="ml-1 text-sm font-semibold">{t("kcal")}</span>
           </span>
         </div>
         <dl className="mt-3 grid grid-cols-3 gap-2 text-center">
@@ -539,20 +561,20 @@ function EscolherGramas({
             <div key={rotulo} className="rounded-xl bg-background/60 px-1 py-2">
               <dt className="text-[11px] text-muted-foreground">{rotulo}</dt>
               <dd className="font-bold tabular-nums">
-                {v === null || invalid ? "—" : `${gFmt(v * fator)} g`}
+                {v === null || invalid ? "—" : t("{{v0}} g", { v0: gFmt(v * fator) })}
               </dd>
             </div>
           ))}
         </dl>
         {valores.some(([, v]) => v === null) && (
-          <p className="mt-2 text-[11px] text-muted-foreground">— sem dado no catálogo</p>
+          <p className="mt-2 text-[11px] text-muted-foreground">{t("— sem dado no catálogo")}</p>
         )}
       </div>
 
       <div className="sticky bottom-0 -mx-5 -mb-6 mt-auto flex gap-2 border-t border-border/60 bg-background px-5 py-3">
         <Button variant="outline" className="h-12 rounded-xl" onClick={onBack}>
           <ArrowLeft className="mr-1 size-4" aria-hidden />
-          Voltar
+          {t("Voltar")}
         </Button>
         <Button
           className="h-12 flex-1 rounded-xl text-base font-bold"
@@ -592,12 +614,13 @@ function EscolherPorcoes({
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        {recipeCategoryOf(receita.category)?.label ?? "Sua receita"} · rende {receita.servings}{" "}
-        {receita.servings === 1 ? "porção" : "porções"}
+        {recipeCategoryOf(receita.category)?.label ?? t("Sua receita")} · rende {receita.servings}{" "}
+        {receita.servings === 1 ? t("porção") : t("porções")}
         {receita.prepMinutes ? (
           <span className="inline-flex items-center gap-1">
             {" "}
-            · <Clock className="size-3.5" aria-hidden /> {receita.prepMinutes} min
+            · <Clock className="size-3.5" aria-hidden />{" "}
+            {t("{{prepMinutes}} min", { prepMinutes: receita.prepMinutes })}
           </span>
         ) : null}
       </p>
@@ -608,7 +631,7 @@ function EscolherPorcoes({
           type="button"
           onClick={() => setPorcoes(PORCOES[Math.max(0, idx - 1)]!)}
           disabled={idx <= 0}
-          aria-label="Menos"
+          aria-label={t("Menos")}
           className="grid size-11 place-items-center rounded-xl bg-elevated disabled:opacity-40"
         >
           <Minus className="size-5" />
@@ -616,14 +639,14 @@ function EscolherPorcoes({
         <p className="text-center">
           <span className="block text-2xl font-extrabold tabular-nums">{porcaoFmt(porcoes)}</span>
           <span className="text-xs text-muted-foreground">
-            {porcoes <= 1 ? "porção" : "porções"}
+            {porcoes <= 1 ? t("porção") : t("porções")}
           </span>
         </p>
         <button
           type="button"
           onClick={() => setPorcoes(PORCOES[Math.min(PORCOES.length - 1, idx + 1)]!)}
           disabled={idx >= PORCOES.length - 1}
-          aria-label="Mais"
+          aria-label={t("Mais")}
           className="grid size-11 place-items-center rounded-xl bg-elevated disabled:opacity-40"
         >
           <Plus className="size-5" />
@@ -633,9 +656,9 @@ function EscolherPorcoes({
       <div className="grid grid-cols-4 gap-2 text-center">
         {[
           ["kcal", m.kcal * porcoes],
-          ["Prot.", m.proteinG * porcoes],
-          ["Carbo", m.carbsG * porcoes],
-          ["Gord.", m.fatG * porcoes],
+          [t("Prot."), m.proteinG * porcoes],
+          [t("Carbo"), m.carbsG * porcoes],
+          [t("Gord."), m.fatG * porcoes],
         ].map(([rotulo, valor]) => (
           <div key={rotulo as string} className="rounded-2xl bg-card px-1 py-2.5">
             <p className="font-bold tabular-nums">{Math.round(valor as number)}</p>
@@ -645,7 +668,7 @@ function EscolherPorcoes({
       </div>
 
       <div>
-        <p className="mb-2 text-sm font-semibold">Ingredientes</p>
+        <p className="mb-2 text-sm font-semibold">{t("Ingredientes")}</p>
         <ul className="divide-y divide-border/50 rounded-2xl bg-card">
           {receita.items.map((i) => (
             <li
@@ -654,7 +677,7 @@ function EscolherPorcoes({
             >
               <span className="min-w-0 break-words">{i.name}</span>
               <span className="shrink-0 tabular-nums text-muted-foreground">
-                {Math.round(i.grams * fator)} g
+                {t("{{v0}} g", { v0: Math.round(i.grams * fator) })}
               </span>
             </li>
           ))}
@@ -663,7 +686,7 @@ function EscolherPorcoes({
 
       {receita.instructions && (
         <div>
-          <p className="mb-1 text-sm font-semibold">Modo de preparo</p>
+          <p className="mb-1 text-sm font-semibold">{t("Modo de preparo")}</p>
           <p className="text-sm leading-relaxed text-muted-foreground">{receita.instructions}</p>
         </div>
       )}
@@ -671,7 +694,7 @@ function EscolherPorcoes({
       <div className="sticky bottom-0 -mx-5 flex gap-2 bg-background px-5 pt-2">
         <Button variant="outline" className="h-12" onClick={onBack}>
           <ArrowLeft className="mr-1 size-4" />
-          Voltar
+          {t("Voltar")}
         </Button>
         <Button className="h-12 flex-1" onClick={onConfirm} disabled={isPending}>
           {isPending && <Loader2 className="mr-2 size-4 animate-spin" />}

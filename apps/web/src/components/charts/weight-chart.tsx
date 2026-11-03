@@ -32,6 +32,7 @@ import {
   CHART_TOOLTIP_LABEL_STYLE,
   CHART_TOOLTIP_STYLE,
 } from "./chart-theme";
+import { t } from "@forja/app-core/i18n";
 
 export type WeightPoint = {
   date: string;
@@ -91,8 +92,8 @@ export default function WeightChart({
           labelStyle={CHART_TOOLTIP_LABEL_STYLE}
           cursor={{ stroke: "var(--chart-1)", strokeWidth: 1.5, strokeDasharray: "3 3" }}
           formatter={(value: number, name) => [
-            `${value} kg`,
-            name === "peso" ? "Peso" : "Tendência",
+            t("{{value}} kg", { value }),
+            name === "peso" ? t("Peso") : t("Tendência"),
           ]}
         />
 

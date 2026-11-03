@@ -3,6 +3,7 @@ import { AlertTriangle, Languages, Lightbulb, ListOrdered } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { INJURY_OPTIONS } from "@forja/app-core/lib/onboarding/options";
 import { cn } from "@/lib/utils";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Como executar o exercício.
@@ -62,12 +63,12 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
     <div className="space-y-3">
       {mostrarTextoCorrido && (
         <Bloco
-          titulo="Execução"
+          titulo={t("Execução")}
           icone={<ListOrdered className="size-4" aria-hidden />}
           extra={
             <Badge variant="warning" className="normal-case tracking-normal">
               <Languages aria-hidden />
-              em inglês
+              {t("em inglês")}
             </Badge>
           }
         >
@@ -79,13 +80,13 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
 
       {passos.length > 0 && (
         <Bloco
-          titulo="Passo a passo"
+          titulo={t("Passo a passo")}
           icone={<ListOrdered className="size-4" aria-hidden />}
           extra={
             emIngles ? (
               <Badge variant="warning" className="normal-case tracking-normal">
                 <Languages aria-hidden />
-                em inglês
+                {t("em inglês")}
               </Badge>
             ) : null
           }
@@ -109,8 +110,9 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
           </ol>
           {emIngles && (
             <p className="mt-3 text-xs text-muted-foreground">
-              Sem versão em português na base de origem. O texto original é exibido sem tradução
-              automática — instrução de execução traduzida por máquina pode sair perigosa.
+              {t(
+                "Sem versão em português na base de origem. O texto original é exibido sem tradução automática — instrução de execução traduzida por máquina pode sair perigosa.",
+              )}
             </p>
           )}
         </Bloco>
@@ -118,7 +120,7 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
 
       {exercise.cues && exercise.cues.length > 0 && (
         <ListaComIcone
-          titulo="Dicas de execução"
+          titulo={t("Dicas de execução")}
           icone={<Lightbulb className="size-4" aria-hidden />}
           itens={exercise.cues}
           tom="primary"
@@ -127,7 +129,7 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
 
       {exercise.common_mistakes && exercise.common_mistakes.length > 0 && (
         <ListaComIcone
-          titulo="Erros comuns"
+          titulo={t("Erros comuns")}
           icone={<AlertTriangle className="size-4" aria-hidden />}
           itens={exercise.common_mistakes}
           tom="warning"
@@ -136,7 +138,7 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
 
       {exercise.contraindications && exercise.contraindications.length > 0 && (
         <ListaComIcone
-          titulo="Cuidado se você tem"
+          titulo={t("Cuidado se você tem")}
           icone={<AlertTriangle className="size-4" aria-hidden />}
           itens={exercise.contraindications.map(
             (c) => INJURY_OPTIONS.find((o) => o.value === c)?.label ?? c,
@@ -147,8 +149,9 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
 
       {passos.length === 0 && !mostrarTextoCorrido && (
         <p className="rounded-[1.25rem] border border-dashed border-border p-4 text-sm text-muted-foreground">
-          Este exercício ainda não tem passo a passo cadastrado. A demonstração acima mostra o
-          movimento completo.
+          {t(
+            "Este exercício ainda não tem passo a passo cadastrado. A demonstração acima mostra o movimento completo.",
+          )}
         </p>
       )}
     </div>

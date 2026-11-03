@@ -1,4 +1,4 @@
-import { WEEKDAY_LABELS } from "@forja/app-core/lib/labels";
+import { WEEKDAY_LABELS, WEEKDAY_SHORT } from "@forja/app-core/lib/labels";
 import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -64,6 +64,7 @@ import { cn } from "@/lib/utils";
 import { BrandLogo } from "@/components/brand-logo";
 import { useStreak } from "@forja/app-core/hooks/use-streak";
 import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Início: a semana, o treino de hoje e o resto do dia.
@@ -75,8 +76,8 @@ import { LOCALE } from "@forja/app-core/i18n";
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
-      { title: "Início — Habitual Fit" },
-      { name: "description", content: "Sua semana, o treino de hoje e o resto do dia." },
+      { title: t("Início — Habitual Fit") },
+      { name: "description", content: t("Sua semana, o treino de hoje e o resto do dia.") },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -90,15 +91,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Home,
 });
 
-const INICIAIS: Record<Weekday, string> = {
-  0: "DOM",
-  1: "SEG",
-  2: "TER",
-  3: "QUA",
-  4: "QUI",
-  5: "SEX",
-  6: "SÁB",
-};
+const INICIAIS = WEEKDAY_SHORT;
 
 function Home() {
   const today = todayISO();
@@ -197,20 +190,20 @@ function SemanaCard() {
 
   const titulo =
     offset === 0
-      ? "Esta semana"
+      ? t("Esta semana")
       : offset === -1
-        ? "Semana passada"
+        ? t("Semana passada")
         : offset === 1
-          ? "Próxima semana"
-          : `${formatDate(dias[0]!, "d MMM")} – ${formatDate(dias[6]!, "d MMM")}`;
+          ? t("Próxima semana")
+          : `${formatDate(dias[0]!, t("d MMM"))} – ${formatDate(dias[6]!, t("d MMM"))}`;
 
   return (
-    <section className="rounded-[1.5rem] bg-card p-5" aria-label="Semana de treino">
+    <section className="rounded-[1.5rem] bg-card p-5" aria-label={t("Semana de treino")}>
       <div className="mb-4 flex items-center justify-between">
         <button
           type="button"
           onClick={() => setOffset((o) => o - 1)}
-          aria-label="Semana anterior"
+          aria-label={t("Semana anterior")}
           className="grid size-9 place-items-center rounded-full hover:bg-elevated"
         >
           <ChevronLeft className="size-5" />
@@ -219,7 +212,7 @@ function SemanaCard() {
         <button
           type="button"
           onClick={() => setOffset((o) => o + 1)}
-          aria-label="Próxima semana"
+          aria-label={t("Próxima semana")}
           className="grid size-9 place-items-center rounded-full hover:bg-elevated"
         >
           <ChevronRight className="size-5" />
@@ -281,15 +274,17 @@ function SemanaCard() {
             )}
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-sm uppercase tracking-wide text-muted-foreground">Hoje</p>
+            <p className="text-sm uppercase tracking-wide text-muted-foreground">{t("Hoje")}</p>
             <p className="truncate text-xl">
               {alreadyDone
-                ? "Treino concluído"
+                ? t("Treino concluído")
                 : isPlannedDay && template
                   ? template.name.replace(/^[A-Z]\s*—\s*/, "")
                   : proximo
-                    ? `Descanso · ${WEEKDAY_LABELS[proximo.weekday].toLowerCase()} tem treino`
-                    : "Descanso"}
+                    ? t("Descanso · {{v0}} tem treino", {
+                        v0: WEEKDAY_LABELS[proximo.weekday].toLowerCase(),
+                      })
+                    : t("Descanso")}
             </p>
           </div>
           {template && !alreadyDone && (
@@ -299,7 +294,7 @@ function SemanaCard() {
               disabled={comecar.isPending}
               className="shrink-0 rounded-xl bg-primary-soft px-4 py-2 text-lg font-medium text-primary-soft-foreground disabled:opacity-60"
             >
-              {isPlannedDay ? "Começar" : "Treinar"}
+              {isPlannedDay ? t("Começar") : t("Treinar")}
             </button>
           )}
         </div>
@@ -324,7 +319,7 @@ function DiaEscolhido({
   return (
     <div className="mt-4 rounded-2xl bg-elevated p-4 animate-in fade-in duration-200">
       <p className="text-sm uppercase tracking-wide text-muted-foreground first-letter:uppercase">
-        {formatDate(dia, "EEEE, d 'de' MMM")}
+        {formatDate(dia, t("EEEE, d 'de' MMM"))}
       </p>
       {feitos.length > 0 ? (
         <ul className="mt-2 space-y-2">
@@ -342,7 +337,9 @@ function DiaEscolhido({
                   <span className="block truncate text-lg">
                     {w.name.replace(/^[A-Z]\s*—\s*/, "")}
                   </span>
-                  <span className="block text-sm text-muted-foreground">Treino concluído</span>
+                  <span className="block text-sm text-muted-foreground">
+                    {t("Treino concluído")}
+                  </span>
                 </span>
                 <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden />
               </Link>
@@ -361,11 +358,11 @@ function DiaEscolhido({
           <p className="min-w-0 flex-1 truncate text-lg">
             {passado
               ? previsto
-                ? `Não treinou · era ${previsto}`
-                : "Descanso"
+                ? t("Não treinou · era {{previsto}}", { previsto })
+                : t("Descanso")
               : previsto
-                ? `Previsto: ${previsto}`
-                : "Descanso"}
+                ? t("Previsto: {{previsto}}", { previsto })
+                : t("Descanso")}
           </p>
         </div>
       )}
@@ -414,7 +411,7 @@ function DietaCard({
     <Link
       to="/diet"
       className="flex items-center gap-4 rounded-[1.5rem] bg-card p-4 transition-colors hover:bg-elevated"
-      aria-label="Abrir a dieta de hoje"
+      aria-label={t("Abrir a dieta de hoje")}
     >
       {diario.isPending || loadingProfile ? (
         <Skeleton className="size-[88px] shrink-0 rounded-full" />
@@ -432,28 +429,31 @@ function DietaCard({
       <div className="min-w-0 flex-1">
         <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
           <Utensils className="size-3.5" aria-hidden />
-          Dieta de hoje
+          {t("Dieta de hoje")}
         </p>
         <p className="mt-1 text-lg font-extrabold tabular-nums">
           {Math.round(totais.kcal).toLocaleString(LOCALE)}
           <span className="text-sm font-medium text-muted-foreground">
-            {semMeta ? " kcal hoje" : ` / ${Math.round(kcalTarget).toLocaleString(LOCALE)} kcal`}
+            {semMeta ? t(" kcal hoje") : ` / ${Math.round(kcalTarget).toLocaleString(LOCALE)} kcal`}
           </span>
         </p>
         {vazio ? (
           <p className="mt-1.5 text-pretty text-sm text-muted-foreground">
-            Nada registrado ainda. Monte suas refeições e adicione o que comer.
+            {t("Nada registrado ainda. Monte suas refeições e adicione o que comer.")}
           </p>
         ) : semMeta ? (
           <p className="mt-1.5 text-sm text-muted-foreground tabular-nums">
-            Proteína: {Math.round(totais.proteinG)} g
+            {t("Proteína: {{v0}} g", { v0: Math.round(totais.proteinG) })}
           </p>
         ) : (
           <div className="mt-2">
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span>Proteína</span>
+              <span>{t("Proteína")}</span>
               <span className="tabular-nums">
-                {Math.round(totais.proteinG)}/{Math.round(proteinTarget)} g
+                {t("{{v0}}/{{v1}} g", {
+                  v0: Math.round(totais.proteinG),
+                  v1: Math.round(proteinTarget),
+                })}
               </span>
             </div>
             <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted" aria-hidden>
@@ -466,8 +466,10 @@ function DietaCard({
         )}
         {!diario.isPending && pendentes > 0 && (
           <p className="mt-1.5 text-xs text-muted-foreground">
-            {!semMeta && restante > 0 ? `Faltam ${restante.toLocaleString(LOCALE)} kcal · ` : ""}
-            {pendentes} {pendentes === 1 ? "item" : "itens"} a marcar
+            {!semMeta && restante > 0
+              ? t("Faltam {{v0}} kcal · ", { v0: restante.toLocaleString(LOCALE) })
+              : ""}
+            {pendentes} {pendentes === 1 ? "item" : "itens"} {t("a marcar")}
           </p>
         )}
       </div>
@@ -499,9 +501,9 @@ function PesoCard() {
   const fmt = (n: number) => n.toLocaleString(LOCALE, { maximumFractionDigits: 1 });
 
   return (
-    <section className="rounded-[1.5rem] bg-card p-5" aria-label="Peso corporal">
+    <section className="rounded-[1.5rem] bg-card p-5" aria-label={t("Peso corporal")}>
       <div className="flex items-center justify-between">
-        <p className="text-lg text-muted-foreground">Peso corporal</p>
+        <p className="text-lg text-muted-foreground">{t("Peso corporal")}</p>
         <div className="flex items-center gap-4">
           {meta.data && (
             <span className="flex items-center gap-1 text-lg text-warning">
@@ -511,7 +513,7 @@ function PesoCard() {
           )}
           <Link to="/body" className="flex items-center gap-1 text-lg text-primary">
             <Plus className="size-5" aria-hidden />
-            Registrar
+            {t("Registrar")}
           </Link>
         </div>
       </div>
@@ -519,13 +521,15 @@ function PesoCard() {
       {pesos.isPending ? (
         <Skeleton className="mt-3 h-40 w-full" />
       ) : !atual ? (
-        <p className="mt-3 text-muted-foreground">Registre seu peso para acompanhar a tendência.</p>
+        <p className="mt-3 text-muted-foreground">
+          {t("Registre seu peso para acompanhar a tendência.")}
+        </p>
       ) : (
         <>
           <div className="mt-2 flex items-end justify-between gap-3">
             <p className="flex items-baseline gap-2">
               <span className="text-5xl font-extrabold tabular-nums">{fmt(atual.kg)}</span>
-              <span className="text-2xl font-bold text-muted-foreground">kg</span>
+              <span className="text-2xl font-bold text-muted-foreground">{t("kg")}</span>
               {delta !== null && Math.abs(delta) >= 0.05 && (
                 <span className="flex items-center text-lg text-primary tabular-nums">
                   {delta < 0 ? <ArrowDown className="size-4" /> : <ArrowUp className="size-4" />}
@@ -533,12 +537,12 @@ function PesoCard() {
                 </span>
               )}
             </p>
-            <p className="pb-1 text-muted-foreground">{formatDate(atual.date, "EEE d MMM")}</p>
+            <p className="pb-1 text-muted-foreground">{formatDate(atual.date, t("EEE d MMM"))}</p>
           </div>
           {meta.data && falta !== null && (
             <p className="mt-1 flex items-center gap-1.5 text-lg text-warning">
               <Target className="size-5" aria-hidden />
-              Meta {fmt(meta.data)} kg
+              {t("Meta {{v0}} kg", { v0: fmt(meta.data) })}
               {Math.abs(falta) >= 0.1 &&
                 ` · ${fmt(Math.abs(falta))} kg para ${falta > 0 ? "perder" : "ganhar"}`}
             </p>
@@ -547,7 +551,7 @@ function PesoCard() {
             <div className="mt-4 h-44">
               <LazyWeightChart
                 data={lista.map((p, i) => ({
-                  date: formatDate(p.date, "d MMM"),
+                  date: formatDate(p.date, t("d MMM")),
                   peso: p.kg,
                   tendencia: Math.round(tendencia[i]! * 10) / 10,
                 }))}
@@ -574,7 +578,10 @@ function SequenciaCard() {
     <Link
       to="/workouts/calendar"
       className="relative block rounded-[1.5rem] border border-border bg-card p-5 transition-colors hover:bg-elevated"
-      aria-label={`${dias} ${dias === 1 ? "dia seguido" : "dias seguidos"} de treino. Ver calendário`}
+      aria-label={t("{{dias}} {{v1}} de treino. Ver calendário", {
+        dias,
+        v1: dias === 1 ? "dia seguido" : "dias seguidos",
+      })}
     >
       <CalendarDays className="absolute right-4 top-4 size-5 text-muted-foreground" aria-hidden />
       {/* Fogo e, ao lado, número e legenda — alinhados à esquerda do card. */}
@@ -589,7 +596,9 @@ function SequenciaCard() {
         />
         <div className="min-w-0 text-left">
           <p className="text-6xl font-extrabold leading-none tabular-nums">{dias}</p>
-          <p className="text-lg font-semibold">{dias === 1 ? "dia seguido" : "dias seguidos"}</p>
+          <p className="text-lg font-semibold">
+            {dias === 1 ? t("dia seguido") : t("dias seguidos")}
+          </p>
         </div>
       </div>
 

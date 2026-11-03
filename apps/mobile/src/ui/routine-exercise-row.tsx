@@ -28,6 +28,7 @@ import { ExerciseDemo } from "./exercise-demo";
 import { ExercisePicker } from "./exercise-picker";
 import { Icon } from "./icon";
 import { Text } from "./text";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Uma linha de exercício da rotina — o `routine-exercise-row.tsx` do web:
@@ -91,7 +92,7 @@ export function RoutineExerciseRow({
           <View className="flex-row gap-3">
             <Pressable
               onPress={onOpenDetail}
-              accessibilityLabel={`Ver detalhes de ${exercise.name}`}
+              accessibilityLabel={t("Ver detalhes de {{name}}", { name: exercise.name })}
               className="w-20"
             >
               <ExerciseDemo
@@ -115,7 +116,7 @@ export function RoutineExerciseRow({
                 </Pressable>
                 <Pressable
                   onPress={() => setMenu(true)}
-                  accessibilityLabel={`Opções de ${exercise.name}`}
+                  accessibilityLabel={t("Opções de {{name}}", { name: exercise.name })}
                   className="h-8 w-8 items-center justify-center rounded-md active:bg-accent"
                 >
                   <Icon node={moreVertical} color={apagada} size={16} />
@@ -124,9 +125,13 @@ export function RoutineExerciseRow({
 
               <View className="mt-2 flex-row flex-wrap items-center gap-1.5">
                 <Badge variante="secundario">{`${exercise.targetSets} × ${faixaReps}`}</Badge>
-                <Badge variante="contorno">{`${exercise.restSeconds}s descanso`}</Badge>
+                <Badge variante="contorno">
+                  {t("{{restSeconds}}s descanso", { restSeconds: exercise.restSeconds })}
+                </Badge>
                 {exercise.targetRpe ? (
-                  <Badge variante="contorno">{`RPE ${exercise.targetRpe}`}</Badge>
+                  <Badge variante="contorno">
+                    {t("RPE {{targetRpe}}", { targetRpe: exercise.targetRpe })}
+                  </Badge>
                 ) : null}
                 {exercise.cadence ? <Badge variante="contorno">{exercise.cadence}</Badge> : null}
               </View>
@@ -136,28 +141,28 @@ export function RoutineExerciseRow({
           {expandido ? (
             <View className="mt-3 flex-row flex-wrap gap-3 border-t border-border pt-3">
               <NumberInput
-                label="Séries"
+                label={t("Séries")}
                 value={exercise.targetSets}
                 min={1}
                 max={12}
                 onCommit={(v) => salvar.mutate({ target_sets: v })}
               />
               <NumberInput
-                label="Repetições"
+                label={t("Repetições")}
                 value={exercise.targetReps}
                 min={1}
                 max={100}
                 onCommit={(v) => salvar.mutate({ target_reps: v })}
               />
               <NumberInput
-                label="Descanso (s)"
+                label={t("Descanso (s)")}
                 value={exercise.restSeconds}
                 min={0}
                 max={600}
                 onCommit={(v) => salvar.mutate({ rest_seconds: v })}
               />
               <NumberInput
-                label="RPE alvo"
+                label={t("RPE alvo")}
                 value={exercise.targetRpe ?? 8}
                 min={1}
                 max={10}
@@ -168,10 +173,10 @@ export function RoutineExerciseRow({
                   variant="outline"
                   size="sm"
                   onPress={() => setConfirmarRemocao(true)}
-                  accessibilityLabel={`Remover ${exercise.name} do treino`}
+                  accessibilityLabel={t("Remover {{name}} do treino", { name: exercise.name })}
                 >
                   <Icon node={trash2} color={destrutiva} size={16} />
-                  <Text className="text-xs font-medium">Remover exercício</Text>
+                  <Text className="text-xs font-medium">{t("Remover exercício")}</Text>
                 </Button>
               </View>
             </View>
@@ -185,16 +190,16 @@ export function RoutineExerciseRow({
         title={exercise.name}
         corIcone={primaria}
         opcoes={[
-          { label: "Ver execução", icon: info, onPress: onOpenDetail },
+          { label: t("Ver execução"), icon: info, onPress: onOpenDetail },
           {
-            label: expandido ? "Ocultar ajustes" : "Ajustar séries e descanso",
+            label: expandido ? t("Ocultar ajustes") : t("Ajustar séries e descanso"),
             icon: timer,
             onPress: () => setExpandido((v) => !v),
           },
-          { label: "Duplicar", icon: copy, onPress: () => duplicar.mutate() },
-          { label: "Trocar exercício", icon: repeat, onPress: () => setTrocando(true) },
+          { label: t("Duplicar"), icon: copy, onPress: () => duplicar.mutate() },
+          { label: t("Trocar exercício"), icon: repeat, onPress: () => setTrocando(true) },
           {
-            label: "Remover do plano",
+            label: t("Remover do plano"),
             icon: trash2,
             destrutiva: true,
             onPress: () => setConfirmarRemocao(true),
@@ -204,16 +209,18 @@ export function RoutineExerciseRow({
       <ExercisePicker
         open={trocando}
         onClose={() => setTrocando(false)}
-        title={`Trocar ${exercise.name}`}
+        title={t("Trocar {{name}}", { name: exercise.name })}
         muscle={exercise.primaryMuscle}
         onPick={(ex) => trocar.mutateAsync(ex.id)}
       />
       <ConfirmDialog
         open={confirmarRemocao}
         onClose={() => setConfirmarRemocao(false)}
-        title="Remover do plano?"
-        description={`“${exercise.name}” sai desta rotina. Seu histórico de séries continua salvo.`}
-        confirmLabel="Remover"
+        title={t("Remover do plano?")}
+        description={t("“{{name}}” sai desta rotina. Seu histórico de séries continua salvo.", {
+          name: exercise.name,
+        })}
+        confirmLabel={t("Remover")}
         destructive
         onConfirm={() => remover.mutate()}
       />

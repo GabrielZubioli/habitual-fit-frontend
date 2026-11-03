@@ -9,6 +9,7 @@ import { cn } from "@/lib/cn";
 import { useColor } from "@/theme/theme";
 import { Icon, type IconNode } from "./icon";
 import { Text } from "./text";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Como executar o exercício — o `exercise-how-to.tsx` do web: o passo a passo
@@ -38,14 +39,14 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
   return (
     <View className="gap-3">
       {mostrarTextoCorrido ? (
-        <Bloco titulo="Execução" icone={listOrdered} cor={texto} extra={<EmIngles />}>
+        <Bloco titulo={t("Execução")} icone={listOrdered} cor={texto} extra={<EmIngles />}>
           <Text className="text-[15px] leading-relaxed">{textoEn}</Text>
         </Bloco>
       ) : null}
 
       {passos.length > 0 ? (
         <Bloco
-          titulo="Passo a passo"
+          titulo={t("Passo a passo")}
           icone={listOrdered}
           cor={texto}
           extra={emIngles ? <EmIngles /> : null}
@@ -66,8 +67,9 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
           </View>
           {emIngles ? (
             <Text className="mt-3 text-xs text-muted-foreground">
-              Sem versão em português na base de origem. O texto original é exibido sem tradução
-              automática — instrução de execução traduzida por máquina pode sair perigosa.
+              {t(
+                "Sem versão em português na base de origem. O texto original é exibido sem tradução automática — instrução de execução traduzida por máquina pode sair perigosa.",
+              )}
             </Text>
           ) : null}
         </Bloco>
@@ -75,7 +77,7 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
 
       {exercise.cues?.length ? (
         <ListaComIcone
-          titulo="Dicas de execução"
+          titulo={t("Dicas de execução")}
           icone={lightbulb}
           itens={exercise.cues}
           tom="primary"
@@ -83,7 +85,7 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
       ) : null}
       {exercise.common_mistakes?.length ? (
         <ListaComIcone
-          titulo="Erros comuns"
+          titulo={t("Erros comuns")}
           icone={alertTriangle}
           itens={exercise.common_mistakes}
           tom="warning"
@@ -91,7 +93,7 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
       ) : null}
       {exercise.contraindications?.length ? (
         <ListaComIcone
-          titulo="Cuidado se você tem"
+          titulo={t("Cuidado se você tem")}
           icone={alertTriangle}
           itens={exercise.contraindications.map(
             (c) => INJURY_OPTIONS.find((o) => o.value === c)?.label ?? c,
@@ -103,8 +105,9 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
       {passos.length === 0 && !mostrarTextoCorrido ? (
         <View className="rounded-[20px] border border-dashed border-border p-4">
           <Text className="text-sm text-muted-foreground">
-            Este exercício ainda não tem passo a passo cadastrado. A demonstração acima mostra o
-            movimento completo.
+            {t(
+              "Este exercício ainda não tem passo a passo cadastrado. A demonstração acima mostra o movimento completo.",
+            )}
           </Text>
         </View>
       ) : null}
@@ -117,7 +120,7 @@ function EmIngles() {
   return (
     <View className="flex-row items-center gap-1 rounded-md bg-warning-soft px-2 py-0.5">
       <Icon node={languages} color={cor} size={12} />
-      <Text className="text-xs font-semibold text-warning">em inglês</Text>
+      <Text className="text-xs font-semibold text-warning">{t("em inglês")}</Text>
     </View>
   );
 }

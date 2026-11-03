@@ -51,6 +51,7 @@ import { SubstituteFoodDialog } from "@/ui/substitute-food-dialog";
 import { Text } from "@/ui/text";
 import { WeeklyMenu } from "@/ui/weekly-menu";
 import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * A dieta — o `diet.tsx` do web: o Diário (o plano executável do dia: marcar o
@@ -149,12 +150,12 @@ export default function DietPage() {
     <PageScroll
       header={
         <PageHeader
-          title="Dieta"
+          title={t("Dieta")}
           description={
             // Mesma altura nas duas abas: o cabeçalho não muda de tamanho ao trocar.
             aba === "cardapio" ? (
               <View className="h-8 justify-center">
-                <Text className="text-base text-muted-foreground">Cardápio da semana</Text>
+                <Text className="text-base text-muted-foreground">{t("Cardápio da semana")}</Text>
               </View>
             ) : (
               <View className="h-8 justify-center">
@@ -162,7 +163,7 @@ export default function DietPage() {
                   simples
                   value={date}
                   onChange={setDate}
-                  accessibilityLabel="Data do diário"
+                  accessibilityLabel={t("Data do diário")}
                 />
               </View>
             )
@@ -180,8 +181,8 @@ export default function DietPage() {
         <View accessibilityRole="tablist" className="mb-6 flex-row rounded-full bg-card p-1">
           {(
             [
-              ["diario", "Diário"],
-              ["cardapio", "Cardápio da semana"],
+              ["diario", t("Diário")],
+              ["cardapio", t("Cardápio da semana")],
             ] as const
           ).map(([v, rotulo]) => (
             <Pressable
@@ -241,7 +242,7 @@ export default function DietPage() {
                   </View>
                   <View className="mt-7 flex-row gap-2">
                     <MacroRing
-                      nome="Proteína"
+                      nome={t("Proteína")}
                       icone="🥩"
                       valor={totaisConsumidos.proteinG}
                       meta={num(profile.data?.protein_g_target)}
@@ -249,7 +250,7 @@ export default function DietPage() {
                       cor={MACRO_COLORS.protein}
                     />
                     <MacroRing
-                      nome="Carbo"
+                      nome={t("Carbo")}
                       icone="🫘"
                       valor={totaisConsumidos.carbsG}
                       meta={num(profile.data?.carbs_g_target)}
@@ -257,7 +258,7 @@ export default function DietPage() {
                       cor={MACRO_COLORS.carbs}
                     />
                     <MacroRing
-                      nome="Gordura"
+                      nome={t("Gordura")}
                       icone="🥑"
                       valor={totaisConsumidos.fatG}
                       meta={num(profile.data?.fat_g_target)}
@@ -265,7 +266,7 @@ export default function DietPage() {
                       cor={MACRO_COLORS.fat}
                     />
                     <MacroRing
-                      nome="Fibra"
+                      nome={t("Fibra")}
                       icone="🥦"
                       valor={totaisConsumidos.fiberG}
                       meta={num(profile.data?.fiber_g_target)}
@@ -277,7 +278,9 @@ export default function DietPage() {
                     <Text className="mt-5 text-center text-xs text-muted-foreground">
                       Planejado para o dia:{" "}
                       <Text className="text-xs font-semibold">
-                        {Math.round(totaisPlanejados.kcal).toLocaleString(LOCALE)} kcal
+                        {t("{{v0}} kcal", {
+                          v0: Math.round(totaisPlanejados.kcal).toLocaleString(LOCALE),
+                        })}
                       </Text>{" "}
                       · P {Math.round(totaisPlanejados.proteinG)} g
                     </Text>
@@ -288,16 +291,16 @@ export default function DietPage() {
 
             {rows.length === 0 && !entries.isPending && !entries.isError ? (
               <View className="mb-4 rounded-[20px] border border-dashed border-primary/40 bg-primary/5 p-5">
-                <Text className="text-lg font-bold">Monte suas refeições</Text>
+                <Text className="text-lg font-bold">{t("Monte suas refeições")}</Text>
                 <Text className="mt-1 text-sm text-muted-foreground">
                   Suas refeições estão vazias. Os alimentos de cada refeição são montados no{" "}
-                  <Text className="text-sm font-bold">Cardápio da semana</Text> e aparecem aqui, no
-                  dia, para você marcar o que comeu. Monte por conta própria ou siga a orientação do
-                  seu nutricionista.
+                  <Text className="text-sm font-bold">{t("Cardápio da semana")}</Text> e aparecem
+                  aqui, no dia, para você marcar o que comeu. Monte por conta própria ou siga a
+                  orientação do seu nutricionista.
                 </Text>
                 <View className="mt-4 flex-row">
                   <Button className="h-11 rounded-xl" onPress={() => setAba("cardapio")}>
-                    Abrir o Cardápio da semana
+                    {t("Abrir o Cardápio da semana")}
                   </Button>
                 </View>
               </View>
@@ -337,7 +340,7 @@ export default function DietPage() {
                 loading={copyPreviousDay.isPending}
               >
                 <CopiarIcone />
-                <Text className="text-sm font-medium">Copiar o dia anterior</Text>
+                <Text className="text-sm font-medium">{t("Copiar o dia anterior")}</Text>
               </Button>
             ) : null}
 
@@ -454,7 +457,10 @@ function MealCard({
                 </Text>
                 <View className="rounded-full bg-primary/15 px-2 py-0.5">
                   <Text className="text-xs font-bold text-primary">
-                    {Math.round(totals.kcal)} kcal · P {Math.round(totals.proteinG)} g
+                    {t("{{v0}} kcal · P {{v1}} g", {
+                      v0: Math.round(totals.kcal),
+                      v1: Math.round(totals.proteinG),
+                    })}
                   </Text>
                 </View>
               </View>
@@ -464,7 +470,9 @@ function MealCard({
             <Pressable
               onPress={() => setAberta((v) => !v)}
               accessibilityState={{ expanded: aberta }}
-              accessibilityLabel={aberta ? `Fechar ${nome}` : `Abrir ${nome}`}
+              accessibilityLabel={
+                aberta ? t("Fechar {{nome}}", { nome }) : t("Abrir {{nome}}", { nome })
+              }
               className="h-10 w-10 items-center justify-center rounded-full bg-primary/15 active:bg-primary/25"
             >
               <View style={{ transform: [{ rotate: aberta ? "180deg" : "0deg" }] }}>
@@ -481,7 +489,7 @@ function MealCard({
           </View>
         ) : items.length === 0 ? (
           <Text className="py-3 text-center text-sm text-muted-foreground">
-            Refeição vazia — adicione alimentos no Cardápio da semana.
+            {t("Refeição vazia — adicione alimentos no Cardápio da semana.")}
           </Text>
         ) : (
           <>
@@ -507,7 +515,7 @@ function MealCard({
                 loading={concluirRefeicao.isPending}
               >
                 <Icon node={check} color={texto} size={16} />
-                <Text className="text-sm font-medium">Concluir refeição</Text>
+                <Text className="text-sm font-medium">{t("Concluir refeição")}</Text>
               </Button>
             ) : null}
           </>
@@ -563,7 +571,7 @@ function FoodRow({
           onPress={() => onToggle(!item.consumed)}
           accessibilityRole="checkbox"
           accessibilityState={{ checked: item.consumed }}
-          accessibilityLabel={`Marcar ${item.name} como consumido`}
+          accessibilityLabel={t("Marcar {{name}} como consumido", { name: item.name })}
           hitSlop={8}
           className={cn(
             "h-5 w-5 items-center justify-center rounded border",
@@ -583,15 +591,18 @@ function FoodRow({
             {item.name}
           </Text>
           <Text className="text-[13px] text-muted-foreground">
-            {Math.round(macros.kcal)} kcal · P {macros.proteinG.toFixed(0)} g
+            {t("{{v0}} kcal · P {{v1}} g", {
+              v0: Math.round(macros.kcal),
+              v1: macros.proteinG.toFixed(0),
+            })}
           </Text>
           <Text className="text-[11px] text-muted-foreground">
             <Text
               onPress={() => setEditando((v) => !v)}
-              accessibilityLabel={`Alterar a quantidade de ${item.name}`}
+              accessibilityLabel={t("Alterar a quantidade de {{name}}", { name: item.name })}
               className="text-[11px] font-medium underline"
             >
-              {Math.round(item.grams)} g
+              {t("{{v0}} g", { v0: Math.round(item.grams) })}
             </Text>
             {medida ? ` (${medida})` : ""} · C {macros.carbsG.toFixed(0)} g · G{" "}
             {macros.fatG.toFixed(0)} g
@@ -600,7 +611,7 @@ function FoodRow({
 
         <Pressable
           onPress={() => setMenu(true)}
-          accessibilityLabel={`Opções de ${item.name}`}
+          accessibilityLabel={t("Opções de {{name}}", { name: item.name })}
           className="h-8 w-8 items-center justify-center rounded-md active:bg-accent"
         >
           <Icon node={moreVertical} color={apagada} size={16} />
@@ -625,9 +636,9 @@ function FoodRow({
         title={item.name}
         corIcone={primaria}
         opcoes={[
-          { label: "Substituir", icon: repeat, onPress: () => setTrocando(true) },
-          { label: "Alterar quantidade", icon: pencil, onPress: () => setEditando(true) },
-          { label: "Remover", icon: trash2, destrutiva: true, onPress: onRemove },
+          { label: t("Substituir"), icon: repeat, onPress: () => setTrocando(true) },
+          { label: t("Alterar quantidade"), icon: pencil, onPress: () => setEditando(true) },
+          { label: t("Remover"), icon: trash2, destrutiva: true, onPress: onRemove },
         ]}
       />
       <SubstituteFoodDialog
@@ -660,7 +671,7 @@ function GramsEditor({
     <View className="mt-2 flex-row items-center gap-2 rounded-xl bg-muted/50 p-2">
       <Pressable
         onPress={() => setValor(String(Math.max(1, numero - 10)))}
-        accessibilityLabel="Diminuir 10 gramas"
+        accessibilityLabel={t("Diminuir 10 gramas")}
         className="h-9 w-9 items-center justify-center rounded-md border border-border bg-card"
       >
         <Icon node={minus} color={texto} size={16} />
@@ -670,22 +681,22 @@ function GramsEditor({
         onChangeText={setValor}
         keyboardType="number-pad"
         autoFocus
-        accessibilityLabel={`Quantidade de ${name} em gramas`}
+        accessibilityLabel={t("Quantidade de {{name}} em gramas", { name })}
         className="h-9 min-w-0 flex-1 rounded-md border border-input bg-background px-2 font-sans text-base"
         style={{ color: texto }}
       />
       <Pressable
         onPress={() => setValor(String(numero + 10))}
-        accessibilityLabel="Aumentar 10 gramas"
+        accessibilityLabel={t("Aumentar 10 gramas")}
         className="h-9 w-9 items-center justify-center rounded-md border border-border bg-card"
       >
         <Icon node={plus} color={texto} size={16} />
       </Pressable>
       <Button size="sm" className="h-9" onPress={() => onSave(numero)}>
-        Salvar
+        {t("Salvar")}
       </Button>
       <Button size="sm" variant="ghost" className="h-9 px-2" onPress={onCancel}>
-        Cancelar
+        {t("Cancelar")}
       </Button>
     </View>
   );
@@ -723,14 +734,14 @@ function RenomearRefeicao({
           setNome(atual);
           setAberto(true);
         }}
-        accessibilityLabel={`Renomear ${atual}`}
+        accessibilityLabel={t("Renomear {{atual}}", { atual })}
         className="h-7 w-7 items-center justify-center rounded-full active:bg-elevated"
       >
         <Icon node={pencil} color={apagada} size={14} />
       </Pressable>
-      <Dialog open={aberto} onClose={() => setAberto(false)} title="Nome da refeição">
+      <Dialog open={aberto} onClose={() => setAberto(false)} title={t("Nome da refeição")}>
         <Text className="text-center text-sm text-muted-foreground">
-          Deixe em branco para voltar a “{padrao}”.
+          {t("Deixe em branco para voltar a “{{padrao}}”.", { padrao })}
         </Text>
         <TextInput
           autoFocus
@@ -738,7 +749,7 @@ function RenomearRefeicao({
           maxLength={40}
           onChangeText={setNome}
           placeholder={padrao}
-          accessibilityLabel="Nome da refeição"
+          accessibilityLabel={t("Nome da refeição")}
           onSubmitEditing={() => {
             setAberto(false);
             if (novo !== atual) setEscopo(true);
@@ -753,18 +764,20 @@ function RenomearRefeicao({
             if (novo !== atual) setEscopo(true);
           }}
         >
-          Continuar
+          {t("Continuar")}
         </Button>
       </Dialog>
       <AlertDialog
         open={escopo}
         onClose={() => setEscopo(false)}
-        title={`Renomear para “${novo}”`}
-        description="Deseja alterar o nome de todas as refeições correspondentes no cardápio da semana?"
+        title={t("Renomear para “{{novo}}”", { novo })}
+        description={t(
+          "Deseja alterar o nome de todas as refeições correspondentes no cardápio da semana?",
+        )}
         acoes={[
-          { label: "Sim, alterar a semana toda", onPress: () => salvar("semana") },
+          { label: t("Sim, alterar a semana toda"), onPress: () => salvar("semana") },
           {
-            label: diaHoje ? "Não, somente hoje" : "Não, somente neste dia",
+            label: diaHoje ? t("Não, somente hoje") : t("Não, somente neste dia"),
             variant: "outline",
             onPress: () => salvar("dia"),
           },
@@ -786,7 +799,11 @@ function SemanaDias({
 }) {
   const inicio = startOfWeek(fromISODate(date), { weekStartsOn: 1 });
   return (
-    <View accessibilityRole="radiogroup" accessibilityLabel="Dia da semana" className="flex-row">
+    <View
+      accessibilityRole="radiogroup"
+      accessibilityLabel={t("Dia da semana")}
+      className="flex-row"
+    >
       {Array.from({ length: 7 }, (_, i) => {
         const iso = toISODate(addDays(inicio, i));
         const ativo = iso === date;
@@ -800,7 +817,7 @@ function SemanaDias({
             key={iso}
             accessibilityRole="radio"
             accessibilityState={{ checked: ativo }}
-            accessibilityLabel={`${formatDate(iso, "EEEE, d 'de' MMMM")}${iso === hoje ? ", hoje" : ""}`}
+            accessibilityLabel={`${formatDate(iso, t("EEEE, d 'de' MMMM"))}${iso === hoje ? ", hoje" : ""}`}
             onPress={() => onChange(iso)}
             className={cn(
               "w-8 items-center rounded-xl py-1.5",

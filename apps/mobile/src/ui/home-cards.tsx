@@ -17,6 +17,7 @@ import { useColor } from "@/theme/theme";
 import { Card } from "./card";
 import { Icon } from "./icon";
 import { Text } from "./text";
+import { t } from "@forja/app-core/i18n";
 
 /** Mistura duas cores `#rrggbb` (o `color-mix` do web). */
 function misturar(a: string, b: string, pesoA: number): string {
@@ -75,13 +76,13 @@ export function ReadinessCard() {
   return (
     <Pressable
       onPress={() => router.push("/stats")}
-      accessibilityLabel={`Prontidão do corpo: ${media}%`}
+      accessibilityLabel={t("Prontidão do corpo: {{media}}%", { media })}
       className="rounded-3xl bg-card p-5 active:bg-elevated"
     >
       <View className="flex-row items-center justify-between gap-3">
         <View className="flex-row items-center gap-2">
           <Icon node={batteryCharging} color={primaria} size={20} />
-          <Text className="text-lg text-muted-foreground">Prontidão do corpo</Text>
+          <Text className="text-lg text-muted-foreground">{t("Prontidão do corpo")}</Text>
         </View>
         <Icon node={chevronRight} color={texto} size={20} />
       </View>
@@ -108,7 +109,7 @@ export function ReadinessCard() {
 
       {recuperando.length === 0 ? (
         <Text className="mt-3 text-muted-foreground">
-          Tudo recuperado — dia perfeito para um treino pesado.
+          {t("Tudo recuperado — dia perfeito para um treino pesado.")}
         </Text>
       ) : (
         <View className="mt-4 gap-1.5">
@@ -119,8 +120,8 @@ export function ReadinessCard() {
               <Text className="text-sm text-muted-foreground">
                 {m.hoursRemaining < 24
                   ? `${m.hoursRemaining}h`
-                  : `${Math.round(m.hoursRemaining / 24)}d`}{" "}
-                para recuperar
+                  : `${Math.round(m.hoursRemaining / 24)}d`}
+                {t("para recuperar")}
               </Text>
             </View>
           ))}
@@ -132,7 +133,7 @@ export function ReadinessCard() {
                   .slice(0, 4)
                   .map((m) => label(MUSCLE_LABELS, m.muscle))
                   .join(", ")}
-                {prontos.length > 4 ? ` e mais ${prontos.length - 4}` : ""}
+                {prontos.length > 4 ? t(" e mais {{v0}}", { v0: prontos.length - 4 }) : ""}
               </Text>
             </Text>
           ) : null}
@@ -200,12 +201,15 @@ export function WaterCard({
               <Icon node={droplets} color={azul} size={16} />
             </View>
             <View>
-              <Text className="text-sm font-semibold leading-tight">Água</Text>
+              <Text className="text-sm font-semibold leading-tight">{t("Água")}</Text>
               {water.isPending ? (
                 <View className="mt-1 h-3 w-20 rounded bg-muted" />
               ) : (
                 <Text className="text-xs text-muted-foreground">
-                  {(consumido / 1000).toFixed(1)} L de {(meta / 1000).toFixed(1)} L
+                  {t("{{v0}} L de {{v1}} L", {
+                    v0: (consumido / 1000).toFixed(1),
+                    v1: (meta / 1000).toFixed(1),
+                  })}
                 </Text>
               )}
             </View>
@@ -214,7 +218,7 @@ export function WaterCard({
             <Pressable
               onPress={() => undo.mutate()}
               disabled={undo.isPending}
-              accessibilityLabel="Desfazer último registro de água"
+              accessibilityLabel={t("Desfazer último registro de água")}
               className="h-8 w-8 items-center justify-center rounded-full active:bg-accent"
             >
               <Icon node={minus} color={texto} size={16} />
@@ -224,7 +228,7 @@ export function WaterCard({
 
         <View
           accessibilityRole="progressbar"
-          accessibilityLabel={`Água: ${consumido} de ${meta} mililitros`}
+          accessibilityLabel={t("Água: {{consumido}} de {{meta}} mililitros", { consumido, meta })}
           className="mb-3 h-2 overflow-hidden rounded-full bg-muted"
         >
           <View

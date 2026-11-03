@@ -5,6 +5,7 @@ import { cn } from "@/lib/cn";
 import { useColor } from "@/theme/theme";
 import { Text } from "./text";
 import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Os anéis de calorias e macros — o `home/macro-rings.tsx` do web. Contam o
@@ -54,8 +55,12 @@ export function CalorieRing({
       style={{ width: size, height: size }}
       accessibilityLabel={
         referencia > 0
-          ? `${Math.round(consumed)} de ${Math.round(referencia)} calorias ${usaMeta ? "da meta" : "planejadas"} consumidas.`
-          : `${Math.round(consumed)} calorias consumidas.`
+          ? t("{{v0}} de {{v1}} calorias {{v2}} consumidas.", {
+              v0: Math.round(consumed),
+              v1: Math.round(referencia),
+              v2: usaMeta ? "da meta" : "planejadas",
+            })
+          : t("{{v0}} calorias consumidas.", { v0: Math.round(consumed) })
       }
     >
       <Svg width={size} height={size} style={{ transform: [{ rotate: "-90deg" }] }}>
@@ -102,14 +107,14 @@ export function CalorieRing({
             : restante >= 0
               ? compacto
                 ? "restantes"
-                : "kcal restantes"
-              : "kcal acima"}
+                : t("kcal restantes")
+              : t("kcal acima")}
         </Text>
         {!compacto && referencia > 0 ? (
           <Text className="mt-1.5 text-[11px] text-muted-foreground">
             {usaMeta
               ? `${Math.round(consumed).toLocaleString(LOCALE)} / ${Math.round(target).toLocaleString(LOCALE)}`
-              : `de ${Math.round(planejado).toLocaleString(LOCALE)} planejadas`}
+              : t("de {{v0}} planejadas", { v0: Math.round(planejado).toLocaleString(LOCALE) })}
           </Text>
         ) : null}
       </View>
@@ -199,7 +204,7 @@ export function MacroRing({
           valor > 0 ? (
             `${Math.round(valor)}g`
           ) : (
-            "nada planejado"
+            t("nada planejado")
           )
         ) : (
           <>
@@ -237,10 +242,10 @@ export function MacroTiles({
     fat: useColor(MACRO_COLORS.fat),
   };
   const itens = [
-    { rotulo: "Calorias", valor: Math.round(kcal), unidade: "kcal", cor: cores.kcal },
-    { rotulo: "Proteína", valor: Math.round(proteinG), unidade: "g", cor: cores.protein },
-    { rotulo: "Carboidrato", valor: Math.round(carbsG), unidade: "g", cor: cores.carbs },
-    { rotulo: "Gordura", valor: Math.round(fatG), unidade: "g", cor: cores.fat },
+    { rotulo: t("Calorias"), valor: Math.round(kcal), unidade: "kcal", cor: cores.kcal },
+    { rotulo: t("Proteína"), valor: Math.round(proteinG), unidade: "g", cor: cores.protein },
+    { rotulo: t("Carboidrato"), valor: Math.round(carbsG), unidade: "g", cor: cores.carbs },
+    { rotulo: t("Gordura"), valor: Math.round(fatG), unidade: "g", cor: cores.fat },
   ];
   return (
     <View className={cn("flex-row flex-wrap gap-2", className)}>

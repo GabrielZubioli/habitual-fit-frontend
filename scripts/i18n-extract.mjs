@@ -70,6 +70,12 @@ const CAMPOS_DE_TEXTO = new Set([
   "unit",
   "heading",
   "body",
+  "measure",
+  "grupo",
+  "dialogTitle",
+  "sub",
+  "nota",
+  "valor",
 ]);
 
 /** Atributos JSX que nunca são texto, mesmo quando a string parece frase. */
@@ -240,9 +246,16 @@ export function pareceTexto(s) {
   const v = s.trim();
   if (!/\p{L}/u.test(v) || /^[a-z]+:\/\//i.test(v)) return false;
   if (/^(no)?(index|follow)(,\s*(no)?(index|follow))*$/.test(v)) return false; // meta robots
-  if (/^(SELECT|INSERT|UPDATE|DELETE|WITH|CREATE|ALTER|DROP|PRAGMA)\s/i.test(v)) return false; // SQL
+  if (
+    /^(SELECT|INSERT|UPDATE|DELETE|WITH|CREATE|ALTER|DROP|PRAGMA|ORDER BY|GROUP BY|WHERE|LIMIT|FROM|AND|OR)\s/i.test(
+      v,
+    )
+  )
+    return false; // SQL
   if (/^[MmLlHhVvCcSsQqTtAaZz][\d\s.,MmLlHhVvCcSsQqTtAaZz-]*$/.test(v)) return false; // path SVG
-  if (/[;{}=]|rgba?\(/.test(v)) return false; // CSS, script, cookie
+  if (/[;{}=]|rgba?\(|\dpx\b/.test(v)) return false; // CSS, script, cookie, fonte do canvas
+  if (/^[a-z_]+(,\s*[a-z_]+)+$/.test(v)) return false; // colunas do SELECT
+  if (/\b(IS NULL|IS NOT NULL|IN \(|= \?)/.test(v)) return false; // condição SQL
   if (!/^[\p{L}¿¡"“(«…0-9+]/u.test(v)) return false;
   if (/^[\w.-]+\/[\w./-]*$/.test(v) || /^\/[\w/$.-]*$/.test(v)) return false; // rotas, caminhos
   const palavras = v.split(/\s+/);
@@ -302,6 +315,7 @@ function listar(alvo) {
     if (statSync(p).isDirectory()) return listar(p);
     return /\.tsx?$/.test(n) &&
       !/\.test\.tsx?$|\.gen\.ts$|\.d\.ts$/.test(n) &&
+      !ARQUIVOS_DE_DADOS.test(n) &&
       !p.includes(`${sep}i18n${sep}`)
       ? [p]
       : [];
@@ -452,12 +466,12 @@ export function processar(sf, checker, { importacao }) {
         return true;
     }
     if (ts.isTaggedTemplateExpression(p)) return true;
-    // "use client" e `X.displayName = "Card"`.
+    // "use client", `X.displayName = "Card"` e `this.name = "DataError"`.
     if (ts.isExpressionStatement(p)) return true;
     if (
       ts.isBinaryExpression(p) &&
       ts.isPropertyAccessExpression(p.left) &&
-      p.left.name.text === "displayName"
+      ["displayName", "displayname", "name"].includes(p.left.name.text)
     ) {
       return true;
     }
@@ -518,11 +532,20 @@ export function processar(sf, checker, { importacao }) {
     if (
       ts.isPropertyAssignment(prop) &&
       !mapaDeRotulos &&
+      !ts.isNumericLiteral(prop.name) && // { 3: "Empurrar / Puxar / Pernas" }
       !CAMPOS_DE_TEXTO.has(prop.name.getText(sf).replace(/["']/g, ""))
     ) {
       return duvida(n, `propriedade "${prop.name.getText(sf)}" com cara de texto`);
     }
     if (!aceitaString(n)) return;
+    // Na camada de dados, listas de strings costumam ser palavras-chave
+    // comparadas com o nome vindo do banco — traduzir quebraria a busca.
+    if (
+      ts.isArrayLiteralExpression(n.parent) &&
+      sf.fileName.replace(/\\/g, "/").includes("/app-core/src/data/")
+    ) {
+      return duvida(n, "string em lista da camada de dados");
+    }
     edicoes.push([n.getStart(sf), n.getEnd(), chamada(frase, exprs)]);
   };
 

@@ -6,6 +6,7 @@ import { cn } from "@/lib/cn";
 import { useColor } from "@/theme/theme";
 import { Icon } from "./icon";
 import { Text } from "./text";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * A demonstração do exercício — o `ExerciseDemo` do web: as fotos de início e
@@ -43,7 +44,7 @@ export function ExerciseDemo({
   if (images.length === 0 || failed) {
     return (
       <View
-        accessibilityLabel={`Sem demonstração disponível para ${name}`}
+        accessibilityLabel={t("Sem demonstração disponível para {{name}}", { name })}
         className={cn(
           "aspect-[4/3] w-full items-center justify-center rounded-xl bg-muted",
           className,
@@ -59,8 +60,8 @@ export function ExerciseDemo({
       onPress={() => (temMultiplas ? setPlaying((p) => !p) : undefined)}
       accessibilityLabel={
         temMultiplas
-          ? `${playing ? "Pausar" : "Reproduzir"} demonstração de ${name}`
-          : `Demonstração de ${name}`
+          ? t("{{v0}} demonstração de {{name}}", { v0: playing ? "Pausar" : "Reproduzir", name })
+          : t("Demonstração de {{name}}", { name })
       }
       className={cn("aspect-[4/3] w-full overflow-hidden rounded-xl bg-muted", className)}
     >
@@ -103,7 +104,7 @@ export function ExerciseMediaView({ media, name }: { media: ExerciseMedia; name:
           source={{ uri: media.gif }}
           onError={() => setFalhou(true)}
           resizeMode="contain"
-          accessibilityLabel={`${name} — demonstração`}
+          accessibilityLabel={t("{{name}} — demonstração", { name })}
           className="aspect-square w-full bg-white"
         />
       ) : (

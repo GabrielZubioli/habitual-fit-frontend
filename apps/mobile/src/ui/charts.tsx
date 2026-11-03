@@ -13,6 +13,7 @@ import Svg, {
 } from "react-native-svg";
 import { useColor } from "@/theme/theme";
 import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Gráficos simples em SVG — o lugar dos gráficos do recharts no web: grade,
@@ -36,7 +37,7 @@ function escala(valores: readonly number[], zeroBase: boolean) {
     : Math.max(0, Math.floor(menor / passo) * passo - (maior === menor ? passo : 0));
   const max = Math.ceil(maior / passo) * passo + (maior === menor ? passo : 0);
   const ticks: number[] = [];
-  for (let t = min; t <= max + passo / 2; t += passo) ticks.push(t);
+  for (let item = min; item <= max + passo / 2; item += passo) ticks.push(item);
   return { min, max, ticks };
 }
 
@@ -69,19 +70,19 @@ function Grade({
   texto: string;
   unidade?: string;
 }) {
-  return g.ticks.map((t) => (
-    <G key={t}>
+  return g.ticks.map((item) => (
+    <G key={item}>
       <Line
         x1={g.eixoY}
         x2={g.largura - 8}
-        y1={g.y(t)}
-        y2={g.y(t)}
+        y1={g.y(item)}
+        y2={g.y(item)}
         stroke={cor}
         strokeDasharray="3 3"
       />
       {g.eixoY > 0 ? (
-        <SvgText x={g.eixoY - 6} y={g.y(t) + 4} fontSize={11} fill={texto} textAnchor="end">
-          {`${Number(t.toPrecision(6)).toLocaleString(LOCALE)}${unidade}`}
+        <SvgText x={g.eixoY - 6} y={g.y(item) + 4} fontSize={11} fill={texto} textAnchor="end">
+          {`${Number(item.toPrecision(6)).toLocaleString(LOCALE)}${unidade}`}
         </SvgText>
       ) : null}
     </G>
@@ -302,7 +303,7 @@ export function WeeklyChart({
                 fill={texto}
                 textAnchor="end"
               >
-                {`meta ${goal}`}
+                {t("meta {{goal}}", { goal })}
               </SvgText>
             </G>
           ) : null}

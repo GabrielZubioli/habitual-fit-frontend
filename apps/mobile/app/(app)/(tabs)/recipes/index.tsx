@@ -43,6 +43,7 @@ import { MacroTiles } from "@/ui/macro-rings";
 import { PageHeader, PageScroll } from "@/ui/page-header";
 import { Text } from "@/ui/text";
 import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Receitas — o `recipes.tsx` do web: as prontas, por categoria, e as da
@@ -107,10 +108,10 @@ export default function RecipesPage() {
   });
 
   const filtradas = useMemo(() => {
-    const t = busca.trim().toLowerCase();
+    const item = busca.trim().toLowerCase();
     return (receitas.data ?? []).filter(
       (r) =>
-        (!t || r.name.toLowerCase().includes(t)) &&
+        (!item || r.name.toLowerCase().includes(item)) &&
         (!categoria || (categoria === "minhas" ? !r.isSystem : r.category === categoria)),
     );
   }, [receitas.data, busca, categoria]);
@@ -125,10 +126,12 @@ export default function RecipesPage() {
         keyboardShouldPersistTaps="handled"
         header={
           <PageHeader
-            title="Receitas"
+            title={t("Receitas")}
             description={
               receitas.data
-                ? `${receitas.data.filter((r) => r.isSystem).length} receitas prontas`
+                ? t("{{length}} receitas prontas", {
+                    length: receitas.data.filter((r) => r.isSystem).length,
+                  })
                 : undefined
             }
             action={
@@ -157,9 +160,9 @@ export default function RecipesPage() {
             <TextInput
               value={busca}
               onChangeText={setBusca}
-              placeholder="Buscar receita…"
+              placeholder={t("Buscar receita…")}
               placeholderTextColor={apagada}
-              accessibilityLabel="Buscar receita"
+              accessibilityLabel={t("Buscar receita")}
               className="h-12 rounded-2xl bg-card pl-12 pr-4 font-sans text-base"
               style={{ color: texto }}
             />
@@ -176,12 +179,12 @@ export default function RecipesPage() {
           contentContainerClassName="items-center gap-1.5 px-4 pb-1"
         >
           {[
-            { key: null, label: "Todas" },
+            { key: null, label: t("Todas") },
             ...RECIPE_CATEGORIES.map((c) => ({
               key: c.key as string,
               label: `${c.emoji} ${c.label}`,
             })),
-            { key: "minhas", label: "Minhas" },
+            { key: "minhas", label: t("Minhas") },
           ].map((c) => (
             <Pressable
               key={c.key ?? "todas"}
@@ -222,7 +225,7 @@ export default function RecipesPage() {
           <>
             {minhas.length > 0 ? (
               <View className="mt-6 px-4">
-                <Text className="mb-3 px-1 text-lg font-semibold">Suas receitas</Text>
+                <Text className="mb-3 px-1 text-lg font-semibold">{t("Suas receitas")}</Text>
                 <View className="gap-2">
                   {minhas.map((r) => (
                     <View
@@ -243,22 +246,24 @@ export default function RecipesPage() {
                             {r.name}
                           </Text>
                           <Text className="mt-0.5 text-xs text-muted-foreground">
-                            {kcal(r.perServing.kcal)} kcal · P {Math.round(r.perServing.proteinG)} g
-                            por porção
+                            {t("{{v0}} kcal · P {{v1}} g por porção", {
+                              v0: kcal(r.perServing.kcal),
+                              v1: Math.round(r.perServing.proteinG),
+                            })}
                             {r.prepMinutes ? ` · ${r.prepMinutes} min` : ""}
                           </Text>
                         </View>
                       </Pressable>
                       <Pressable
                         onPress={() => abrir(r.id)}
-                        accessibilityLabel={`Editar ${r.name}`}
+                        accessibilityLabel={t("Editar {{name}}", { name: r.name })}
                         className="h-9 w-9 items-center justify-center rounded-full active:bg-elevated"
                       >
                         <Icon node={pencil} color={apagada} size={16} />
                       </Pressable>
                       <Pressable
                         onPress={() => setExcluindo(r)}
-                        accessibilityLabel={`Excluir receita ${r.name}`}
+                        accessibilityLabel={t("Excluir receita {{name}}", { name: r.name })}
                         className="h-9 w-9 items-center justify-center rounded-full active:bg-elevated"
                       >
                         <Icon node={trash2} color={apagada} size={16} />
@@ -274,7 +279,7 @@ export default function RecipesPage() {
               <View className="mt-6">
                 <Titulo
                   icone={<Icon node={zap} color={primaria} size={16} />}
-                  texto="Mais proteína por caloria"
+                  texto={t("Mais proteína por caloria")}
                 />
                 <Fileira>
                   {[...prontas]
@@ -321,7 +326,9 @@ export default function RecipesPage() {
             {filtradas.length === 0 ? (
               <View className="mt-10 items-center">
                 <Icon node={bookOpen} color={apagada} size={32} />
-                <Text className="mt-2 text-muted-foreground">Nenhuma receita encontrada.</Text>
+                <Text className="mt-2 text-muted-foreground">
+                  {t("Nenhuma receita encontrada.")}
+                </Text>
               </View>
             ) : null}
           </>
@@ -337,9 +344,11 @@ export default function RecipesPage() {
       <ConfirmDialog
         open={excluindo !== null}
         onClose={() => setExcluindo(null)}
-        title="Excluir esta receita?"
-        description={`“${excluindo?.name ?? ""}” sai da lista. Lançamentos já feitos no diário não são afetados.`}
-        confirmLabel="Excluir"
+        title={t("Excluir esta receita?")}
+        description={t("“{{v0}}” sai da lista. Lançamentos já feitos no diário não são afetados.", {
+          v0: excluindo?.name ?? "",
+        })}
+        confirmLabel={t("Excluir")}
         destructive
         onConfirm={() => excluindo && excluir.mutate(excluindo.id)}
       />
@@ -424,17 +433,19 @@ function CartaoReceita({
         </Text>
         <View className="mt-2 flex-row flex-wrap gap-1">
           <View className="rounded-full bg-elevated px-2 py-0.5">
-            <Text className="text-[11px] font-semibold">{kcal(r.perServing.kcal)} kcal</Text>
+            <Text className="text-[11px] font-semibold">
+              {t("{{v0}} kcal", { v0: kcal(r.perServing.kcal) })}
+            </Text>
           </View>
           <View className="rounded-full bg-primary/10 px-2 py-0.5">
             <Text className="text-[11px] font-semibold text-primary">
-              {Math.round(r.perServing.proteinG)} g P
+              {t("{{v0}} g P", { v0: Math.round(r.perServing.proteinG) })}
             </Text>
           </View>
           {r.prepMinutes ? (
             <View className="rounded-full bg-elevated px-2 py-0.5">
               <Text className="text-[11px] font-semibold text-muted-foreground">
-                {r.prepMinutes} min
+                {t("{{prepMinutes}} min", { prepMinutes: r.prepMinutes })}
               </Text>
             </View>
           ) : null}
@@ -472,7 +483,7 @@ function DetalheReceita({
       <View className="flex-1 items-center justify-center px-4">
         <Pressable
           onPress={onClose}
-          accessibilityLabel="Fechar"
+          accessibilityLabel={t("Fechar")}
           className="absolute inset-0 bg-black/80"
         />
         {receita ? (
@@ -499,14 +510,15 @@ function DetalheReceita({
                   {receita.name}
                 </Text>
                 <Text className="text-sm text-muted-foreground">
-                  Rende {receita.servings} {receita.servings === 1 ? "porção" : "porções"}
+                  {t("Rende {{servings}}", { servings: receita.servings })}{" "}
+                  {receita.servings === 1 ? t("porção") : t("porções")}
                   {receita.prepMinutes ? ` · ${receita.prepMinutes} min` : ""}
                 </Text>
               </View>
 
               <View className="px-5">
                 <Text className="mb-2 text-xs font-bold uppercase tracking-[1.5px] text-muted-foreground">
-                  Por porção
+                  {t("Por porção")}
                 </Text>
                 <MacroTiles
                   kcal={receita.perServing.kcal}
@@ -519,9 +531,9 @@ function DetalheReceita({
               <View className="px-5">
                 <View className="mb-2 flex-row items-baseline justify-between">
                   <Text className="text-xs font-bold uppercase tracking-[1.5px] text-muted-foreground">
-                    Ingredientes
+                    {t("Ingredientes")}
                   </Text>
-                  <Text className="text-xs text-muted-foreground">receita inteira</Text>
+                  <Text className="text-xs text-muted-foreground">{t("receita inteira")}</Text>
                 </View>
                 <View className="rounded-2xl bg-card px-4">
                   {receita.items.map((i, k) => (
@@ -534,7 +546,9 @@ function DetalheReceita({
                     >
                       <Text className="min-w-0 flex-1 text-sm">{i.name}</Text>
                       <View className="rounded-full bg-elevated px-2.5 py-1">
-                        <Text className="text-xs font-semibold tabular-nums">{i.grams} g</Text>
+                        <Text className="text-xs font-semibold tabular-nums">
+                          {t("{{grams}} g", { grams: i.grams })}
+                        </Text>
                       </View>
                     </View>
                   ))}
@@ -544,7 +558,7 @@ function DetalheReceita({
               {receita.instructions ? (
                 <View className="px-5">
                   <Text className="mb-2 text-xs font-bold uppercase tracking-[1.5px] text-muted-foreground">
-                    Modo de preparo
+                    {t("Modo de preparo")}
                   </Text>
                   <Text className="text-sm leading-relaxed">{receita.instructions}</Text>
                 </View>
@@ -553,7 +567,7 @@ function DetalheReceita({
               <View className="gap-3 px-5">
                 <Text className="text-sm text-muted-foreground">
                   Para comer, use{" "}
-                  <Text className="text-sm font-bold">Dieta → Adicionar → Receitas</Text> na
+                  <Text className="text-sm font-bold">{t("Dieta → Adicionar → Receitas")}</Text> na
                   refeição.
                 </Text>
                 <Button
@@ -563,13 +577,13 @@ function DetalheReceita({
                   loading={copiando}
                 >
                   <Icon node={copy} color={texto} size={16} />
-                  <Text className="text-sm font-medium">Copiar para minhas receitas</Text>
+                  <Text className="text-sm font-medium">{t("Copiar para minhas receitas")}</Text>
                 </Button>
               </View>
             </ScrollView>
             <Pressable
               onPress={onClose}
-              accessibilityLabel="Fechar"
+              accessibilityLabel={t("Fechar")}
               className="absolute right-3 top-3 h-9 w-9 items-center justify-center rounded-full bg-black/45"
             >
               <Icon node={x} color="#fff" size={18} />

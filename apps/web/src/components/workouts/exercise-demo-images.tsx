@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ImageOff } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Demonstração do exercício.
@@ -61,7 +62,7 @@ export function ExerciseDemo({
         )}
       >
         <ImageOff className="size-6" aria-hidden />
-        <span className="sr-only">Sem demonstração disponível para {name}</span>
+        <span className="sr-only">{t("Sem demonstração disponível para {{name}}", { name })}</span>
       </div>
     );
   }
@@ -73,8 +74,8 @@ export function ExerciseDemo({
         type: "button" as const,
         onClick: () => (temMultiplas ? setPlaying((p) => !p) : undefined),
         "aria-label": temMultiplas
-          ? `${playing ? "Pausar" : "Reproduzir"} demonstração de ${name}`
-          : `Demonstração de ${name}`,
+          ? t("{{v0}} demonstração de {{name}}", { v0: playing ? "Pausar" : "Reproduzir", name })
+          : t("Demonstração de {{name}}", { name }),
       })}
       className={cn(
         "relative block aspect-[4/3] w-full overflow-hidden rounded-xl bg-muted",
@@ -86,7 +87,11 @@ export function ExerciseDemo({
         <img
           key={src}
           src={src}
-          alt={i === 0 ? `${name} — posição inicial` : `${name} — posição final`}
+          alt={
+            i === 0
+              ? t("{{name}} — posição inicial", { name })
+              : t("{{name}} — posição final", { name })
+          }
           loading="lazy"
           decoding="async"
           // As imagens ficam empilhadas e a opacidade alterna: trocar o `src`

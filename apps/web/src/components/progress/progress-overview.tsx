@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { differenceInCalendarDays } from "date-fns";
 import { bmi, goalProgress, navyBodyFat, weeklyRate } from "@forja/domain";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Resumo do progresso.
@@ -32,12 +33,12 @@ import { bmi, goalProgress, navyBodyFat, weeklyRate } from "@forja/domain";
  */
 
 const BMI_LABELS: Record<string, string> = {
-  underweight: "Abaixo do peso",
-  normal: "Faixa saudável",
-  overweight: "Acima do peso",
-  obese_1: "Obesidade grau I",
-  obese_2: "Obesidade grau II",
-  obese_3: "Obesidade grau III",
+  underweight: t("Abaixo do peso"),
+  normal: t("Faixa saudável"),
+  overweight: t("Acima do peso"),
+  obese_1: t("Obesidade grau I"),
+  obese_2: t("Obesidade grau II"),
+  obese_3: t("Obesidade grau III"),
 };
 
 const WINDOW_DAYS = 30;
@@ -123,7 +124,7 @@ export function ProgressOverview() {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatCard
           icon={<Scale className="size-4" />}
-          label="Peso atual"
+          label={t("Peso atual")}
           destaque
           value={pesoAtual !== undefined ? `${pesoAtual.toFixed(1)}` : "—"}
           unit="kg"
@@ -137,27 +138,27 @@ export function ProgressOverview() {
               <TrendingUp className="size-4" />
             )
           }
-          label="Ritmo"
+          label={t("Ritmo")}
           value={ritmo !== null ? `${ritmo > 0 ? "+" : ""}${ritmo.toFixed(2)}` : "—"}
           unit="kg/sem"
-          hint={ritmo === null ? "4 pesagens" : undefined}
+          hint={ritmo === null ? t("4 pesagens") : undefined}
         />
 
         <StatCard
           icon={<Activity className="size-4" />}
           label="IMC"
           value={imc ? String(imc.bmi) : "—"}
-          hint={imc ? BMI_LABELS[imc.category] : "informe a altura"}
+          hint={imc ? BMI_LABELS[imc.category] : t("informe a altura")}
         />
 
         <StatCard
           icon={<Flame className="size-4" />}
-          label="Gordura"
+          label={t("Gordura")}
           value={gordura !== null ? gordura.toFixed(1) : "—"}
           unit="%"
           hint={
             gordura === null
-              ? "meça cintura e pescoço"
+              ? t("meça cintura e pescoço")
               : gorduraEhEstimativa
                 ? "estimativa"
                 : "medido"
@@ -167,24 +168,24 @@ export function ProgressOverview() {
 
       {imc && (
         <p className="px-1 text-xs leading-relaxed text-muted-foreground">
-          O IMC não distingue músculo de gordura — quem treina há anos costuma aparecer acima da
-          faixa mesmo com pouca gordura. As medidas de circunferência dizem mais sobre a sua
-          composição do que o peso sozinho.
+          {t(
+            "O IMC não distingue músculo de gordura — quem treina há anos costuma aparecer acima da faixa mesmo com pouca gordura. As medidas de circunferência dizem mais sobre a sua composição do que o peso sozinho.",
+          )}
         </p>
       )}
 
       {gorduraEhEstimativa && (
         <p className="px-1 text-xs leading-relaxed text-muted-foreground">
           O percentual de gordura é estimado a partir das circunferências, com margem de 3 a 4
-          pontos. Medido sempre do mesmo jeito, o erro é constante — então a <em>variação</em> é
-          confiável mesmo que o valor absoluto não seja.
+          pontos. Medido sempre do mesmo jeito, o erro é constante — então a{" "}
+          <em>{t("variação")}</em> é confiável mesmo que o valor absoluto não seja.
         </p>
       )}
 
       {/* Meta de peso */}
       {metaPeso !== null && pesoAtual !== undefined && serie[0] && (
         <GoalCard
-          label={metaPeso < pesoAtual ? "Chegar ao peso desejado" : "Ganhar até a meta"}
+          label={metaPeso < pesoAtual ? t("Chegar ao peso desejado") : t("Ganhar até a meta")}
           start={serie[0].weightKg}
           current={pesoAtual}
           target={metaPeso}
@@ -198,7 +199,7 @@ export function ProgressOverview() {
         <section>
           <h3 className="mb-2 flex items-center gap-1.5 px-1 text-xs font-bold uppercase tracking-wider text-primary">
             <Target className="size-3.5" aria-hidden />
-            Suas metas
+            {t("Suas metas")}
           </h3>
           <Card>
             <CardContent className="divide-y divide-border p-0">
@@ -223,17 +224,18 @@ export function ProgressOverview() {
             <span className="mx-auto grid size-11 place-items-center rounded-xl bg-primary text-primary-foreground">
               <Ruler className="size-5" aria-hidden />
             </span>
-            <p className="mt-2 text-sm font-medium">Registre suas medidas</p>
+            <p className="mt-2 text-sm font-medium">{t("Registre suas medidas")}</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Cintura e pescoço destravam a estimativa de gordura corporal — e a cintura é o número
-              que melhor acompanha a mudança de composição.
+              {t(
+                "Cintura e pescoço destravam a estimativa de gordura corporal — e a cintura é o número que melhor acompanha a mudança de composição.",
+              )}
             </p>
           </CardContent>
         </Card>
       )}
 
       <Button asChild variant="ghost" className="w-full font-semibold text-primary">
-        <Link to="/plan">Ver progressão de cargas nos treinos</Link>
+        <Link to="/plan">{t("Ver progressão de cargas nos treinos")}</Link>
       </Button>
     </div>
   );
@@ -322,11 +324,16 @@ function GoalCard({
           <div className="min-w-0">
             <p className="font-semibold leading-tight">{label}</p>
             <p className="mt-0.5 text-sm tabular-nums text-muted-foreground">
-              {start.toFixed(1)} → {current.toFixed(1)} de {target.toFixed(1)} {unit}
+              {t("{{v0}} → {{v1}} de {{v2}} {{unit}}", {
+                v0: start.toFixed(1),
+                v1: current.toFixed(1),
+                v2: target.toFixed(1),
+                unit,
+              })}
             </p>
           </div>
           {progresso.achieved ? (
-            <Badge className="shrink-0">Atingida</Badge>
+            <Badge className="shrink-0">{t("Atingida")}</Badge>
           ) : (
             <span className="shrink-0 text-lg font-bold tabular-nums">{Math.round(pct)}%</span>
           )}
@@ -354,8 +361,8 @@ function GoalCard({
             </span>
             {semanas !== null && semanas <= 104 && (
               <>
-                {" "}
-                — cerca de {semanas} {semanas === 1 ? "semana" : "semanas"} no ritmo atual
+                {t("— cerca de {{semanas}}", { semanas })} {semanas === 1 ? "semana" : "semanas"}{" "}
+                {t("no ritmo atual")}
               </>
             )}
             .

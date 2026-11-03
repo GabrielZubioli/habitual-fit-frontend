@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { queryKeys } from "@forja/app-core/data/query-keys";
 import { fetchCoachInsights, type CoachInsight } from "@forja/app-core/data/coach";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * As recomendações do treinador na tela inicial.
@@ -35,10 +36,10 @@ export function CoachTips({ limit }: { limit?: number } = {}) {
   if (lista.length === 0) return null;
 
   return (
-    <section aria-label="Recomendações do treinador" className="space-y-2.5">
+    <section aria-label={t("Recomendações do treinador")} className="space-y-2.5">
       <h2 className="flex items-center gap-1.5 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         <Lightbulb className="size-3.5" aria-hidden />
-        Seu treinador
+        {t("Seu treinador")}
       </h2>
 
       {lista.map((insight, i) => (

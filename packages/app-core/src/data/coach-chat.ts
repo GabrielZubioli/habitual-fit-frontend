@@ -1,5 +1,6 @@
 import { supabase, supabaseUrl } from "../supabase";
 import { assertOk, unwrap, unwrapList } from "./supabase-helpers";
+import { t } from "../i18n";
 
 /**
  * Conversa com o treinador.
@@ -67,13 +68,13 @@ export async function sendToCoach(
   if (res.status === 503) {
     const corpo = (await res.json().catch(() => null)) as { message?: string } | null;
     throw new CoachUnavailableError(
-      corpo?.message ?? "O treinador com IA ainda não foi configurado neste projeto.",
+      corpo?.message ?? t("O treinador com IA ainda não foi configurado neste projeto."),
     );
   }
 
   if (!res.ok || !res.body) {
     const corpo = (await res.json().catch(() => null)) as { error?: string } | null;
-    throw new Error(corpo?.error ?? "Não foi possível falar com o treinador.");
+    throw new Error(corpo?.error ?? t("Não foi possível falar com o treinador."));
   }
 
   return await lerSse(res.body, onDelta);
@@ -183,7 +184,7 @@ export async function createConversation(userId: string, firstMessage: string): 
     "criar conversa",
     await supabase
       .from("ai_conversations")
-      .insert({ user_id: userId, title: titulo || "Nova conversa" })
+      .insert({ user_id: userId, title: titulo || t("Nova conversa") })
       .select("id")
       .single(),
   );

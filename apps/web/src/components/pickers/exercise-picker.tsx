@@ -35,12 +35,13 @@ import {
 } from "@/components/ui/select";
 import { ErrorState } from "@/components/query-boundary";
 import { exerciseMedia } from "@forja/app-core/data/exercise-media";
+import { t } from "@forja/app-core/i18n";
 
 export type { PickedExercise };
 
 export function ExercisePicker({
   trigger,
-  title = "Adicionar exercício",
+  title = t("Adicionar exercício"),
   showMuscleFilter = true,
   muscle: initialMuscle,
   onPick,
@@ -103,7 +104,7 @@ export function ExercisePicker({
             <SearchField
               value={term}
               onChange={setTerm}
-              placeholder="Buscar exercício…"
+              placeholder={t("Buscar exercício…")}
               loading={exercises.isFetching}
             />
             {showMuscleFilter && (
@@ -113,12 +114,12 @@ export function ExercisePicker({
                     "h-11 w-full rounded-2xl border-transparent bg-card text-sm font-semibold",
                     muscle !== "all" && "border-primary/50 text-primary",
                   )}
-                  aria-label="Filtrar por músculo"
+                  aria-label={t("Filtrar por músculo")}
                 >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos os músculos</SelectItem>
+                  <SelectItem value="all">{t("Todos os músculos")}</SelectItem>
                   {FILTERABLE_MUSCLES.map((m) => (
                     <SelectItem key={m} value={m}>
                       {MUSCLE_LABELS[m]}
@@ -133,10 +134,15 @@ export function ExercisePicker({
         {exercises.isPending ? (
           <ResultsLoading />
         ) : exercises.isError ? (
-          <ErrorState message="Falha ao buscar exercícios." onRetry={exercises.refetch} compact />
+          <ErrorState
+            message={t("Falha ao buscar exercícios.")}
+            onRetry={exercises.refetch}
+            compact
+          />
         ) : exercises.data.length === 0 ? (
           <ResultsEmpty>
-            Nenhum exercício encontrado{debouncedTerm ? ` para “${debouncedTerm}”` : ""}.
+            {t("Nenhum exercício encontrado")}
+            {debouncedTerm ? t(" para “{{debouncedTerm}}”", { debouncedTerm }) : ""}.
           </ResultsEmpty>
         ) : (
           <ResultList>

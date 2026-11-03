@@ -1,6 +1,7 @@
 import { useId } from "react";
 import { cn } from "@/lib/utils";
 import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Anéis de macronutrientes.
@@ -132,8 +133,8 @@ export function CalorieRing({
             : restante >= 0
               ? compacto
                 ? "restantes"
-                : "kcal restantes"
-              : "kcal acima"}
+                : t("kcal restantes")
+              : t("kcal acima")}
         </p>
         <p
           className={cn(
@@ -147,15 +148,19 @@ export function CalorieRing({
               {Math.round(target).toLocaleString(LOCALE)}
             </>
           ) : (
-            `de ${Math.round(planejado).toLocaleString(LOCALE)} planejadas`
+            t("de {{v0}} planejadas", { v0: Math.round(planejado).toLocaleString(LOCALE) })
           )}
         </p>
       </div>
 
       <span className="sr-only">
         {referencia > 0
-          ? `${Math.round(consumed)} de ${Math.round(referencia)} calorias ${usaMeta ? "da meta" : "planejadas"} consumidas.`
-          : `${Math.round(consumed)} calorias consumidas.`}
+          ? t("{{v0}} de {{v1}} calorias {{v2}} consumidas.", {
+              v0: Math.round(consumed),
+              v1: Math.round(referencia),
+              v2: usaMeta ? "da meta" : "planejadas",
+            })
+          : t("{{v0}} calorias consumidas.", { v0: Math.round(consumed) })}
       </span>
     </div>
   );
@@ -241,7 +246,7 @@ export function MacroRing({
           valor > 0 ? (
             `${Math.round(valor)}g`
           ) : (
-            "nada planejado"
+            t("nada planejado")
           )
         ) : (
           <>

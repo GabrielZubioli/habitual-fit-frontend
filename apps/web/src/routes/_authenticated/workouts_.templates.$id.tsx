@@ -25,14 +25,15 @@ import { Plus, Trash2, ArrowUp, ArrowDown, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { MUSCLE_LABELS, label } from "@forja/app-core/lib/labels";
+import { t } from "@forja/app-core/i18n";
 
 export const Route = createFileRoute("/_authenticated/workouts_/templates/$id")({
   head: () => ({
     meta: [
-      { title: "Editar template — Habitual Fit" },
-      { name: "description", content: "Monte e edite seus templates de treino." },
-      { property: "og:title", content: "Editar template — Habitual Fit" },
-      { property: "og:description", content: "Adicione exercícios, séries e reps alvo." },
+      { title: t("Editar template — Habitual Fit") },
+      { name: "description", content: t("Monte e edite seus templates de treino.") },
+      { property: "og:title", content: t("Editar template — Habitual Fit") },
+      { property: "og:description", content: t("Adicione exercícios, séries e reps alvo.") },
     ],
   }),
   component: TemplateEditor,
@@ -111,7 +112,7 @@ function TemplateEditor() {
       return created.id;
     },
     onSuccess: (newId) => {
-      toast.success("Template criado — agora adicione os exercícios");
+      toast.success(t("Template criado — agora adicione os exercícios"));
       void qc.invalidateQueries({ queryKey: queryKeys.workouts.templates() });
       void navigate({ to: "/workouts/templates/$id", params: { id: newId }, replace: true });
     },
@@ -131,7 +132,7 @@ function TemplateEditor() {
       );
     },
     onSuccess: () => {
-      toast.success("Template salvo");
+      toast.success(t("Template salvo"));
       void qc.invalidateQueries({ queryKey: queryKeys.workouts.templates() });
       void qc.invalidateQueries({ queryKey: queryKeys.workouts.template(id) });
     },
@@ -232,8 +233,10 @@ function TemplateEditor() {
   return (
     <>
       <PageHeader
-        title={isNew ? "Novo template" : name || "Template"}
-        description="Monte a sequência, séries alvo e descanso. Ao iniciar o treino, tudo isso é copiado para a sessão."
+        title={isNew ? t("Novo template") : name || t("Template")}
+        description={t(
+          "Monte a sequência, séries alvo e descanso. Ao iniciar o treino, tudo isso é copiado para a sessão.",
+        )}
         action={
           <>
             <Button variant="outline" asChild>
@@ -261,22 +264,22 @@ function TemplateEditor() {
             <Card className="lg:col-span-1">
               <CardContent className="space-y-3 p-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="tpl-name">Nome</Label>
+                  <Label htmlFor="tpl-name">{t("Nome")}</Label>
                   <Input
                     id="tpl-name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Ex: Push A"
+                    placeholder={t("Ex: Push A")}
                     autoFocus={isNew}
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="tpl-notes">Notas</Label>
+                  <Label htmlFor="tpl-notes">{t("Notas")}</Label>
                   <Textarea
                     id="tpl-notes"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Observações do treino"
+                    placeholder={t("Observações do treino")}
                     rows={4}
                   />
                 </div>
@@ -286,14 +289,14 @@ function TemplateEditor() {
             <Card className="lg:col-span-2">
               <CardContent className="p-4">
                 <div className="mb-3 flex items-center justify-between">
-                  <h2 className="font-semibold">Exercícios</h2>
+                  <h2 className="font-semibold">{t("Exercícios")}</h2>
                   {!isNew && (
                     <ExercisePicker
                       onPick={(ex) => addExercise.mutateAsync(ex.id)}
                       trigger={
                         <Button size="sm">
                           <Plus className="mr-1 size-4" />
-                          Adicionar
+                          {t("Adicionar")}
                         </Button>
                       }
                     />
@@ -302,7 +305,7 @@ function TemplateEditor() {
 
                 {isNew ? (
                   <p className="py-8 text-center text-sm text-muted-foreground">
-                    Dê um nome e toque em <b>Criar</b> para começar a adicionar exercícios.
+                    Dê um nome e toque em <b>{t("Criar")}</b> para começar a adicionar exercícios.
                   </p>
                 ) : items.isPending ? (
                   <div className="space-y-2">
@@ -314,7 +317,7 @@ function TemplateEditor() {
                   <ErrorState message={errorMessage(items.error)} onRetry={items.refetch} compact />
                 ) : list.length === 0 ? (
                   <p className="py-8 text-center text-sm text-muted-foreground">
-                    Nenhum exercício ainda. Adicione o primeiro para montar sua rotina.
+                    {t("Nenhum exercício ainda. Adicione o primeiro para montar sua rotina.")}
                   </p>
                 ) : (
                   <ul className="space-y-2">
@@ -335,7 +338,9 @@ function TemplateEditor() {
                               variant="ghost"
                               disabled={index === 0 || swap.isPending}
                               onClick={() => swap.mutate({ a: it, b: list[index - 1] })}
-                              aria-label={`Mover ${it.exercises.name} para cima`}
+                              aria-label={t("Mover {{name}} para cima", {
+                                name: it.exercises.name,
+                              })}
                             >
                               <ArrowUp className="size-4" />
                             </Button>
@@ -344,15 +349,22 @@ function TemplateEditor() {
                               variant="ghost"
                               disabled={index === list.length - 1 || swap.isPending}
                               onClick={() => swap.mutate({ a: it, b: list[index + 1] })}
-                              aria-label={`Mover ${it.exercises.name} para baixo`}
+                              aria-label={t("Mover {{name}} para baixo", {
+                                name: it.exercises.name,
+                              })}
                             >
                               <ArrowDown className="size-4" />
                             </Button>
                             <ConfirmButton
-                              aria-label={`Remover ${it.exercises.name} do template`}
-                              title="Remover exercício?"
-                              description={`“${it.exercises.name}” sai deste template. Treinos já registrados não são afetados.`}
-                              confirmLabel="Remover"
+                              aria-label={t("Remover {{name}} do template", {
+                                name: it.exercises.name,
+                              })}
+                              title={t("Remover exercício?")}
+                              description={t(
+                                "“{{name}}” sai deste template. Treinos já registrados não são afetados.",
+                                { name: it.exercises.name },
+                              )}
+                              confirmLabel={t("Remover")}
                               onConfirm={() => deleteItem.mutate(it.id)}
                             >
                               <Trash2 className="size-4" />
@@ -362,7 +374,7 @@ function TemplateEditor() {
 
                         <div className="mt-3 grid grid-cols-3 gap-2">
                           <NumberField
-                            label="Séries"
+                            label={t("Séries")}
                             id={`sets-${it.id}`}
                             value={it.target_sets}
                             min={1}
@@ -370,7 +382,7 @@ function TemplateEditor() {
                             onCommit={(v) => updateItem.mutate({ id: it.id, target_sets: v })}
                           />
                           <NumberField
-                            label="Reps"
+                            label={t("Reps")}
                             id={`reps-${it.id}`}
                             value={it.target_reps}
                             min={1}
@@ -378,7 +390,7 @@ function TemplateEditor() {
                             onCommit={(v) => updateItem.mutate({ id: it.id, target_reps: v })}
                           />
                           <NumberField
-                            label="Descanso (s)"
+                            label={t("Descanso (s)")}
                             id={`rest-${it.id}`}
                             value={it.rest_seconds}
                             min={0}

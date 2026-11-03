@@ -14,6 +14,7 @@ import { Button } from "./button";
 import { Dialog, MenuSheet } from "./dialog";
 import { Icon } from "./icon";
 import { Text } from "./text";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Criar um exercício próprio — o `create-exercise-dialog.tsx` do web: nome,
@@ -65,41 +66,41 @@ export function CreateExerciseDialog({ open, onClose }: { open: boolean; onClose
   );
 
   return (
-    <Dialog open={open} onClose={onClose} title="Novo exercício">
+    <Dialog open={open} onClose={onClose} title={t("Novo exercício")}>
       <Text className="-mt-2 text-center text-sm text-muted-foreground">
-        Para o aparelho ou variação que não está na biblioteca. Só você vê.
+        {t("Para o aparelho ou variação que não está na biblioteca. Só você vê.")}
       </Text>
       <View className="gap-1.5">
-        <Text className="text-sm font-medium">Nome</Text>
+        <Text className="text-sm font-medium">{t("Nome")}</Text>
         <TextInput
           value={nome}
           onChangeText={setNome}
           maxLength={80}
-          placeholder="Ex.: Remada articulada Hammer"
+          placeholder={t("Ex.: Remada articulada Hammer")}
           placeholderTextColor={apagada}
           className="h-10 rounded-md border border-input bg-background px-3 font-sans text-sm"
           style={{ color: texto }}
         />
       </View>
       <Campo
-        rotulo="Músculo principal"
+        rotulo={t("Músculo principal")}
         valor={label(MUSCLE_LABELS, musculo)}
         onPress={() => setEscolhendo("musculo")}
       />
       <Campo
-        rotulo="Equipamento"
+        rotulo={t("Equipamento")}
         valor={label(EQUIPMENT_LABELS, equipamento)}
         onPress={() => setEscolhendo("equipamento")}
       />
       {erro ? <Text className="text-sm text-destructive">{erro}</Text> : null}
       <Button disabled={!nomeValido || criar.isPending} onPress={() => criar.mutate()}>
-        {criar.isPending ? "Criando…" : "Criar"}
+        {criar.isPending ? t("Criando…") : t("Criar")}
       </Button>
 
       <MenuSheet
         open={escolhendo !== null}
         onClose={() => setEscolhendo(null)}
-        title={escolhendo === "musculo" ? "Músculo principal" : "Equipamento"}
+        title={escolhendo === "musculo" ? t("Músculo principal") : t("Equipamento")}
         corIcone={texto}
         opcoes={
           escolhendo === "musculo"

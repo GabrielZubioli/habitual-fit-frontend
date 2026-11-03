@@ -2,6 +2,7 @@ import { supabase } from "../supabase";
 import { DataError } from "./supabase-helpers";
 import { exerciseMedia } from "./exercise-media";
 import { jsonList, localDb, marcadores } from "../local";
+import { t } from "../i18n";
 
 /**
  * A biblioteca de exercícios (a tela Exercícios): os grupos, os equipamentos e
@@ -12,106 +13,106 @@ import { jsonList, localDb, marcadores } from "../local";
 export const GRUPOS = [
   {
     key: "peito",
-    nome: "Peito",
+    nome: t("Peito"),
     musculos: ["chest"],
     recorte: { view: "front" as const, box: [150, 215, 424, 318] as const },
   },
   {
     key: "costas",
-    nome: "Costas",
+    nome: t("Costas"),
     musculos: ["back", "lats", "lower_back"],
     recorte: { view: "back" as const, box: [110, 190, 504, 378] as const },
   },
   {
     key: "ombros",
-    nome: "Ombros",
+    nome: t("Ombros"),
     musculos: ["shoulders", "front_delts", "side_delts", "rear_delts"],
     recorte: { view: "front" as const, box: [90, 170, 544, 408] as const },
   },
   {
     key: "biceps",
-    nome: "Bíceps",
+    nome: t("Bíceps"),
     musculos: ["biceps"],
     recorte: { view: "front" as const, box: [30, 230, 664, 498] as const },
   },
   {
     key: "triceps",
-    nome: "Tríceps",
+    nome: t("Tríceps"),
     musculos: ["triceps"],
     recorte: { view: "back" as const, box: [30, 230, 664, 498] as const },
   },
   {
     key: "antebraco",
-    nome: "Antebraço",
+    nome: t("Antebraço"),
     musculos: ["forearms"],
     recorte: { view: "front" as const, box: [10, 430, 704, 528] as const },
   },
   {
     key: "abdomen",
-    nome: "Abdômen",
+    nome: t("Abdômen"),
     musculos: ["abs", "core", "obliques"],
     recorte: { view: "front" as const, box: [140, 370, 444, 333] as const },
   },
   {
     key: "quadriceps",
-    nome: "Quadríceps",
+    nome: t("Quadríceps"),
     musculos: ["quads"],
     recorte: { view: "front" as const, box: [110, 690, 504, 378] as const },
   },
   {
     key: "posterior",
-    nome: "Posterior de coxa",
+    nome: t("Posterior de coxa"),
     musculos: ["hamstrings"],
     recorte: { view: "back" as const, box: [110, 740, 504, 378] as const },
   },
   {
     key: "gluteos",
-    nome: "Glúteos",
+    nome: t("Glúteos"),
     musculos: ["glutes", "abductors", "adductors"],
     recorte: { view: "back" as const, box: [140, 600, 444, 333] as const },
   },
   {
     key: "panturrilhas",
-    nome: "Panturrilhas",
+    nome: t("Panturrilhas"),
     musculos: ["calves"],
     recorte: { view: "back" as const, box: [140, 1000, 444, 333] as const },
   },
   {
     key: "trapezio",
-    nome: "Trapézio e pescoço",
+    nome: t("Trapézio e pescoço"),
     musculos: ["traps", "neck"],
     recorte: { view: "back" as const, box: [130, 110, 464, 348] as const },
   },
-  { key: "cardio", nome: "Cardio e corpo todo", musculos: ["cardio", "full_body"] },
+  { key: "cardio", nome: t("Cardio e corpo todo"), musculos: ["cardio", "full_body"] },
 ] as const;
 
 export const EQUIPAMENTOS = [
-  { key: "barbell", nome: "Barra" },
-  { key: "dumbbell", nome: "Halteres" },
-  { key: "machine", nome: "Máquinas" },
-  { key: "cable", nome: "Polia" },
-  { key: "bodyweight", nome: "Peso corporal" },
-  { key: "kettlebell", nome: "Kettlebell" },
-  { key: "band", nome: "Elásticos" },
-  { key: "cardio", nome: "Cardio" },
-  { key: "other", nome: "Outros acessórios" },
+  { key: "barbell", nome: t("Barra") },
+  { key: "dumbbell", nome: t("Halteres") },
+  { key: "machine", nome: t("Máquinas") },
+  { key: "cable", nome: t("Polia") },
+  { key: "bodyweight", nome: t("Peso corporal") },
+  { key: "kettlebell", nome: t("Kettlebell") },
+  { key: "band", nome: t("Elásticos") },
+  { key: "cardio", nome: t("Cardio") },
+  { key: "other", nome: t("Outros acessórios") },
 ] as const;
 
 /** Estrutura de treino → equipamentos que ela tem. */
 export const ESTRUTURAS = [
-  { key: "completa", nome: "Academia completa", equipamentos: EQUIPAMENTOS.map((e) => e.key) },
+  { key: "completa", nome: t("Academia completa"), equipamentos: EQUIPAMENTOS.map((e) => e.key) },
   {
     key: "pequena",
-    nome: "Academia pequena",
+    nome: t("Academia pequena"),
     equipamentos: ["barbell", "dumbbell", "bodyweight", "kettlebell", "band", "other"],
   },
-  { key: "sem", nome: "Sem equipamento", equipamentos: ["bodyweight"] },
+  { key: "sem", nome: t("Sem equipamento"), equipamentos: ["bodyweight"] },
 ] as const;
 
 export const NIVEIS = [
-  { value: "beginner", label: "Iniciante" },
-  { value: "intermediate", label: "Intermediário" },
-  { value: "advanced", label: "Avançado" },
+  { value: "beginner", label: t("Iniciante") },
+  { value: "intermediate", label: t("Intermediário") },
+  { value: "advanced", label: t("Avançado") },
 ];
 
 export const PAGE_SIZE = 24;
@@ -266,8 +267,8 @@ export async function fetchExercisePage({
     const params: unknown[] = [];
     if (termo) {
       cond.push("(name LIKE ? OR name LIKE ? OR name_en LIKE ?)");
-      const t = termo.trim();
-      params.push(`%${t}%`, `%${t.charAt(0).toUpperCase()}${t.slice(1)}%`, `%${t}%`);
+      const item = termo.trim();
+      params.push(`%${item}%`, `%${item.charAt(0).toUpperCase()}${item.slice(1)}%`, `%${item}%`);
     }
     if (musculos?.length) {
       cond.push(`primary_muscle IN (${marcadores(musculos.length)})`);

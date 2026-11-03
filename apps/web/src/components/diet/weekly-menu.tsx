@@ -42,22 +42,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { CATEGORY_EMOJI } from "@forja/app-core/lib/food-emoji";
 import { MACRO_COLORS, MacroRing } from "@/components/home/macro-rings";
-import { MEAL_LABELS, label, WEEKDAY_LABELS } from "@forja/app-core/lib/labels";
+import { MEAL_LABELS, label, WEEKDAY_LABELS, WEEKDAY_SHORT } from "@forja/app-core/lib/labels";
 import { todayISO } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
 import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 /** Segunda primeiro, como no Plano. */
 const ORDEM: Weekday[] = [1, 2, 3, 4, 5, 6, 0];
-const SIGLA: Record<Weekday, string> = {
-  0: "DOM",
-  1: "SEG",
-  2: "TER",
-  3: "QUA",
-  4: "QUI",
-  5: "SEX",
-  6: "SÁB",
-};
+const SIGLA = WEEKDAY_SHORT;
 
 type Meal = ActiveMealPlan["meals"][number];
 type Item = Meal["items"][number];
@@ -78,11 +71,20 @@ function situacao(total: number, meta: number): { texto: string; cor: string } {
   const sinal = d > 0 ? "+" : "";
   switch (toleranceStatus(total, meta)) {
     case "ideal":
-      return { texto: `Dentro da meta (±${KCAL_TOLERANCE.ideal} kcal)`, cor: "text-primary" };
+      return {
+        texto: t("Dentro da meta (±{{ideal}} kcal)", { ideal: KCAL_TOLERANCE.ideal }),
+        cor: "text-primary",
+      };
     case "acceptable":
-      return { texto: `Perto da meta: ${sinal}${d} kcal`, cor: "text-muted-foreground" };
+      return {
+        texto: t("Perto da meta: {{sinal}}{{d}} kcal", { sinal, d }),
+        cor: "text-muted-foreground",
+      };
     default:
-      return { texto: `Fora da meta: ${sinal}${d} kcal`, cor: "text-destructive" };
+      return {
+        texto: t("Fora da meta: {{sinal}}{{d}} kcal", { sinal, d }),
+        cor: "text-destructive",
+      };
   }
 }
 
@@ -121,11 +123,11 @@ export function WeeklyMenu() {
   const p = plan.data;
   if (!p) return null;
 
-  const t = totais(p, dia);
+  const item2 = totais(p, dia);
   const metaKcal = p.kcalTarget;
   // Plano sem meta (o padrão agora: o app não prescreve) mostra só os totais.
   const semMeta = metaKcal <= 0;
-  const status = semMeta ? null : situacao(t.kcal, metaKcal);
+  const status = semMeta ? null : situacao(item2.kcal, metaKcal);
   const nomeDia = WEEKDAY_LABELS[dia];
 
   return (
@@ -134,7 +136,7 @@ export function WeeklyMenu() {
         Os sete dias como botões grandes: o aberto em verde cheio, hoje com
         contorno. Só o nome do dia — o cardápio é da semana, não de uma data.
       */}
-      <div role="tablist" aria-label="Dia da semana" className="grid grid-cols-7 gap-1.5">
+      <div role="tablist" aria-label={t("Dia da semana")} className="grid grid-cols-7 gap-1.5">
         {ORDEM.map((d) => {
           const ativo = d === dia;
           return (
@@ -165,12 +167,12 @@ export function WeeklyMenu() {
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
-              {dia === hoje ? "Hoje · " : ""}
+              {dia === hoje ? t("Hoje · ") : ""}
               {nomeDia}
             </p>
             <p className="mt-1 flex items-baseline gap-1.5">
               <span className="text-4xl font-extrabold leading-none tabular-nums">
-                {Math.round(t.kcal).toLocaleString(LOCALE)}
+                {Math.round(item2.kcal).toLocaleString(LOCALE)}
               </span>
               <span className="text-sm text-muted-foreground tabular-nums">
                 {semMeta ? "kcal" : `/ ${Math.round(metaKcal).toLocaleString(LOCALE)} kcal`}
@@ -192,11 +194,13 @@ export function WeeklyMenu() {
                 className="flex shrink-0 items-center gap-1.5 rounded-full border border-border px-3 py-2 text-sm font-semibold hover:bg-elevated"
               >
                 <Copy className="size-4" aria-hidden />
-                Copiar
+                {t("Copiar")}
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Copiar {nomeDia.toLowerCase()} para…</DropdownMenuLabel>
+              <DropdownMenuLabel>
+                {t("Copiar {{v0}} para…", { v0: nomeDia.toLowerCase() })}
+              </DropdownMenuLabel>
               {ORDEM.filter((d) => d !== dia).map((d) => (
                 <DropdownMenuItem
                   key={d}
@@ -210,23 +214,23 @@ export function WeeklyMenu() {
         </div>
         <div className="mt-5 grid grid-cols-3 gap-2">
           <MacroRing
-            nome="Proteína"
+            nome={t("Proteína")}
             icone="🥩"
-            valor={t.proteinG}
+            valor={item2.proteinG}
             meta={p.proteinTarget}
             cor={MACRO_COLORS.protein}
           />
           <MacroRing
-            nome="Carbo"
+            nome={t("Carbo")}
             icone="🫘"
-            valor={t.carbsG}
+            valor={item2.carbsG}
             meta={p.carbsTarget}
             cor={MACRO_COLORS.carbs}
           />
           <MacroRing
-            nome="Gordura"
+            nome={t("Gordura")}
             icone="🥑"
-            valor={t.fatG}
+            valor={item2.fatG}
             meta={p.fatTarget}
             cor={MACRO_COLORS.fat}
           />
@@ -239,8 +243,9 @@ export function WeeklyMenu() {
           </ul>
         )}
         <p className="mt-3 text-[11px] text-muted-foreground">
-          O app não prescreve dietas: monte o cardápio por conta própria ou com a orientação de um
-          nutricionista.
+          {t(
+            "O app não prescreve dietas: monte o cardápio por conta própria ou com a orientação de um nutricionista.",
+          )}
         </p>
       </section>
 
@@ -258,8 +263,10 @@ export function WeeklyMenu() {
                 <div className="min-w-0">
                   <h3 className="truncate text-xl font-bold">{nome}</h3>
                   <p className="text-xs text-muted-foreground tabular-nums">
-                    {Math.round(kcalRefeicao)} kcal
-                    {receita && ` · ${receita}`}
+                    {t("{{v0}} kcal {{v1}}", {
+                      v0: Math.round(kcalRefeicao),
+                      v1: receita && ` · ${receita}`,
+                    })}
                   </p>
                 </div>
                 <FoodPicker
@@ -274,7 +281,10 @@ export function WeeklyMenu() {
                     <button
                       type="button"
                       className="grid size-10 shrink-0 place-items-center rounded-full bg-primary/12 text-primary hover:bg-primary/20"
-                      aria-label={`Adicionar em ${nome} de ${nomeDia.toLowerCase()}`}
+                      aria-label={t("Adicionar em {{nome}} de {{v1}}", {
+                        nome,
+                        v1: nomeDia.toLowerCase(),
+                      })}
                     >
                       <Plus className="size-5" />
                     </button>
@@ -284,7 +294,10 @@ export function WeeklyMenu() {
 
               {itens.length === 0 ? (
                 <p className="rounded-xl border border-dashed border-border px-3 py-4 text-center text-sm text-muted-foreground">
-                  Nada em {nome.toLowerCase()} na {nomeDia.toLowerCase()}.
+                  {t("Nada em {{v0}} na {{v1}}.", {
+                    v0: nome.toLowerCase(),
+                    v1: nomeDia.toLowerCase(),
+                  })}
                 </p>
               ) : (
                 <ul className="divide-y divide-border/60">
@@ -302,7 +315,7 @@ export function WeeklyMenu() {
                           {Math.round(i.grams)} g · {Math.round(macrosDe(i).kcal)} kcal
                           {i.weekday !== null && (
                             <span className="ml-1.5 rounded-full bg-primary/12 px-1.5 py-px text-[10px] font-bold text-primary">
-                              só {SIGLA[i.weekday as Weekday].toLowerCase()}
+                              {t("só {{v0}}", { v0: SIGLA[i.weekday as Weekday].toLowerCase() })}
                             </span>
                           )}
                         </span>
@@ -317,7 +330,7 @@ export function WeeklyMenu() {
                                 afeta: dia,
                               })
                         }
-                        aria-label={`Tirar ${i.name}`}
+                        aria-label={t("Tirar {{name}}", { name: i.name })}
                         className="grid size-9 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-elevated hover:text-foreground"
                       >
                         <X className="size-4" />
@@ -332,17 +345,20 @@ export function WeeklyMenu() {
       </div>
 
       <p className="mt-4 px-1 text-center text-xs text-muted-foreground">
-        Itens marcados com “só” valem apenas naquele dia; os demais, a semana toda. As mudanças
-        valem a partir de hoje — o que já foi marcado como comido não muda.
+        {t(
+          "Itens marcados com “só” valem apenas naquele dia; os demais, a semana toda. As mudanças valem a partir de hoje — o que já foi marcado como comido não muda.",
+        )}
       </p>
 
       {/* Item de toda a semana: tirar só deste dia ou de todos. */}
       <AlertDialog open={remover !== null} onOpenChange={(o) => !o && setRemover(null)}>
         <AlertDialogContent className="rounded-[1.5rem]">
           <AlertDialogHeader>
-            <AlertDialogTitle>Tirar {remover?.item.name}?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t("Tirar")} {remover?.item.name}?
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Este alimento está no cardápio de toda a semana.
+              {t("Este alimento está no cardápio de toda a semana.")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="grid gap-2">
@@ -358,7 +374,7 @@ export function WeeklyMenu() {
                 setRemover(null);
               }}
             >
-              Só de {nomeDia.toLowerCase()}
+              {t("Só de {{v0}}", { v0: nomeDia.toLowerCase() })}
             </button>
             <button
               type="button"
@@ -372,11 +388,11 @@ export function WeeklyMenu() {
                 setRemover(null);
               }}
             >
-              Da semana toda
+              {t("Da semana toda")}
             </button>
           </div>
           <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-2xl">Cancelar</AlertDialogCancel>
+            <AlertDialogCancel className="rounded-2xl">{t("Cancelar")}</AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

@@ -31,6 +31,7 @@ import { BackButton, PageHeader, PageScroll } from "@/ui/page-header";
 import { RoutineIcon, routineIconOf } from "@/ui/routine-icon";
 import { Text } from "@/ui/text";
 import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Calendário mensal de treinos — o `workouts_.calendar.tsx` do web. Mostra só o
@@ -83,8 +84,8 @@ export default function WorkoutCalendar() {
       contentContainerClassName="pb-28"
       header={
         <PageHeader
-          title="Calendário"
-          description="Seus treinos por mês."
+          title={t("Calendário")}
+          description={t("Seus treinos por mês.")}
           action={<BackButton fallback="/plan" />}
         />
       }
@@ -93,14 +94,14 @@ export default function WorkoutCalendar() {
         <Card>
           <View className="flex-row items-center justify-between p-4 pb-3">
             <Text className="text-base font-semibold capitalize">
-              {formatDate(monthCursor, "MMMM 'de' yyyy")}
+              {formatDate(monthCursor, t("MMMM 'de' yyyy"))}
             </Text>
             <View className="flex-row items-center gap-1">
               <Button
                 variant="ghost"
                 size="icon"
                 onPress={() => setMonthCursor((m) => subMonths(m, 1))}
-                accessibilityLabel="Mês anterior"
+                accessibilityLabel={t("Mês anterior")}
               >
                 <Icon node={chevronLeft} color={texto} size={16} />
               </Button>
@@ -109,13 +110,13 @@ export default function WorkoutCalendar() {
                 size="sm"
                 onPress={() => setMonthCursor(startOfMonth(new Date()))}
               >
-                Hoje
+                {t("Hoje")}
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
                 onPress={() => setMonthCursor((m) => addMonths(m, 1))}
-                accessibilityLabel="Próximo mês"
+                accessibilityLabel={t("Próximo mês")}
               >
                 <Icon node={chevronRight} color={texto} size={16} />
               </Button>
@@ -168,10 +169,13 @@ export default function WorkoutCalendar() {
                             key={iso}
                             onPress={() => setSelectedDate(temTreino ? iso : null)}
                             disabled={!temTreino}
-                            accessibilityLabel={`${formatDate(iso, "dd 'de' MMMM")}: ${
+                            accessibilityLabel={`${formatDate(iso, t("dd 'de' MMMM"))}: ${
                               temTreino
-                                ? `${treinos.length} treino${treinos.length > 1 ? "s" : ""}`
-                                : "sem treino"
+                                ? t("{{length}} treino{{v1}}", {
+                                    length: treinos.length,
+                                    v1: treinos.length > 1 ? "s" : "",
+                                  })
+                                : t("sem treino")
                             }`}
                             accessibilityState={{ selected: selectedDate === iso }}
                             className={cn(
@@ -209,12 +213,17 @@ export default function WorkoutCalendar() {
                 <View className="mt-4 flex-row flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
                   <Text className="text-sm text-muted-foreground">
                     {doMes.length === 0
-                      ? "Nenhum treino neste mês"
-                      : `${doMes.length} ${doMes.length === 1 ? "treino" : "treinos"} neste mês`}
+                      ? t("Nenhum treino neste mês")
+                      : t("{{length}} {{v1}} neste mês", {
+                          length: doMes.length,
+                          v1: doMes.length === 1 ? "treino" : "treinos",
+                        })}
                   </Text>
                   {volumeMes > 0 ? (
                     <Text className="text-sm text-muted-foreground">
-                      {Math.round(volumeMes).toLocaleString(LOCALE)} kg de volume
+                      {t("{{v0}} kg de volume", {
+                        v0: Math.round(volumeMes).toLocaleString(LOCALE),
+                      })}
                     </Text>
                   ) : null}
                 </View>
@@ -226,10 +235,11 @@ export default function WorkoutCalendar() {
         {selectedDate && selecionados.length > 0 ? (
           <Card className="mt-4">
             <Text className="p-4 pb-3 text-base font-semibold">
-              {formatDate(selectedDate, "EEEE, dd 'de' MMMM")}
+              {formatDate(selectedDate, t("EEEE, dd 'de' MMMM"))}
             </Text>
             {selecionados.map((treino, i) => {
-              const t = treino.splitIndex !== undefined ? templates[treino.splitIndex] : undefined;
+              const item =
+                treino.splitIndex !== undefined ? templates[treino.splitIndex] : undefined;
               return (
                 <Pressable
                   key={treino.sessionId}
@@ -255,7 +265,7 @@ export default function WorkoutCalendar() {
                         : ""}
                     </Text>
                   </View>
-                  {t ? <RoutineIcon icon={t.icon} name={t.name} pequeno muted /> : null}
+                  {item ? <RoutineIcon icon={item.icon} name={item.name} pequeno muted /> : null}
                 </Pressable>
               );
             })}
@@ -266,8 +276,8 @@ export default function WorkoutCalendar() {
           <View className="mt-4">
             <EmptyState
               icon={calendarDays}
-              title="Nenhum treino neste período"
-              description="Assim que você finalizar um treino, ele aparece aqui."
+              title={t("Nenhum treino neste período")}
+              description={t("Assim que você finalizar um treino, ele aparece aqui.")}
               action={<Button onPress={() => router.push("/plan")}>Ir para treinos</Button>}
             />
           </View>

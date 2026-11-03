@@ -8,6 +8,7 @@ import { CoachIcon } from "@/components/coach/coach-icon";
 import { PageBody, PageHeader } from "@/components/page-header";
 import { cn } from "@/lib/utils";
 import type { ChatMessage } from "@forja/app-core/data/coach-chat";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Treinador: perguntas prontas respondidas com os dados da pessoa (ver
@@ -28,8 +29,8 @@ export const Route = createFileRoute("/_authenticated/coach")({
   },
   head: () => ({
     meta: [
-      { title: "Treinador — Habitual Fit" },
-      { name: "description", content: "Tire dúvidas sobre treino e alimentação." },
+      { title: t("Treinador — Habitual Fit") },
+      { name: "description", content: t("Tire dúvidas sobre treino e alimentação.") },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -95,7 +96,10 @@ function CoachPage() {
 
   return (
     <>
-      <PageHeader title="Treinador" description="Tire dúvidas sobre treino e alimentação." />
+      <PageHeader
+        title={t("Treinador")}
+        description={t("Tire dúvidas sobre treino e alimentação.")}
+      />
 
       <PageBody>
         <div>
@@ -115,7 +119,7 @@ function CoachPage() {
                 <Avatar role="assistant" />
                 <div className="flex items-center gap-2 rounded-2xl rounded-tl-sm bg-muted px-4 py-3">
                   <Loader2 className="size-4 animate-spin text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">Pensando…</span>
+                  <span className="text-sm text-muted-foreground">{t("Pensando…")}</span>
                 </div>
               </div>
             )}
@@ -150,8 +154,8 @@ function CoachPage() {
                 <Lock className="ml-1.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
                 <input
                   disabled
-                  placeholder="Perguntas personalizadas em breve"
-                  aria-label="Pergunta personalizada (indisponível)"
+                  placeholder={t("Perguntas personalizadas em breve")}
+                  aria-label={t("Pergunta personalizada (indisponível)")}
                   className="min-w-0 flex-1 cursor-not-allowed bg-transparent px-1 py-2 text-base outline-none placeholder:text-muted-foreground"
                 />
                 <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-muted text-muted-foreground">
@@ -174,16 +178,16 @@ function Welcome({ onPick }: { onPick: (key: FaqKey) => void }) {
           <CoachIcon className="size-7" aria-hidden />
         </span>
         <div>
-          <h2 className="text-xl font-extrabold">Como posso ajudar?</h2>
+          <h2 className="text-xl font-extrabold">{t("Como posso ajudar?")}</h2>
           <p className="text-sm text-muted-foreground">
-            Respostas na hora, com os seus dados de treino, dieta e corpo.
+            {t("Respostas na hora, com os seus dados de treino, dieta e corpo.")}
           </p>
         </div>
       </div>
 
       <p className="mb-2.5 mt-6 flex items-center gap-1.5 px-1 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
         <Zap className="size-3.5 text-primary" aria-hidden />
-        Perguntas rápidas
+        {t("Perguntas rápidas")}
       </p>
       <div className="grid grid-cols-2 gap-2">
         {COACH_FAQ.map((q, i) => (
@@ -199,7 +203,7 @@ function Welcome({ onPick }: { onPick: (key: FaqKey) => void }) {
         ))}
       </div>
       <p className="mt-4 px-1 text-center text-xs text-muted-foreground">
-        Ou escreva a sua pergunta abaixo.
+        {t("Ou escreva a sua pergunta abaixo.")}
       </p>
     </div>
   );

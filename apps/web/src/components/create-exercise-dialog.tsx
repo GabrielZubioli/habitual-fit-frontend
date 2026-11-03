@@ -20,6 +20,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { EQUIPMENT_LABELS, MUSCLE_LABELS, label } from "@forja/app-core/lib/labels";
+import { t } from "@forja/app-core/i18n";
 
 const SELECT =
   "h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
@@ -38,7 +39,9 @@ export function CreateExerciseDialog({ trigger }: { trigger?: ReactNode } = {}) 
     mutationFn: () =>
       createOwnExercise(userId, { name: nome, primaryMuscle: musculo, equipment: equipamento }),
     onSuccess: (id) => {
-      toast.success("Exercício criado", { description: "Ele já aparece na busca e nas trocas." });
+      toast.success(t("Exercício criado"), {
+        description: t("Ele já aparece na busca e nas trocas."),
+      });
       void qc.invalidateQueries({ queryKey: queryKeys.exercises.all });
       setAberto(false);
       setNome("");
@@ -55,15 +58,15 @@ export function CreateExerciseDialog({ trigger }: { trigger?: ReactNode } = {}) 
         {trigger ?? (
           <Button variant="outline">
             <Plus className="mr-1.5 size-4" aria-hidden />
-            Criar exercício
+            {t("Criar exercício")}
           </Button>
         )}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Novo exercício</DialogTitle>
+          <DialogTitle>{t("Novo exercício")}</DialogTitle>
           <DialogDescription>
-            Para o aparelho ou variação que não está na biblioteca. Só você vê.
+            {t("Para o aparelho ou variação que não está na biblioteca. Só você vê.")}
           </DialogDescription>
         </DialogHeader>
         <form
@@ -74,17 +77,17 @@ export function CreateExerciseDialog({ trigger }: { trigger?: ReactNode } = {}) 
           }}
         >
           <label className="block space-y-1.5">
-            <span className="text-sm font-medium">Nome</span>
+            <span className="text-sm font-medium">{t("Nome")}</span>
             <Input
               value={nome}
               onChange={(e) => setNome(e.target.value)}
               maxLength={80}
-              placeholder="Ex.: Remada articulada Hammer"
+              placeholder={t("Ex.: Remada articulada Hammer")}
               required
             />
           </label>
           <label className="block space-y-1.5">
-            <span className="text-sm font-medium">Músculo principal</span>
+            <span className="text-sm font-medium">{t("Músculo principal")}</span>
             <select
               className={SELECT}
               value={musculo}
@@ -98,7 +101,7 @@ export function CreateExerciseDialog({ trigger }: { trigger?: ReactNode } = {}) 
             </select>
           </label>
           <label className="block space-y-1.5">
-            <span className="text-sm font-medium">Equipamento</span>
+            <span className="text-sm font-medium">{t("Equipamento")}</span>
             <select
               className={SELECT}
               value={equipamento}
@@ -113,7 +116,7 @@ export function CreateExerciseDialog({ trigger }: { trigger?: ReactNode } = {}) 
           </label>
           <DialogFooter>
             <Button type="submit" disabled={!nomeValido || criar.isPending}>
-              {criar.isPending ? "Criando…" : "Criar"}
+              {criar.isPending ? t("Criando…") : t("Criar")}
             </Button>
           </DialogFooter>
         </form>

@@ -17,6 +17,7 @@ import {
   safePool,
   type FoodCandidate,
 } from "@forja/domain";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Substituição de alimento.
@@ -91,7 +92,7 @@ export function SubstituteFoodDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <SearchDialogContent
-        title="Substituir alimento"
+        title={t("Substituir alimento")}
         description={
           <>
             Trocando <b className="font-semibold text-foreground">{food.name}</b> (
@@ -103,7 +104,9 @@ export function SubstituteFoodDialog({
         {pool.isPending ? (
           <ResultsLoading />
         ) : opcoes.length === 0 ? (
-          <ResultsEmpty>Não encontramos alternativas equivalentes para este alimento.</ResultsEmpty>
+          <ResultsEmpty>
+            {t("Não encontramos alternativas equivalentes para este alimento.")}
+          </ResultsEmpty>
         ) : (
           <ResultList>
             {opcoes.map((sub) => (

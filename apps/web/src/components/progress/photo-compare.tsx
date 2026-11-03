@@ -7,6 +7,7 @@ import { formatShortDate } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
 import type { PhotoSession } from "@forja/app-core/data/progress-photos";
 import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Comparação antes / depois.
@@ -58,8 +59,9 @@ export function PhotoCompare({
   if (angulosComuns.length === 0) {
     return (
       <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-        Estas duas datas não têm nenhum ângulo em comum. Para comparar, registre o mesmo ângulo nas
-        duas.
+        {t(
+          "Estas duas datas não têm nenhum ângulo em comum. Para comparar, registre o mesmo ângulo nas duas.",
+        )}
       </p>
     );
   }
@@ -71,7 +73,7 @@ export function PhotoCompare({
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         {angulosComuns.length > 1 && (
-          <div role="tablist" aria-label="Ângulo comparado" className="flex flex-wrap gap-1.5">
+          <div role="tablist" aria-label={t("Ângulo comparado")} className="flex flex-wrap gap-1.5">
             {angulosComuns.map((a) => (
               <button
                 key={a}
@@ -100,12 +102,12 @@ export function PhotoCompare({
           {modo === "sobreposto" ? (
             <>
               <Columns2 className="size-3.5" aria-hidden />
-              Lado a lado
+              {t("Lado a lado")}
             </>
           ) : (
             <>
               <MoveHorizontal className="size-3.5" aria-hidden />
-              Sobrepor
+              {t("Sobrepor")}
             </>
           )}
         </button>
@@ -137,7 +139,7 @@ export function PhotoCompare({
         <p className="text-center text-sm text-muted-foreground">
           <span className="font-semibold tabular-nums text-foreground">
             {deltaPeso > 0 ? "+" : ""}
-            {deltaPeso.toLocaleString(LOCALE, { maximumFractionDigits: 1 })} kg
+            {t("{{v0}} kg", { v0: deltaPeso.toLocaleString(LOCALE, { maximumFractionDigits: 1 }) })}
           </span>{" "}
           entre as duas datas
         </p>
@@ -160,7 +162,7 @@ function PhotoPane({
       {url ? (
         <img
           src={url}
-          alt={`Foto de progresso de ${caption}`}
+          alt={t("Foto de progresso de {{caption}}", { caption })}
           className="aspect-[3/4] w-full rounded-lg border border-border object-cover"
           loading="lazy"
         />
@@ -173,7 +175,7 @@ function PhotoPane({
           <>
             {" · "}
             <span className="tabular-nums">
-              {weight.toLocaleString(LOCALE, { maximumFractionDigits: 1 })} kg
+              {t("{{v0}} kg", { v0: weight.toLocaleString(LOCALE, { maximumFractionDigits: 1 }) })}
             </span>
           </>
         )}
@@ -259,13 +261,13 @@ function SlidingCompare({
       >
         <img
           src={afterUrl}
-          alt={`Foto de progresso de ${afterLabel}`}
+          alt={t("Foto de progresso de {{afterLabel}}", { afterLabel })}
           className="absolute inset-0 size-full object-cover"
           draggable={false}
         />
         <img
           src={beforeUrl}
-          alt={`Foto de progresso de ${beforeLabel}`}
+          alt={t("Foto de progresso de {{beforeLabel}}", { beforeLabel })}
           className="absolute inset-0 size-full object-cover"
           style={{ clipPath: `inset(0 ${100 - posicao}% 0 0)` }}
           draggable={false}
@@ -280,11 +282,14 @@ function SlidingCompare({
         <div
           role="slider"
           tabIndex={0}
-          aria-label="Posição da divisória entre as duas fotos"
+          aria-label={t("Posição da divisória entre as duas fotos")}
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={Math.round(posicao)}
-          aria-valuetext={`${Math.round(posicao)}% da foto de ${beforeLabel}`}
+          aria-valuetext={t("{{v0}}% da foto de {{beforeLabel}}", {
+            v0: Math.round(posicao),
+            beforeLabel,
+          })}
           onKeyDown={(e) => {
             const passo = e.shiftKey ? 10 : 2;
             if (e.key === "ArrowLeft") setPosicao((p) => Math.max(0, p - passo));
@@ -307,7 +312,7 @@ function SlidingCompare({
       </div>
 
       <p className="text-center text-xs text-muted-foreground">
-        Arraste a divisória — ou use as setas do teclado — para revelar cada foto.
+        {t("Arraste a divisória — ou use as setas do teclado — para revelar cada foto.")}
       </p>
     </div>
   );

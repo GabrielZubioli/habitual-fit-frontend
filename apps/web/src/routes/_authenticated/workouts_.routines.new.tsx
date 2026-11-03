@@ -35,14 +35,15 @@ import {
   type TrainingLevel,
   type EquipmentProfile,
 } from "@forja/domain";
+import { t } from "@forja/app-core/i18n";
 
 export const Route = createFileRoute("/_authenticated/workouts_/routines/new")({
   head: () => ({
     meta: [
-      { title: "Montar plano de treino — Habitual Fit" },
+      { title: t("Montar plano de treino — Habitual Fit") },
       {
         name: "description",
-        content: "Responda quatro perguntas e receba sua divisão de treino pronta.",
+        content: t("Responda quatro perguntas e receba sua divisão de treino pronta."),
       },
     ],
   }),
@@ -66,44 +67,56 @@ export const Route = createFileRoute("/_authenticated/workouts_/routines/new")({
 type Step = 0 | 1 | 2 | 3 | 4 | 5;
 
 const LEVEL_OPTIONS: { value: TrainingLevel; label: string; hint: string }[] = [
-  { value: "beginner", label: "Iniciante", hint: "Menos de 6 meses treinando com consistência" },
+  {
+    value: "beginner",
+    label: t("Iniciante"),
+    hint: t("Menos de 6 meses treinando com consistência"),
+  },
   {
     value: "intermediate",
-    label: "Intermediário",
-    hint: "6 meses a 2 anos, técnica já consolidada",
+    label: t("Intermediário"),
+    hint: t("6 meses a 2 anos, técnica já consolidada"),
   },
-  { value: "advanced", label: "Avançado", hint: "Mais de 2 anos, progressão já lenta" },
+  { value: "advanced", label: t("Avançado"), hint: t("Mais de 2 anos, progressão já lenta") },
 ];
 
 const GOAL_OPTIONS: { value: TrainingGoal; label: string; hint: string }[] = [
-  { value: "hypertrophy", label: "Ganhar massa", hint: "8–12 repetições, descanso médio" },
-  { value: "strength", label: "Ganhar força", hint: "4–6 repetições, descanso longo" },
-  { value: "endurance", label: "Resistência", hint: "12–20 repetições, descanso curto" },
+  { value: "hypertrophy", label: t("Ganhar massa"), hint: t("8–12 repetições, descanso médio") },
+  { value: "strength", label: t("Ganhar força"), hint: t("4–6 repetições, descanso longo") },
+  { value: "endurance", label: t("Resistência"), hint: t("12–20 repetições, descanso curto") },
 ];
 
 const EQUIPMENT_OPTIONS: { value: EquipmentProfile; label: string; hint: string }[] = [
-  { value: "full_gym", label: "Academia completa", hint: "Barras, halteres, máquinas e polias" },
-  { value: "home_basic", label: "Casa com halteres", hint: "Halteres, elásticos e peso corporal" },
-  { value: "bodyweight", label: "Só peso corporal", hint: "Sem nenhum equipamento" },
+  {
+    value: "full_gym",
+    label: t("Academia completa"),
+    hint: t("Barras, halteres, máquinas e polias"),
+  },
+  {
+    value: "home_basic",
+    label: t("Casa com halteres"),
+    hint: t("Halteres, elásticos e peso corporal"),
+  },
+  { value: "bodyweight", label: t("Só peso corporal"), hint: t("Sem nenhum equipamento") },
 ];
 
 const FREQUENCY_OPTIONS = [2, 3, 4, 5, 6] as const;
 
 const FREQUENCY_HINT: Record<number, string> = {
-  2: "Corpo inteiro, duas vezes por semana",
-  3: "Empurrar / Puxar / Pernas",
-  4: "Superiores e inferiores, duas vezes cada",
-  5: "Divisão completa com maior volume",
-  6: "Empurrar / Puxar / Pernas, duas vezes",
+  2: t("Corpo inteiro, duas vezes por semana"),
+  3: t("Empurrar / Puxar / Pernas"),
+  4: t("Superiores e inferiores, duas vezes cada"),
+  5: t("Divisão completa com maior volume"),
+  6: t("Empurrar / Puxar / Pernas, duas vezes"),
 };
 
 const STEP_TITLES = [
-  "Seu nível",
-  "Seu objetivo",
-  "Onde você treina",
-  "Quantos dias",
-  "Quais dias",
-  "Seu plano",
+  t("Seu nível"),
+  t("Seu objetivo"),
+  t("Onde você treina"),
+  t("Quantos dias"),
+  t("Quais dias"),
+  t("Seu plano"),
 ];
 
 function RoutineWizard() {
@@ -142,11 +155,16 @@ function RoutineWizard() {
       if (!input || !draft.data) throw new Error("Plano ainda não está pronto.");
       const nome =
         programa?.name ??
-        `${GOAL_OPTIONS.find((g) => g.value === input.goal)?.label ?? "Treino"} · ${input.daysPerWeek}× por semana`;
+        t("{{v0}} · {{daysPerWeek}}× por semana", {
+          v0: GOAL_OPTIONS.find((g) => g.value === input.goal)?.label ?? "Treino",
+          daysPerWeek: input.daysPerWeek,
+        });
       return createRoutine(userId, input, draft.data, nome, weekdays);
     },
     onSuccess: () => {
-      toast.success("Plano criado!", { description: "Sua divisão já está pronta em Treinos." });
+      toast.success(t("Plano criado!"), {
+        description: t("Sua divisão já está pronta em Treinos."),
+      });
       void qc.invalidateQueries({ queryKey: queryKeys.workouts.all });
       void navigate({ to: "/plan" });
     },
@@ -163,8 +181,8 @@ function RoutineWizard() {
   return (
     <>
       <PageHeader
-        title="Montar meu plano"
-        description="Quatro perguntas e sua divisão de treino fica pronta."
+        title={t("Montar meu plano")}
+        description={t("Quatro perguntas e sua divisão de treino fica pronta.")}
         topo={
           <Button
             variant="ghost"
@@ -180,14 +198,14 @@ function RoutineWizard() {
               void navigate({ to: "/plan" });
             }}
           >
-            Agora não
+            {t("Agora não")}
             <X className="ml-1 size-4" />
           </Button>
         }
       />
       <PageBody>
         <div className="mx-auto max-w-2xl">
-          <ol className="mb-6 flex items-center gap-2" aria-label="Progresso do assistente">
+          <ol className="mb-6 flex items-center gap-2" aria-label={t("Progresso do assistente")}>
             {STEP_TITLES.map((titulo, i) => (
               <li key={titulo} className="flex flex-1 items-center gap-2">
                 <span
@@ -257,7 +275,7 @@ function RoutineWizard() {
                   )}
                 >
                   <span className="block text-2xl font-bold">{dias}</span>
-                  <span className="block text-xs text-muted-foreground">dias/semana</span>
+                  <span className="block text-xs text-muted-foreground">{t("dias/semana")}</span>
                 </button>
               ))}
               {daysPerWeek && (
@@ -291,14 +309,14 @@ function RoutineWizard() {
               disabled={step === 0}
             >
               <ArrowLeft className="mr-1 size-4" />
-              Voltar
+              {t("Voltar")}
             </Button>
             {step < 5 && (
               <Button
                 onClick={() => setStep((s) => Math.min(5, s + 1) as Step)}
                 disabled={!canAdvance}
               >
-                Continuar
+                {t("Continuar")}
                 <ArrowRight className="ml-1 size-4" />
               </Button>
             )}
@@ -358,17 +376,21 @@ function WeekdayPicker({
 
       <p className="text-sm text-muted-foreground">
         {faltam > 0
-          ? `Escolha mais ${faltam} ${faltam === 1 ? "dia" : "dias"}.`
+          ? t("Escolha mais {{faltam}} {{v1}}.", { faltam, v1: faltam === 1 ? "dia" : "dias" })
           : faltam < 0
-            ? `Você escolheu ${-faltam} ${-faltam === 1 ? "dia a mais" : "dias a mais"} do que a frequência definida.`
-            : "Agenda definida."}
+            ? t("Você escolheu {{v0}} {{v1}} do que a frequência definida.", {
+                v0: -faltam,
+                v1: -faltam === 1 ? "dia a mais" : "dias a mais",
+              })
+            : t("Agenda definida.")}
       </p>
 
       <p className="flex gap-2 rounded-lg border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
         <Info className="mt-px size-3.5 shrink-0" aria-hidden />
         <span>
-          Estes dias são um guia, não uma cobrança. A sequência A → B → C avança a cada treino
-          concluído: se você faltar numa segunda, o treino A continua esperando por você na quarta.
+          {t(
+            "Estes dias são um guia, não uma cobrança. A sequência A → B → C avança a cada treino concluído: se você faltar numa segunda, o treino A continua esperando por você na quarta.",
+          )}
         </span>
       </p>
     </div>
@@ -448,9 +470,11 @@ function PlanPreview({
             <Sparkles className="size-5" />
           </span>
           <div>
-            <p className="font-semibold">{draft.splits.length} treinos na sequência</p>
+            <p className="font-semibold">
+              {t("{{length}} treinos na sequência", { length: draft.splits.length })}
+            </p>
             <p className="text-sm text-muted-foreground">
-              Você treina A, B, C… na ordem. Faltou um dia? O próximo continua de onde parou.
+              {t("Você treina A, B, C… na ordem. Faltou um dia? O próximo continua de onde parou.")}
             </p>
           </div>
         </CardContent>
@@ -461,13 +485,13 @@ function PlanPreview({
           <CardContent className="flex gap-3 p-4 text-sm">
             <TriangleAlert className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden />
             <div>
-              <p className="font-medium">Atenção ao volume</p>
+              <p className="font-medium">{t("Atenção ao volume")}</p>
               <ul className="mt-1 space-y-0.5 text-muted-foreground">
                 {alertas.map((a) => (
                   <li key={a.muscle}>
                     <b className="capitalize text-foreground">{a.muscle}</b>: {a.sets} séries por
                     semana — {a.status === "low" ? "abaixo" : "acima"} do ideal para o seu nível.
-                    {a.status === "low" && " Considere treinar mais dias."}
+                    {a.status === "low" && t(" Considere treinar mais dias.")}
                   </li>
                 ))}
               </ul>
@@ -480,11 +504,14 @@ function PlanPreview({
         <Card className="border-warning/40 bg-warning-soft/40">
           <CardContent className="p-4 text-sm">
             <p className="font-medium">
-              {semExercicio.length} exercício(s) sem correspondência no catálogo
+              {t("{{length}} exercício(s) sem correspondência no catálogo", {
+                length: semExercicio.length,
+              })}
             </p>
             <p className="mt-1 text-muted-foreground">
-              O plano foi criado assim mesmo. Você pode adicionar os movimentos que faltarem
-              editando a divisão depois.
+              {t(
+                "O plano foi criado assim mesmo. Você pode adicionar os movimentos que faltarem editando a divisão depois.",
+              )}
             </p>
           </CardContent>
         </Card>
@@ -501,7 +528,9 @@ function PlanPreview({
                 </span>
                 {split.name}
               </CardTitle>
-              <span className="text-xs text-muted-foreground">{totalSeries} séries</span>
+              <span className="text-xs text-muted-foreground">
+                {t("{{totalSeries}} séries", { totalSeries })}
+              </span>
             </CardHeader>
             <CardContent className="p-0">
               <ul className="divide-y divide-border">
@@ -529,14 +558,14 @@ function PlanPreview({
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Volume semanal</CardTitle>
+          <CardTitle className="text-base">{t("Volume semanal")}</CardTitle>
         </CardHeader>
         <CardContent>
           <dl className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-5">
             {Object.entries(semanal).map(([grupo, series]) => (
               <div key={grupo} className="rounded-lg border border-border p-2.5">
                 <dt className="text-xs capitalize text-muted-foreground">{grupo}</dt>
-                <dd className="font-semibold">{series} séries</dd>
+                <dd className="font-semibold">{t("{{series}} séries", { series })}</dd>
               </div>
             ))}
           </dl>
@@ -545,7 +574,7 @@ function PlanPreview({
 
       <Button className="w-full" size="lg" onClick={onConfirm} disabled={isSaving}>
         <Dumbbell className="mr-1.5 size-4" />
-        {isSaving ? "Criando…" : "Usar este plano"}
+        {isSaving ? t("Criando…") : t("Usar este plano")}
       </Button>
     </div>
   );
