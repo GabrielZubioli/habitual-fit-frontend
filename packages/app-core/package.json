@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@forja/domain": "*",
-    "@gabrielzubioli/db": "^0.2.0",
+    "@gabrielzubioli/db": "^0.3.0",
     "@supabase/supabase-js": "^2.110.8",
     "@tanstack/react-query": "^5.101.1",
     "date-fns": "^4.1.0",

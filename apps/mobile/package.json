@@ -14,7 +14,7 @@
   "dependencies": {
     "@forja/app-core": "*",
     "@forja/domain": "*",
-    "@gabrielzubioli/db": "^0.2.0",
+    "@gabrielzubioli/db": "^0.3.0",
     "@op-engineering/op-sqlite": "18.2.5",
     "@powersync/react-native": "2.3.1",
     "@react-native-google-signin/google-signin": "^17.0.0",
