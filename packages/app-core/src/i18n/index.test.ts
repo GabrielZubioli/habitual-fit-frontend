@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { language, LOCALE, normalizeLanguage, t } from "./index";
+import { language, LOCALE, normalizeLanguage, t, tRich } from "./index";
 
 describe("normalizeLanguage", () => {
   it("pt-* vira pt-BR, es-* vira es e o resto vira en", () => {
@@ -21,5 +21,18 @@ describe("t (ambiente de teste roda em pt-BR)", () => {
     expect(t("{{n}} treinos", { n: 3 })).toBe("3 treinos");
     // Ponto e dois-pontos fazem parte do texto, não separam chaves.
     expect(t("Atenção: salvo.")).toBe("Atenção: salvo.");
+  });
+});
+
+describe("tRich", () => {
+  it("separa os trechos marcados e aplica cada parte", () => {
+    const saida = tRich("Aceita os <0>Termos</0> e a <1>Política</1>.", [
+      (s) => `[${s}]`,
+      (s) => `{${s}}`,
+    ]);
+    const plano = saida.map((n) =>
+      typeof n === "string" ? n : (n as { props: { children: string } }).props.children,
+    );
+    expect(plano).toEqual(["Aceita os ", "[Termos]", " e a ", "{Política}", "."]);
   });
 });

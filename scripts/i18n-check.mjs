@@ -16,14 +16,14 @@ const PASTAS = ["apps/web/src", "apps/mobile/app", "apps/mobile/src", "packages/
 const IDIOMAS = ["en", "es"];
 const PLURAL = /_(zero|one|two|few|many|other)$/;
 
-/** Frases literais passadas a `t()` num trecho de código (comentários não contam). */
+/** Frases literais passadas a `t()`/`tRich()` num trecho de código (comentários não contam). */
 export function chavesDoCodigo(codigo, nome = "x.tsx") {
   const chaves = new Set();
   const visitar = (no) => {
     if (
       ts.isCallExpression(no) &&
       ts.isIdentifier(no.expression) &&
-      no.expression.text === "t" &&
+      (no.expression.text === "t" || no.expression.text === "tRich") &&
       no.arguments[0] &&
       ts.isStringLiteralLike(no.arguments[0])
     ) {

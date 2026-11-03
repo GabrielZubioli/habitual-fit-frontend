@@ -39,3 +39,4 @@ apps/mobile/ios/
 *.suo
 *.sw?
 .playwright-mcp/
+scripts/.i18n-pending.json

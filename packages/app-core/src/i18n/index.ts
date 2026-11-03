@@ -24,6 +24,7 @@
  * requisição se isso incomodar.
  */
 import i18next from "i18next";
+import { createElement, Fragment, type ReactNode } from "react";
 import type { Locale as DateFnsLocale } from "date-fns";
 import { enUS, es as esLocale, ptBR } from "date-fns/locale";
 import en from "./en.json";
@@ -75,4 +76,33 @@ void i18n.init({
 /** Traduz um texto em pt-BR. Interpolação: `t("{{n}} treinos", { n })`. */
 export function t(key: string, options?: Record<string, unknown>): string {
   return i18n.t(key, options) as string;
+}
+
+/**
+ * Frase com trechos marcados — link, negrito — traduzida inteira:
+ *
+ *   tRich("Aceita os <0>Termos</0> e a <1>Política</1>.", [
+ *     (s) => <Link to="/termos">{s}</Link>,
+ *     (s) => <Link to="/privacidade">{s}</Link>,
+ *   ])
+ *
+ * Traduzir os pedaços em separado quebra a gramática dos outros idiomas.
+ */
+export function tRich(
+  key: string,
+  partes: ((texto: string) => ReactNode)[],
+  options?: Record<string, unknown>,
+): ReactNode[] {
+  const frase = t(key, options);
+  const saida: ReactNode[] = [];
+  const marca = /<(\d+)>([\s\S]*?)<\/\1>/g;
+  let fim = 0;
+  for (const m of frase.matchAll(marca)) {
+    if (m.index > fim) saida.push(frase.slice(fim, m.index));
+    const parte = partes[Number(m[1])];
+    saida.push(createElement(Fragment, { key: saida.length }, parte ? parte(m[2] ?? "") : m[2]));
+    fim = m.index + m[0].length;
+  }
+  if (fim < frase.length) saida.push(frase.slice(fim));
+  return saida;
 }

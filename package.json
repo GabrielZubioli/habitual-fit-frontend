@@ -23,6 +23,7 @@
     "tokens:mobile": "node scripts/build-mobile-tokens.mjs",
     "verify": "npm run typecheck && npm run lint && npm run i18n:check && npm run test:all && npm run build",
     "i18n:check": "node scripts/i18n-check.mjs",
+    "i18n:extract": "node scripts/i18n-extract.mjs",
     "test:scripts": "node --test \"scripts/*.test.mjs\"",
     "test:core": "npm run test --workspace @forja/app-core"
   },
