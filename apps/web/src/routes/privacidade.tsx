@@ -1,5 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { LegalPage, Secao } from "@/components/legal-page";
+import { PrivacidadeEn } from "@/components/legal/privacidade-en";
+import { PrivacidadeEs } from "@/components/legal/privacidade-es";
+import { language, t } from "@forja/app-core/i18n";
 import { EMPRESA, identificacaoEmpresa } from "@forja/app-core/lib/legal";
 
 /**
@@ -10,17 +13,24 @@ import { EMPRESA, identificacaoEmpresa } from "@forja/app-core/lib/legal";
 export const Route = createFileRoute("/privacidade")({
   head: () => ({
     meta: [
-      { title: "Política de Privacidade — Habitual Fit" },
+      { title: t("Política de Privacidade — Habitual Fit") },
       {
         name: "description",
-        content: "Como o Habitual Fit coleta, usa, guarda e protege os seus dados pessoais.",
+        content: t("Como o Habitual Fit coleta, usa, guarda e protege os seus dados pessoais."),
       },
     ],
   }),
   component: PrivacidadePage,
 });
 
+/** Cada idioma tem o documento inteiro, revisado como um todo. */
 function PrivacidadePage() {
+  if (language === "en") return <PrivacidadeEn />;
+  if (language === "es") return <PrivacidadeEs />;
+  return <PrivacidadePt />;
+}
+
+function PrivacidadePt() {
   return (
     <LegalPage
       titulo="Política de Privacidade"

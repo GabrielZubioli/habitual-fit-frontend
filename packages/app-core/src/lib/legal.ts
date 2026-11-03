@@ -12,8 +12,8 @@ export const EMPRESA = {
   email: "suporte@zubion.com.br",
 };
 
-/** Data em que a versão atual dos dois documentos passou a valer. */
-export const VIGENCIA = "24 de outubro de 2026";
+/** Data (ISO) em que a versão atual dos dois documentos passou a valer. */
+export const VIGENCIA = "2026-10-24";
 
 /** "Zubion (Razão Social Ltda., CNPJ 00.000.000/0001-00)" — só com o que existir. */
 export function identificacaoEmpresa(): string {

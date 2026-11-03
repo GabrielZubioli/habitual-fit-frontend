@@ -1,5 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { LegalPage, Secao } from "@/components/legal-page";
+import { TermosEn } from "@/components/legal/termos-en";
+import { TermosEs } from "@/components/legal/termos-es";
+import { language, t } from "@forja/app-core/i18n";
 import { EMPRESA, identificacaoEmpresa } from "@forja/app-core/lib/legal";
 
 /**
@@ -10,17 +13,24 @@ import { EMPRESA, identificacaoEmpresa } from "@forja/app-core/lib/legal";
 export const Route = createFileRoute("/termos")({
   head: () => ({
     meta: [
-      { title: "Termos de Uso — Habitual Fit" },
+      { title: t("Termos de Uso — Habitual Fit") },
       {
         name: "description",
-        content: "As regras de uso do Habitual Fit, o que o app oferece e os seus limites.",
+        content: t("As regras de uso do Habitual Fit, o que o app oferece e os seus limites."),
       },
     ],
   }),
   component: TermosPage,
 });
 
+/** Cada idioma tem o documento inteiro, revisado como um todo. */
 function TermosPage() {
+  if (language === "en") return <TermosEn />;
+  if (language === "es") return <TermosEs />;
+  return <TermosPt />;
+}
+
+function TermosPt() {
   return (
     <LegalPage
       titulo="Termos de Uso"

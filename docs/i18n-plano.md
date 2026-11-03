@@ -1,6 +1,6 @@
 # Plano: tradução para inglês e espanhol + lançamento em todas as regiões
 
-> Status: **em andamento** (branch `feat/i18n-en-es`). Fases 0, 1 e 2 prontas; fase 3 com as áreas 1, 2 e 3 traduzidas. Próximo: área 4 (Início).
+> Status: **em andamento** (branch `feat/i18n-en-es`). Fases 0 a 3 prontas (1.589 frases em en e es; páginas legais com versão completa por idioma, aguardando revisão jurídica). Próximo: fase 4 (banco) e fase 5 (loja).
 > Repos: `forja-frontend` (web + mobile + app-core) e `forja-backend` (banco, edge functions).
 
 ## Objetivo
