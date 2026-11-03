@@ -1,6 +1,6 @@
 import { supabase, supabaseUrl } from "../supabase";
 import { assertOk, unwrap, unwrapList } from "./supabase-helpers";
-import { t } from "../i18n";
+import { language, t } from "../i18n";
 
 /**
  * Conversa com o treinador.
@@ -57,6 +57,8 @@ export async function sendToCoach(
       },
       body: JSON.stringify({
         messages: messages.map((m) => ({ role: m.role, content: m.content })),
+        // O treinador responde no idioma do app.
+        locale: language,
       }),
     });
   } catch {
