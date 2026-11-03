@@ -36,15 +36,17 @@ export const FILTERABLE_MUSCLES: MuscleValue[] = [
 export async function searchExercises(term: string, muscle: string) {
   const db = localDb();
   if (db) {
-    // Todas as palavras no nome em português, ou todas no original em inglês.
+    // Todas as palavras no nome em português, no original em inglês ou em espanhol.
     const pt = localSearch(term);
     const en = localSearch(term, "name_en");
+    const es = localSearch(term, "name_es");
     const porMusculo = muscle !== "all";
     return (
       await db.getAll<{
         id: string;
         name: string;
         name_en: string | null;
+        name_es: string | null;
         primary_muscle: Enums<"muscle_t">;
         equipment: Enums<"equipment_t">;
         category: Enums<"exercise_category_t">;
@@ -56,20 +58,20 @@ export async function searchExercises(term: string, muscle: string) {
         video_url: string | null;
         popularity: number | null;
       }>(
-        `SELECT id, name, name_en, primary_muscle, equipment, category, image_urls, external_id,
+        `SELECT id, name, name_en, name_es, primary_muscle, equipment, category, image_urls, external_id,
                 media_id, media_ref, media_source, video_url, popularity
            FROM exercises
-          WHERE deleted_at IS NULL AND ((${pt.where}) OR (${en.where}))
+          WHERE deleted_at IS NULL AND ((${pt.where}) OR (${en.where}) OR (${es.where}))
             ${porMusculo ? "AND primary_muscle = ?" : ""}
           ORDER BY popularity DESC, name LIMIT 60`,
-        [...pt.params, ...en.params, ...(porMusculo ? [muscle] : [])],
+        [...pt.params, ...en.params, ...es.params, ...(porMusculo ? [muscle] : [])],
       )
     ).map((r) => ({ ...r, image_urls: jsonList(r.image_urls) }));
   }
   let query = supabase
     .from("exercises")
     .select(
-      "id, name, name_en, primary_muscle, equipment, category, image_urls, external_id, media_id, media_ref, media_source, video_url, popularity",
+      "id, name, name_en, name_es, primary_muscle, equipment, category, image_urls, external_id, media_id, media_ref, media_source, video_url, popularity",
     )
     .is("deleted_at", null)
     // Popularidade antes do nome: com 880 exercícios, a ordem alfabética
@@ -82,7 +84,8 @@ export async function searchExercises(term: string, muscle: string) {
     // "romanian deadlift", não por "terra romeno".
     const ws = searchWords(term);
     const todas = (col: string) => ws.map((w) => `${col}.ilike.%${w}%`).join(",");
-    if (ws.length) query = query.or(`and(${todas("name")}),and(${todas("name_en")})`);
+    if (ws.length)
+      query = query.or(`and(${todas("name")}),and(${todas("name_en")}),and(${todas("name_es")})`);
   }
   if (muscle !== "all") query = query.eq("primary_muscle", muscle as never);
   return unwrapList("buscar exercícios", await query);

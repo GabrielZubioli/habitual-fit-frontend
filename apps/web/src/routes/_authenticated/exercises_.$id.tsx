@@ -1,3 +1,4 @@
+import { exerciseName } from "@forja/app-core/data/exercise-library";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
@@ -116,7 +117,7 @@ function ExerciseDetail() {
           {t("Exercício")}
         </span>
         {ex ? (
-          <FavoriteButton exerciseId={ex.id} nome={ex.name} className="size-11 bg-card" />
+          <FavoriteButton exerciseId={ex.id} nome={exerciseName(ex)} className="size-11 bg-card" />
         ) : (
           <span className="size-11" aria-hidden />
         )}
@@ -147,7 +148,7 @@ function ExerciseDetail() {
             />
           </div>
 
-          <h1 className="mt-5 text-[1.75rem] font-extrabold leading-tight">{ex.name}</h1>
+          <h1 className="mt-5 text-[1.75rem] font-extrabold leading-tight">{exerciseName(ex)}</h1>
           <div className="mt-3 flex flex-wrap gap-2">
             <span className="rounded-full bg-primary px-3 py-1 text-sm font-bold text-primary-foreground">
               {label(MUSCLE_LABELS, ex.primary_muscle)}
@@ -253,7 +254,7 @@ function ExerciseDetail() {
               </section>
               <ExerciseHowTo exercise={ex} />
               <a
-                href={isSafeUrl(ex.video_url) ? ex.video_url! : videoSearchUrl(ex.name)}
+                href={isSafeUrl(ex.video_url) ? ex.video_url! : videoSearchUrl(exerciseName(ex))}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-3 flex items-center justify-between gap-3 rounded-[1.25rem] border border-border px-4 py-3.5 text-sm font-medium transition-colors hover:bg-card"

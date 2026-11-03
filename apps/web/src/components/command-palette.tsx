@@ -12,6 +12,7 @@
  *  - **Busca ao vivo** — exercícios, alimentos, receitas e treinos do histórico,
  *    consultados com debounce só quando há termo digitado.
  */
+import { exerciseName } from "@forja/app-core/data/exercise-library";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -230,7 +231,7 @@ export function CommandPalette() {
                   }
                 >
                   <Dumbbell className="mr-2 size-4" />
-                  {ex.name}
+                  {exerciseName(ex)}
                   <CommandShortcut>{label(MUSCLE_LABELS, ex.primary_muscle)}</CommandShortcut>
                 </CommandItem>
               ))}

@@ -1,3 +1,4 @@
+import { exerciseName } from "@forja/app-core/data/exercise-library";
 import { useEffect, useState } from "react";
 import { Image, Pressable, View } from "react-native";
 import { useQuery } from "@tanstack/react-query";
@@ -134,7 +135,7 @@ export function ExercisePicker({
             <ResultRow
               key={ex.id}
               thumb={<PickerThumb exercise={ex} />}
-              title={ex.name}
+              title={exerciseName(ex)}
               detail={`${MUSCLE_LABELS[ex.primary_muscle as MuscleValue] ?? ex.primary_muscle} · ${
                 EQUIPMENT_LABELS[ex.equipment as keyof typeof EQUIPMENT_LABELS] ?? ex.equipment
               }`}

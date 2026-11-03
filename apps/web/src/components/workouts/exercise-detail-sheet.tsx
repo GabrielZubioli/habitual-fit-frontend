@@ -1,3 +1,8 @@
+import {
+  exerciseName,
+  exerciseSteps,
+  idiomaDiferente,
+} from "@forja/app-core/data/exercise-library";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, ListChecks, PlayCircle, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -56,7 +61,7 @@ export function ExerciseDetailSheet({
         await supabase
           .from("exercises")
           .select(
-            "id, name, name_en, instructions, execution, execution_en, cues, common_mistakes, default_cadence, image_urls, external_id, media_id, media_ref, media_source, video_url, equipment, category, level, mechanic, movement_pattern, primary_muscle, secondary_muscles, contraindications, exercise_muscles(muscle, contribution)",
+            "id, name, name_en, name_es, instructions, execution, execution_en, execution_es, cues, common_mistakes, default_cadence, image_urls, external_id, media_id, media_ref, media_source, video_url, equipment, category, level, mechanic, movement_pattern, primary_muscle, secondary_muscles, contraindications, exercise_muscles(muscle, contribution)",
           )
           .eq("id", exerciseId!)
           .maybeSingle(),
@@ -65,11 +70,9 @@ export function ExerciseDetailSheet({
 
   const ex = exercise.data;
 
-  // Passo a passo: português primeiro, inglês da base importada como reserva.
-  const passosPt = ex?.execution ?? [];
-  const passosEn = ex?.execution_en ?? [];
-  const passos = passosPt.length > 0 ? passosPt : passosEn;
-  const passosEmIngles = passosPt.length === 0 && passosEn.length > 0;
+  // Passo a passo no idioma do app; na falta dele, o mais próximo, com selo.
+  const { passos, idioma } = exerciseSteps(ex ?? {});
+  const selo = idiomaDiferente(idioma);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -86,8 +89,10 @@ export function ExerciseDetailSheet({
         ) : (
           <>
             <SheetHeader className="text-left">
-              <SheetTitle className="text-balance text-xl leading-tight">{ex.name}</SheetTitle>
-              {ex.name_en && ex.name_en !== ex.name && (
+              <SheetTitle className="text-balance text-xl leading-tight">
+                {exerciseName(ex)}
+              </SheetTitle>
+              {ex.name_en && ex.name_en !== exerciseName(ex) && (
                 <SheetDescription className="text-xs">{ex.name_en}</SheetDescription>
               )}
             </SheetHeader>
@@ -114,7 +119,7 @@ export function ExerciseDetailSheet({
                   movimento. */}
               <Button asChild variant="outline" className="w-full">
                 <a
-                  href={ex.video_url ?? videoSearchUrl(ex.name)}
+                  href={ex.video_url ?? videoSearchUrl(exerciseName(ex))}
                   target="_blank"
                   rel="noreferrer noopener"
                 >
@@ -196,9 +201,9 @@ export function ExerciseDetailSheet({
                   <SectionTitle icon={<ListChecks className="size-4" />}>
                     {t("Execução correta")}
                   </SectionTitle>
-                  {passosEmIngles && (
+                  {selo && (
                     <Badge variant="warning" className="mt-2">
-                      {t("Texto original em inglês")}
+                      {selo}
                     </Badge>
                   )}
                   <ol className="mt-3 space-y-2.5">
@@ -207,7 +212,10 @@ export function ExerciseDetailSheet({
                         <span className="grid size-5 shrink-0 place-items-center rounded-full bg-primary-soft text-[11px] font-bold text-primary-soft-foreground">
                           {i + 1}
                         </span>
-                        <span className="text-pretty" lang={passosEmIngles ? "en" : undefined}>
+                        <span
+                          className="text-pretty"
+                          lang={idioma === "pt" ? "pt-BR" : (idioma ?? undefined)}
+                        >
                           {passo}
                         </span>
                       </li>
