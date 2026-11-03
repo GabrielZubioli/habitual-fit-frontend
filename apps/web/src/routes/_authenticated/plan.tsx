@@ -1,3 +1,4 @@
+import { WEEKDAY_LABELS } from "@forja/app-core/lib/labels";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -16,7 +17,7 @@ import {
   Wand2,
   X,
 } from "lucide-react";
-import { TRAINING_PROGRAMS, WEEKDAY_LABELS, weekdayOf, type Weekday } from "@forja/domain";
+import { TRAINING_PROGRAMS, weekdayOf, type Weekday } from "@forja/domain";
 import { queryKeys } from "@forja/app-core/data/query-keys";
 import { errorMessage } from "@forja/app-core/data/supabase-helpers";
 import {

@@ -14,6 +14,7 @@ import { cn } from "@/lib/cn";
 import { useColor } from "@/theme/theme";
 import { Icon } from "./icon";
 import { Text } from "./text";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * O diálogo de busca do web (`pickers/search-dialog.tsx`): cartão de até 88%
@@ -61,7 +62,7 @@ export function SearchDialog({
             </View>
             <Pressable
               onPress={onClose}
-              accessibilityLabel="Fechar"
+              accessibilityLabel={t("Fechar")}
               className="absolute right-4 top-4 h-8 w-8 items-center justify-center rounded-full"
             >
               <Icon node={x} color={texto} size={18} />
@@ -166,7 +167,7 @@ export function ResultRow({
 
 export function ResultsLoading() {
   return (
-    <View className="gap-2" accessibilityLabel="Carregando">
+    <View className="gap-2" accessibilityLabel={t("Carregando")}>
       {[0, 1, 2, 3, 4].map((i) => (
         <View key={i} className="h-[72px] w-full rounded-2xl bg-muted" />
       ))}

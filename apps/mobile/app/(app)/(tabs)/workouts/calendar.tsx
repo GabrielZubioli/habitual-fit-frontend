@@ -1,3 +1,4 @@
+import { WEEKDAY_INITIALS } from "@forja/app-core/lib/labels";
 import { useMemo, useState } from "react";
 import { Pressable, View } from "react-native";
 import { router } from "expo-router";
@@ -16,7 +17,7 @@ import { __iconNode as calendarDays } from "lucide-react/dist/esm/icons/calendar
 import { __iconNode as chevronLeft } from "lucide-react/dist/esm/icons/chevron-left.js";
 import { __iconNode as chevronRight } from "lucide-react/dist/esm/icons/chevron-right.js";
 import { __iconNode as dumbbell } from "lucide-react/dist/esm/icons/dumbbell.js";
-import { WEEKDAY_INITIALS, type Weekday } from "@forja/domain";
+import { type Weekday } from "@forja/domain";
 import { errorMessage } from "@forja/app-core/data/supabase-helpers";
 import { fetchActiveRoutine, fetchCompletedWorkouts } from "@forja/app-core/data/routines";
 import { queryKeys } from "@forja/app-core/data/query-keys";

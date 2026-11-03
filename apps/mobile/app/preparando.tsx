@@ -19,7 +19,7 @@ import { __iconNode as moon } from "lucide-react/dist/esm/icons/moon.js";
 import { __iconNode as triangleAlert } from "lucide-react/dist/esm/icons/triangle-alert.js";
 import { __iconNode as user } from "lucide-react/dist/esm/icons/user.js";
 import { __iconNode as utensils } from "lucide-react/dist/esm/icons/utensils.js";
-import { WEEKDAY_LABELS, type Weekday } from "@forja/domain";
+import { type Weekday } from "@forja/domain";
 import { errorMessage, num } from "@forja/app-core/data/supabase-helpers";
 import { queryKeys } from "@forja/app-core/data/query-keys";
 import { fetchProfile } from "@forja/app-core/data/profile";
@@ -34,7 +34,7 @@ import {
 } from "@forja/app-core/data/onboarding";
 import { isComplete, type Answers } from "@forja/app-core/lib/onboarding/schema";
 import { derivedObjective } from "@forja/app-core/lib/onboarding/options";
-import { MEAL_LABELS, label } from "@forja/app-core/lib/labels";
+import { MEAL_LABELS, label, WEEKDAY_LABELS } from "@forja/app-core/lib/labels";
 import { supabase } from "@/lib/supabase";
 import { clearDraft, loadDraft } from "@/lib/onboarding-storage";
 import { cn } from "@/lib/cn";

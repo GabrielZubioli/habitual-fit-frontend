@@ -2,6 +2,7 @@ import { Moon, Sun } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useTheme } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Modo escuro como um interruptor: ligado = escuro, desligado = claro.
@@ -28,14 +29,14 @@ export function ThemeSwitch({
         ) : (
           <Sun className="size-5 shrink-0 text-muted-foreground" aria-hidden />
         ))}
-      {!compacto && <span className="flex-1 font-medium">Modo escuro</span>}
+      {!compacto && <span className="flex-1 font-medium">{t("Modo escuro")}</span>}
       {compacto &&
         (escuro ? <Moon className="size-4" aria-hidden /> : <Sun className="size-4" aria-hidden />)}
       <Switch
         id={id}
         checked={escuro}
         onCheckedChange={(v) => setTheme(v ? "dark" : "light")}
-        aria-label="Modo escuro"
+        aria-label={t("Modo escuro")}
       />
     </label>
   );

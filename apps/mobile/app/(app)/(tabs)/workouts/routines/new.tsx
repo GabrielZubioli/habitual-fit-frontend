@@ -13,8 +13,6 @@ import { __iconNode as triangleAlert } from "lucide-react/dist/esm/icons/triangl
 import { __iconNode as xIcon } from "lucide-react/dist/esm/icons/x.js";
 import {
   WEEKDAYS,
-  WEEKDAY_INITIALS,
-  WEEKDAY_LABELS,
   findProgram,
   findVolumeOutliers,
   suggestWeekdays,
@@ -27,7 +25,7 @@ import {
 import { errorMessage } from "@forja/app-core/data/supabase-helpers";
 import { buildRoutineDraft, createRoutine } from "@forja/app-core/data/routines";
 import { queryKeys } from "@forja/app-core/data/query-keys";
-import { MUSCLE_LABELS, label } from "@forja/app-core/lib/labels";
+import { MUSCLE_LABELS, label, WEEKDAY_INITIALS, WEEKDAY_LABELS } from "@forja/app-core/lib/labels";
 import { useCurrentUserId } from "@/lib/session";
 import { cn } from "@/lib/cn";
 import { useColor } from "@/theme/theme";

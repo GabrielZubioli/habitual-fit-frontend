@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Cronômetro de descanso entre séries.
@@ -114,7 +115,7 @@ export function useRestTimer(options?: { onFinish?: () => void }): RestTimer {
     setEndsAt((current) => {
       if (current === null) return current;
       const next = Math.max(Date.now() + 1000, current + deltaSeconds * 1000);
-      setTotal((t) => Math.max(1, t + deltaSeconds));
+      setTotal((item) => Math.max(1, item + deltaSeconds));
       sessionStorage.setItem(
         STORAGE_KEY,
         JSON.stringify({ endsAt: next, total: Math.ceil((next - Date.now()) / 1000) }),
@@ -148,8 +149,8 @@ function notifyRestFinished(): void {
   }
   if (typeof Notification !== "undefined" && Notification.permission === "granted") {
     try {
-      new Notification("Descanso concluído", {
-        body: "Hora da próxima série.",
+      new Notification(t("Descanso concluído"), {
+        body: t("Hora da próxima série."),
         icon: "/favicon.ico",
         tag: "forja-rest",
       });

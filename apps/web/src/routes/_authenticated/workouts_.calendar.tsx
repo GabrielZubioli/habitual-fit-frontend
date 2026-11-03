@@ -1,3 +1,4 @@
+import { WEEKDAY_INITIALS } from "@forja/app-core/lib/labels";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
@@ -25,7 +26,7 @@ import { errorMessage } from "@forja/app-core/data/supabase-helpers";
 import { fetchActiveRoutine, fetchCompletedWorkouts } from "@forja/app-core/data/routines";
 import { queryKeys } from "@forja/app-core/data/query-keys";
 import { formatDate, formatDuration, toISODate, todayISO } from "@forja/app-core/lib/date";
-import { WEEKDAY_INITIALS, type Weekday } from "@forja/domain";
+import { type Weekday } from "@forja/domain";
 import { LOCALE } from "@forja/app-core/i18n";
 
 export const Route = createFileRoute("/_authenticated/workouts_/calendar")({

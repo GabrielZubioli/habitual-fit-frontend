@@ -4,7 +4,6 @@ import { AlertTriangle, Copy, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   KCAL_TOLERANCE,
-  WEEKDAY_LABELS,
   nutritionTotals,
   portionMacros,
   toleranceStatus,
@@ -43,7 +42,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { CATEGORY_EMOJI } from "@forja/app-core/lib/food-emoji";
 import { MACRO_COLORS, MacroRing } from "@/components/home/macro-rings";
-import { MEAL_LABELS, label } from "@forja/app-core/lib/labels";
+import { MEAL_LABELS, label, WEEKDAY_LABELS } from "@forja/app-core/lib/labels";
 import { todayISO } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
 import { LOCALE } from "@forja/app-core/i18n";

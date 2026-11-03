@@ -4,6 +4,7 @@ import { RotateCw, SearchX, TriangleAlert, Wifi, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 import { BrandSymbol } from "@/components/brand-logo";
 import { cn } from "@/lib/utils";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Telas de estado do app: erro inesperado, página inexistente e sem conexão.
@@ -75,17 +76,19 @@ export function ErrorScreen({
     <StatusScreen
       telaCheia={telaCheia}
       selo={<TriangleAlert />}
-      titulo="Algo saiu do previsto"
-      texto="Esta tela encontrou um problema. Seus dados estão salvos — tente de novo ou volte ao início."
+      titulo={t("Algo saiu do previsto")}
+      texto={t(
+        "Esta tela encontrou um problema. Seus dados estão salvos — tente de novo ou volte ao início.",
+      )}
       detalhe={error instanceof Error ? error.message : undefined}
       acoes={
         <>
           <button type="button" className={acaoPrimaria} onClick={onRetry}>
             <RotateCw className="size-4" aria-hidden />
-            Tentar de novo
+            {t("Tentar de novo")}
           </button>
           <a href="/dashboard" className={acaoSecundaria}>
-            Voltar ao início
+            {t("Voltar ao início")}
           </a>
         </>
       }
@@ -97,11 +100,11 @@ export function NotFoundScreen() {
   return (
     <StatusScreen
       selo={<SearchX />}
-      titulo="Página não encontrada"
-      texto="O endereço não existe ou foi movido."
+      titulo={t("Página não encontrada")}
+      texto={t("O endereço não existe ou foi movido.")}
       acoes={
         <a href="/dashboard" className={acaoPrimaria}>
-          Voltar ao início
+          {t("Voltar ao início")}
         </a>
       }
     />
@@ -119,12 +122,14 @@ export function OfflineScreen({
     <StatusScreen
       telaCheia={telaCheia}
       selo={<WifiOff />}
-      titulo="Sem conexão"
-      texto="Não foi possível falar com o servidor. Confira o Wi-Fi ou os dados móveis e tente de novo."
+      titulo={t("Sem conexão")}
+      texto={t(
+        "Não foi possível falar com o servidor. Confira o Wi-Fi ou os dados móveis e tente de novo.",
+      )}
       acoes={
         <button type="button" className={acaoPrimaria} onClick={onRetry}>
           <RotateCw className="size-4" aria-hidden />
-          Tentar de novo
+          {t("Tentar de novo")}
         </button>
       }
     />
@@ -159,7 +164,7 @@ export function OfflineBanner() {
   useEffect(() => {
     if (!online) setCaiu(true);
     else if (caiu) {
-      toast.success("Conexão restabelecida", { icon: <Wifi className="size-4" /> });
+      toast.success(t("Conexão restabelecida"), { icon: <Wifi className="size-4" /> });
       setCaiu(false);
       onlineManager.setOnline(true);
     }
@@ -174,8 +179,8 @@ export function OfflineBanner() {
       <div className="flex items-center gap-3 rounded-2xl bg-foreground px-4 py-3 text-background shadow-xl">
         <WifiOff className="size-5 shrink-0" aria-hidden />
         <div className="text-left">
-          <p className="text-sm font-bold">Sem conexão com a internet</p>
-          <p className="text-xs opacity-75">O que você fizer agora pode não ser salvo.</p>
+          <p className="text-sm font-bold">{t("Sem conexão com a internet")}</p>
+          <p className="text-xs opacity-75">{t("O que você fizer agora pode não ser salvo.")}</p>
         </div>
       </div>
     </div>

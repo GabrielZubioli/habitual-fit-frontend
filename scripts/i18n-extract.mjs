@@ -68,6 +68,8 @@ const CAMPOS_DE_TEXTO = new Set([
   "vazio",
   "text",
   "unit",
+  "heading",
+  "body",
 ]);
 
 /** Atributos JSX que nunca são texto, mesmo quando a string parece frase. */
@@ -239,6 +241,8 @@ export function pareceTexto(s) {
   if (!/\p{L}/u.test(v) || /^[a-z]+:\/\//i.test(v)) return false;
   if (/^(no)?(index|follow)(,\s*(no)?(index|follow))*$/.test(v)) return false; // meta robots
   if (/^(SELECT|INSERT|UPDATE|DELETE|WITH|CREATE|ALTER|DROP|PRAGMA)\s/i.test(v)) return false; // SQL
+  if (/^[MmLlHhVvCcSsQqTtAaZz][\d\s.,MmLlHhVvCcSsQqTtAaZz-]*$/.test(v)) return false; // path SVG
+  if (/[;{}=]|rgba?\(/.test(v)) return false; // CSS, script, cookie
   if (!/^[\p{L}¿¡"“(«…0-9+]/u.test(v)) return false;
   if (/^[\w.-]+\/[\w./-]*$/.test(v) || /^\/[\w/$.-]*$/.test(v)) return false; // rotas, caminhos
   const palavras = v.split(/\s+/);
@@ -285,8 +289,12 @@ function projetoDe(arquivo) {
   return PROJETOS.find((p) => rel.startsWith(p.pasta + "/"));
 }
 
+/** Dados, não interface: nomes do banco usados como chave e geometria gerada. */
+const ARQUIVOS_DE_DADOS = /(name-index|muscle-paths)\.ts$/;
+
 function listar(alvo) {
   const abs = resolve(RAIZ, alvo);
+  if (ARQUIVOS_DE_DADOS.test(abs)) return [];
   if (statSync(abs).isFile()) return [abs];
   return readdirSync(abs).flatMap((n) => {
     if (n === "node_modules" || n.startsWith(".")) return [];
@@ -444,6 +452,15 @@ export function processar(sf, checker, { importacao }) {
         return true;
     }
     if (ts.isTaggedTemplateExpression(p)) return true;
+    // "use client" e `X.displayName = "Card"`.
+    if (ts.isExpressionStatement(p)) return true;
+    if (
+      ts.isBinaryExpression(p) &&
+      ts.isPropertyAccessExpression(p.left) &&
+      p.left.name.text === "displayName"
+    ) {
+      return true;
+    }
     return false;
   };
 
@@ -481,7 +498,8 @@ export function processar(sf, checker, { importacao }) {
   const tratarString = (n) => {
     if (ts.isJsxAttribute(n.parent)) return; // já tratado acima
     const { frase, exprs } = ts.isStringLiteral(n) ? { frase: n.text, exprs: [] } : doTemplate(n);
-    if (!pareceTexto(frase.replace(/\{\{\w+\}\}/g, "x"))) {
+    // As variáveis contam como número: "{{a}} {{b}}" não é frase, "{{n}} treinos" é.
+    if (!pareceTexto(frase.replace(/\{\{\w+\}\}/g, "0"))) {
       exprs.forEach(visitar);
       return;
     }
@@ -491,8 +509,15 @@ export function processar(sf, checker, { importacao }) {
     if (motivo) return;
     // Dentro de uma propriedade: só os campos de texto conhecidos.
     const prop = n.parent;
+    // Mapa de rótulos (`const BMI_LABELS = { under: "Abaixo do peso" }`): todo valor é texto.
+    const declaracao = prop.parent?.parent;
+    const mapaDeRotulos =
+      declaracao &&
+      ts.isVariableDeclaration(declaracao) &&
+      /(LABELS|TITLES|HINTS|TEXTS)$/.test(declaracao.name.getText(sf));
     if (
       ts.isPropertyAssignment(prop) &&
+      !mapaDeRotulos &&
       !CAMPOS_DE_TEXTO.has(prop.name.getText(sf).replace(/["']/g, ""))
     ) {
       return duvida(n, `propriedade "${prop.name.getText(sf)}" com cara de texto`);

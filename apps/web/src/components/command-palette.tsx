@@ -45,17 +45,18 @@ import {
 import { MUSCLE_LABELS, label } from "@forja/app-core/lib/labels";
 import { formatShortDate } from "@forja/app-core/lib/date";
 import { toast } from "sonner";
+import { t } from "@forja/app-core/i18n";
 
 const NAV_ITEMS = [
-  { to: "/dashboard", label: "Início", icon: LayoutDashboard },
-  { to: "/plan", label: "Plano", icon: Dumbbell },
-  { to: "/stats", label: "Estatísticas", icon: Dumbbell },
-  { to: "/exercises", label: "Exercícios", icon: Dumbbell },
-  { to: "/diet", label: "Diário alimentar", icon: Utensils },
-  { to: "/recipes", label: "Receitas", icon: BookOpen },
-  { to: "/body", label: "Progresso", icon: HeartPulse },
-  { to: "/profile", label: "Perfil", icon: User },
-  { to: "/settings", label: "Configurações", icon: User },
+  { to: "/dashboard", label: t("Início"), icon: LayoutDashboard },
+  { to: "/plan", label: t("Plano"), icon: Dumbbell },
+  { to: "/stats", label: t("Estatísticas"), icon: Dumbbell },
+  { to: "/exercises", label: t("Exercícios"), icon: Dumbbell },
+  { to: "/diet", label: t("Diário alimentar"), icon: Utensils },
+  { to: "/recipes", label: t("Receitas"), icon: BookOpen },
+  { to: "/body", label: t("Progresso"), icon: HeartPulse },
+  { to: "/profile", label: t("Perfil"), icon: User },
+  { to: "/settings", label: t("Configurações"), icon: User },
 ] as const;
 
 /** Abaixo disso a busca não filtra o suficiente para valer uma requisição. */
@@ -156,21 +157,25 @@ export function CommandPalette() {
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
       <CommandInput
-        placeholder="Buscar exercícios, alimentos, receitas… ou digite uma ação"
+        placeholder={t("Buscar exercícios, alimentos, receitas… ou digite uma ação")}
         value={term}
         onValueChange={setTerm}
       />
       <CommandList>
-        {semResultados && <CommandEmpty>Nada encontrado para “{debouncedTerm}”.</CommandEmpty>}
-        {searching && results.isPending && <CommandEmpty>Buscando…</CommandEmpty>}
+        {semResultados && (
+          <CommandEmpty>
+            {t("Nada encontrado para “{{debouncedTerm}}”.", { debouncedTerm })}
+          </CommandEmpty>
+        )}
+        {searching && results.isPending && <CommandEmpty>{t("Buscando…")}</CommandEmpty>}
 
-        <CommandGroup heading="Ações">
+        <CommandGroup heading={t("Ações")}>
           <CommandItem
             value="iniciar treino rápido novo"
             onSelect={() => run(() => startWorkout.mutate())}
           >
             <Play className="mr-2 size-4" />
-            Iniciar treino rápido
+            {t("Iniciar treino rápido")}
           </CommandItem>
           <CommandItem
             value="novo template de treino"
@@ -179,27 +184,27 @@ export function CommandPalette() {
             }
           >
             <Plus className="mr-2 size-4" />
-            Novo template
+            {t("Novo template")}
           </CommandItem>
           <CommandItem
             value="registrar peso corporal balança"
             onSelect={() => run(() => navigate({ to: "/body" }))}
           >
             <Scale className="mr-2 size-4" />
-            Registrar peso
+            {t("Registrar peso")}
           </CommandItem>
           <CommandItem
             value="nova receita"
             onSelect={() => run(() => navigate({ to: "/recipes" }))}
           >
             <Plus className="mr-2 size-4" />
-            Nova receita
+            {t("Nova receita")}
           </CommandItem>
         </CommandGroup>
 
         <CommandSeparator />
 
-        <CommandGroup heading="Ir para">
+        <CommandGroup heading={t("Ir para")}>
           {NAV_ITEMS.map((item) => (
             <CommandItem
               key={item.to}
@@ -215,7 +220,7 @@ export function CommandPalette() {
         {data && data.exercises.length > 0 && (
           <>
             <CommandSeparator />
-            <CommandGroup heading="Exercícios">
+            <CommandGroup heading={t("Exercícios")}>
               {data.exercises.map((ex) => (
                 <CommandItem
                   key={ex.id}
@@ -236,7 +241,7 @@ export function CommandPalette() {
         {data && data.foods.length > 0 && (
           <>
             <CommandSeparator />
-            <CommandGroup heading="Alimentos">
+            <CommandGroup heading={t("Alimentos")}>
               {data.foods.map((food) => (
                 <CommandItem
                   key={food.id}
@@ -255,7 +260,7 @@ export function CommandPalette() {
         {data && data.recipes.length > 0 && (
           <>
             <CommandSeparator />
-            <CommandGroup heading="Receitas">
+            <CommandGroup heading={t("Receitas")}>
               {data.recipes.map((recipe) => (
                 <CommandItem
                   key={recipe.id}
@@ -275,7 +280,7 @@ export function CommandPalette() {
         {data && data.sessions.length > 0 && (
           <>
             <CommandSeparator />
-            <CommandGroup heading="Treinos">
+            <CommandGroup heading={t("Treinos")}>
               {data.sessions.map((session) => (
                 <CommandItem
                   key={session.id}
@@ -311,11 +316,11 @@ export function CommandPaletteTrigger({ className }: { className?: string }) {
       type="button"
       onClick={openPalette}
       className={className}
-      aria-label="Abrir busca (Ctrl+K)"
+      aria-label={t("Abrir busca (Ctrl+K)")}
     >
-      <span className="text-muted-foreground">Buscar…</span>
+      <span className="text-muted-foreground">{t("Buscar…")}</span>
       <kbd className="ml-auto hidden rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground sm:inline-block">
-        Ctrl K
+        {t("Ctrl K")}
       </kbd>
     </button>
   );

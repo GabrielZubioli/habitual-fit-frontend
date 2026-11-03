@@ -7,7 +7,6 @@ import { __iconNode as alertTriangle } from "lucide-react/dist/esm/icons/triangl
 import { __iconNode as x } from "lucide-react/dist/esm/icons/x.js";
 import {
   KCAL_TOLERANCE,
-  WEEKDAY_LABELS,
   nutritionTotals,
   portionMacros,
   toleranceStatus,
@@ -25,7 +24,7 @@ import {
 import { queryKeys } from "@forja/app-core/data/query-keys";
 import { errorMessage } from "@forja/app-core/data/supabase-helpers";
 import { CATEGORY_EMOJI } from "@forja/app-core/lib/food-emoji";
-import { MEAL_LABELS, label } from "@forja/app-core/lib/labels";
+import { MEAL_LABELS, label, WEEKDAY_LABELS } from "@forja/app-core/lib/labels";
 import { todayISO } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/cn";
 import { useCurrentUserId } from "@/lib/session";

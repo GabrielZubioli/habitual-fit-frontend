@@ -10,6 +10,7 @@ import { cn } from "@/lib/cn";
 import { useSession } from "@/lib/session";
 import { useColor } from "@/theme/theme";
 import { Text } from "./text";
+import { t } from "@forja/app-core/i18n";
 
 /** A URL assinada da foto (ou `null`): resolvida de novo quando o caminho muda. */
 export function useAvatarUrl(path: string | null | undefined) {
@@ -66,7 +67,7 @@ export function AvatarPicker({
     };
     if (origem === "camera") {
       const { granted } = await ImagePicker.requestCameraPermissionsAsync();
-      if (!granted) return onError("Permita o uso da câmera nas configurações do aparelho.");
+      if (!granted) return onError(t("Permita o uso da câmera nas configurações do aparelho."));
     }
     const r =
       origem === "camera"
@@ -83,14 +84,14 @@ export function AvatarPicker({
     <>
       <Pressable
         onPress={() =>
-          Alert.alert("Foto de perfil", undefined, [
-            { text: "Tirar foto", onPress: () => void escolher("camera") },
-            { text: "Escolher da galeria", onPress: () => void escolher("galeria") },
-            { text: "Cancelar", style: "cancel" },
+          Alert.alert(t("Foto de perfil"), undefined, [
+            { text: t("Tirar foto"), onPress: () => void escolher("camera") },
+            { text: t("Escolher da galeria"), onPress: () => void escolher("galeria") },
+            { text: t("Cancelar"), style: "cancel" },
           ])
         }
         disabled={enviar.isPending}
-        accessibilityLabel={url ? "Trocar foto de perfil" : "Adicionar foto de perfil"}
+        accessibilityLabel={url ? t("Trocar foto de perfil") : t("Adicionar foto de perfil")}
         className={cn(
           "items-center justify-center overflow-hidden rounded-full border border-border bg-primary-soft",
           className,

@@ -37,6 +37,7 @@ import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { BrandLogo } from "@/components/brand-logo";
+import { t } from "@forja/app-core/i18n";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -62,18 +63,18 @@ export const Route = createFileRoute("/_authenticated")({
  * e leva de volta à sessão.
  */
 const NAV_ITEMS = [
-  { to: "/dashboard", label: "Início", icon: Home },
-  { to: "/plan", label: "Plano", icon: CalendarDays },
-  { to: "/diet", label: "Dieta", icon: Utensils },
+  { to: "/dashboard", label: t("Início"), icon: Home },
+  { to: "/plan", label: t("Plano"), icon: CalendarDays },
+  { to: "/diet", label: t("Dieta"), icon: Utensils },
 ] as const;
 
 /** O resto: no Menu (painel de baixo) no celular, abaixo da barra lateral no desktop. */
 const SECONDARY_NAV = [
-  { to: "/exercises", label: "Exercícios", icon: List },
-  { to: "/stats", label: "Estatísticas", icon: BarChart3 },
-  { to: "/body", label: "Progresso", icon: HeartPulse },
-  { to: "/recipes", label: "Receitas", icon: BookOpen },
-  { to: "/profile", label: "Perfil", icon: User },
+  { to: "/exercises", label: t("Exercícios"), icon: List },
+  { to: "/stats", label: t("Estatísticas"), icon: BarChart3 },
+  { to: "/body", label: t("Progresso"), icon: HeartPulse },
+  { to: "/recipes", label: t("Receitas"), icon: BookOpen },
+  { to: "/profile", label: t("Perfil"), icon: User },
 ] as const;
 
 function AuthLayout() {
@@ -142,13 +143,17 @@ function AuthLayout() {
         href="#conteudo"
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
       >
-        Pular para o conteúdo
+        {t("Pular para o conteúdo")}
       </a>
 
       {/* Barra lateral (desktop) */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r border-border bg-sidebar md:flex">
         <div className="flex items-center justify-between gap-2 px-5 py-5">
-          <Link to="/dashboard" className="flex items-center" aria-label="Habitual Fit — início">
+          <Link
+            to="/dashboard"
+            className="flex items-center"
+            aria-label={t("Habitual Fit — início")}
+          >
             <BrandLogo className="h-9" />
           </Link>
           <ThemeSwitch compacto />
@@ -158,7 +163,7 @@ function AuthLayout() {
           <CommandPaletteTrigger className="flex w-full items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm transition-colors hover:bg-accent" />
         </div>
 
-        <nav className="flex-1 space-y-1 px-3" aria-label="Navegação principal">
+        <nav className="flex-1 space-y-1 px-3" aria-label={t("Navegação principal")}>
           <Link
             to={sessao ? "/workouts/session/$id" : "/train"}
             params={sessao ? { id: sessao.id } : undefined}
@@ -173,7 +178,7 @@ function AuthLayout() {
             ) : (
               <BrandSymbol escuro className="w-5" />
             )}
-            {emTreino ? "Voltar ao treino" : "Treinar"}
+            {emTreino ? t("Voltar ao treino") : t("Treinar")}
           </Link>
           {NAV_ITEMS.map((item) => {
             const active = isActive(item.to);
@@ -227,7 +232,7 @@ function AuthLayout() {
             )}
           >
             <Settings className="size-4" aria-hidden />
-            Configurações
+            {t("Configurações")}
           </Link>
         </nav>
       </aside>
@@ -235,7 +240,7 @@ function AuthLayout() {
       {/* Barra inferior (celular): três destinos, o botão central de treinar e o Menu. */}
       <nav
         className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
-        aria-label="Navegação principal"
+        aria-label={t("Navegação principal")}
       >
         <ul className="grid grid-cols-5 items-end">
           {[NAV_ITEMS[0], NAV_ITEMS[1], null, NAV_ITEMS[2]].map((item) => {
@@ -247,7 +252,11 @@ function AuthLayout() {
                     params={sessao ? { id: sessao.id } : undefined}
                     onClick={aoTocarTreinar}
                     aria-label={
-                      naSessao ? "Terminar treino" : emTreino ? "Voltar ao treino" : "Treinar"
+                      naSessao
+                        ? t("Terminar treino")
+                        : emTreino
+                          ? t("Voltar ao treino")
+                          : t("Treinar")
                     }
                     className={cn(
                       "flex flex-col items-center gap-1 pb-2",
@@ -289,7 +298,7 @@ function AuthLayout() {
               )}
             >
               <Menu className="size-6" aria-hidden />
-              <span>Menu</span>
+              <span>{t("Menu")}</span>
             </button>
           </li>
         </ul>

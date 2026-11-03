@@ -5,8 +5,9 @@
  * a partir do perfil, do plano, dos treinos e das pesagens. Por isso respondem
  * instantaneamente, sem custo e mesmo com o treinador de IA desligado.
  */
+import { WEEKDAY_LABELS } from "../lib/labels";
 import { addDays, startOfWeek } from "date-fns";
-import { WEEKDAY_LABELS, weekdayOf, weeklyStreak } from "@forja/domain";
+import { weekdayOf, weeklyStreak } from "@forja/domain";
 import { supabase } from "../supabase";
 import { num, unwrapMaybe } from "./supabase-helpers";
 import { fetchWorkoutWeek } from "./workout-week";

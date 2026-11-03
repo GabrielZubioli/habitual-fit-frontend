@@ -5,6 +5,7 @@ import { Button, type ButtonVariant } from "./button";
 import { Icon, type IconNode } from "./icon";
 import { Sheet } from "./sheet";
 import { Text } from "./text";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * O AlertDialog do web (`ui/alert-dialog.tsx`) no celular: cartão no centro,
@@ -25,7 +26,7 @@ export function AlertDialog({
   title,
   description,
   acoes,
-  cancelar = "Cancelar",
+  cancelar = t("Cancelar"),
 }: {
   open: boolean;
   onClose: () => void;

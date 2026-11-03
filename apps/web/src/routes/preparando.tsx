@@ -13,7 +13,7 @@ import {
   User,
   Utensils,
 } from "lucide-react";
-import { WEEKDAY_LABELS, type Weekday } from "@forja/domain";
+import { type Weekday } from "@forja/domain";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -35,7 +35,7 @@ import {
 import { clearDraft, clearStep, loadDraft } from "@/lib/onboarding/storage";
 import { isComplete, type Answers } from "@forja/app-core/lib/onboarding/schema";
 import { derivedObjective } from "@forja/app-core/lib/onboarding/options";
-import { MEAL_LABELS, label } from "@forja/app-core/lib/labels";
+import { MEAL_LABELS, label, WEEKDAY_LABELS } from "@forja/app-core/lib/labels";
 import { LOCALE } from "@forja/app-core/i18n";
 import { t } from "@forja/app-core/i18n";
 

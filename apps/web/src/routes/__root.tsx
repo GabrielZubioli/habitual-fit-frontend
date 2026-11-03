@@ -14,6 +14,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { THEME_INIT_SCRIPT, ThemeProvider } from "@/components/theme-provider";
 import { ErrorScreen, NotFoundScreen, OfflineBanner } from "@/components/status-screen";
 import { KeyboardInset } from "@/components/keyboard-inset";
+import { t } from "@forja/app-core/i18n";
 
 function NotFoundComponent() {
   return <NotFoundScreen />;
@@ -44,20 +45,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         name: "viewport",
         content: "width=device-width, initial-scale=1, interactive-widget=resizes-content",
       },
-      { title: "Habitual Fit — Treino, Dieta e Progresso" },
+      { title: t("Habitual Fit — Treino, Dieta e Progresso") },
       {
         name: "description",
-        content:
+        content: t(
           "Registre treinos, monitore macros e acompanhe seu progresso corporal em um só app.",
+        ),
       },
-      { property: "og:title", content: "Habitual Fit — Treino, Dieta e Progresso" },
+      { property: "og:title", content: t("Habitual Fit — Treino, Dieta e Progresso") },
       {
         property: "og:description",
-        content: "Registre treinos, monitore macros e acompanhe seu progresso corporal.",
+        content: t("Registre treinos, monitore macros e acompanhe seu progresso corporal."),
       },
       { property: "og:type", content: "website" },
       { property: "og:image", content: "/og-image.png" },
-      { property: "og:site_name", content: "Habitual Fit" },
+      { property: "og:site_name", content: t("Habitual Fit") },
       { name: "twitter:card", content: "summary_large_image" },
       // PWA: um app usado na academia precisa abrir da tela inicial, em tela
       // cheia, sem a barra do navegador roubando espaço vertical.
@@ -69,7 +71,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "theme-color", content: "#f6faf8", media: "(prefers-color-scheme: light)" },
       { name: "theme-color", content: "#070d0b", media: "(prefers-color-scheme: dark)" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
-      { name: "apple-mobile-web-app-title", content: "Habitual Fit" },
+      { name: "apple-mobile-web-app-title", content: t("Habitual Fit") },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "mobile-web-app-capable", content: "yes" },
       // Evita que o iOS transforme números em links de telefone nas tabelas de séries.

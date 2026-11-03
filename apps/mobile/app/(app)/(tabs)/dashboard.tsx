@@ -1,3 +1,4 @@
+import { WEEKDAY_LABELS } from "@forja/app-core/lib/labels";
 import { useMemo, useState } from "react";
 import { Pressable, View } from "react-native";
 import { router } from "expo-router";
@@ -17,7 +18,6 @@ import { __iconNode as plus } from "lucide-react/dist/esm/icons/plus.js";
 import { __iconNode as target } from "lucide-react/dist/esm/icons/target.js";
 import { __iconNode as utensils } from "lucide-react/dist/esm/icons/utensils.js";
 import {
-  WEEKDAY_LABELS,
   ema,
   nutritionTotals,
   projectSchedule,

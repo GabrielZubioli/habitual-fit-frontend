@@ -1,3 +1,4 @@
+import { WEEKDAY_LABELS } from "@forja/app-core/lib/labels";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowLeft } from "lucide-react";
@@ -39,7 +40,7 @@ import {
   suggestWeekdays,
   weightGoalFeedback,
 } from "@forja/app-core/lib/onboarding/options";
-import { WEEKDAY_LABELS, type Weekday } from "@forja/domain";
+import { type Weekday } from "@forja/domain";
 import { BrandSymbol } from "@/components/brand-logo";
 import { hasCompletedOnboarding } from "@forja/app-core/data/onboarding";
 import { t } from "@forja/app-core/i18n";

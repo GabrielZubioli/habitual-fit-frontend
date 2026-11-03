@@ -23,11 +23,9 @@ import { errorMessage } from "@forja/app-core/data/supabase-helpers";
 import { buildRoutineDraft, createRoutine } from "@forja/app-core/data/routines";
 import { queryKeys } from "@forja/app-core/data/query-keys";
 import { useCurrentUserId } from "@/hooks/use-current-user";
-import { MUSCLE_LABELS, label } from "@forja/app-core/lib/labels";
+import { MUSCLE_LABELS, label, WEEKDAY_INITIALS, WEEKDAY_LABELS } from "@forja/app-core/lib/labels";
 import {
   WEEKDAYS,
-  WEEKDAY_INITIALS,
-  WEEKDAY_LABELS,
   findProgram,
   findVolumeOutliers,
   suggestWeekdays,

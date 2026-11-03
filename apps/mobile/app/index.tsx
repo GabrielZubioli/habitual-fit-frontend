@@ -1,3 +1,4 @@
+import { WEEKDAY_LABELS } from "@forja/app-core/lib/labels";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { router } from "expo-router";
@@ -26,7 +27,7 @@ import {
   weightGoalFeedback,
 } from "@forja/app-core/lib/onboarding/options";
 import { hasCompletedOnboarding } from "@forja/app-core/data/onboarding";
-import { WEEKDAY_LABELS, type Weekday } from "@forja/domain";
+import { type Weekday } from "@forja/domain";
 import { supabase } from "@/lib/supabase";
 import { loadDraft, loadStep, saveDraft, saveStep } from "@/lib/onboarding-storage";
 import { cn } from "@/lib/cn";

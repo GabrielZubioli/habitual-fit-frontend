@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AppState, Vibration } from "react-native";
 import * as Notifications from "expo-notifications";
 import * as SecureStore from "expo-secure-store";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Cronômetro de descanso — o `use-rest-timer.ts` do web.
@@ -60,8 +61,8 @@ async function agendarAviso(endsAt: number) {
   if (status !== "granted") return;
   agendada = await Notifications.scheduleNotificationAsync({
     content: {
-      title: "Descanso concluído",
-      body: "Hora da próxima série.",
+      title: t("Descanso concluído"),
+      body: t("Hora da próxima série."),
       sound: somLigado,
     },
     trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: new Date(endsAt) },
@@ -121,7 +122,7 @@ export function useRestTimer(): RestTimer {
     const atual = endsAtRef.current;
     if (atual === null) return;
     const next = Math.max(Date.now() + 1000, atual + deltaSeconds * 1000);
-    setTotal((t) => Math.max(1, t + deltaSeconds));
+    setTotal((item) => Math.max(1, item + deltaSeconds));
     setEndsAt(next);
     void agendarAviso(next);
   }, []);

@@ -1,3 +1,4 @@
+import { WEEKDAY_LABELS } from "@forja/app-core/lib/labels";
 import { useMemo, useState } from "react";
 import { Pressable, TextInput, View } from "react-native";
 import { router } from "expo-router";
@@ -14,7 +15,7 @@ import { __iconNode as sparkles } from "lucide-react/dist/esm/icons/sparkles.js"
 import { __iconNode as trash2 } from "lucide-react/dist/esm/icons/trash-2.js";
 import { __iconNode as wand2 } from "lucide-react/dist/esm/icons/wand-sparkles.js";
 import { __iconNode as xIcon } from "lucide-react/dist/esm/icons/x.js";
-import { TRAINING_PROGRAMS, WEEKDAY_LABELS, weekdayOf, type Weekday } from "@forja/domain";
+import { TRAINING_PROGRAMS, weekdayOf, type Weekday } from "@forja/domain";
 import { queryKeys } from "@forja/app-core/data/query-keys";
 import { errorMessage } from "@forja/app-core/data/supabase-helpers";
 import {

@@ -1,3 +1,4 @@
+import { WEEKDAY_LABELS } from "@forja/app-core/lib/labels";
 import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -18,7 +19,6 @@ import {
   Utensils,
 } from "lucide-react";
 import {
-  WEEKDAY_LABELS,
   ema,
   nutritionTotals,
   projectSchedule,

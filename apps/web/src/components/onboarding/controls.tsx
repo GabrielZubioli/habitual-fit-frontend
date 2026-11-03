@@ -1,8 +1,9 @@
+import { WEEKDAY_INITIALS, WEEKDAY_LABELS } from "@forja/app-core/lib/labels";
 import { useEffect, useRef, useState } from "react";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { WEEKDAY_INITIALS, WEEKDAY_LABELS, WEEKDAYS } from "@forja/domain";
+import { WEEKDAYS } from "@forja/domain";
 import { t } from "@forja/app-core/i18n";
 
 /**
