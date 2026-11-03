@@ -10,6 +10,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Pergunta de confirmação controlada por estado — para quando o gatilho é um
@@ -40,7 +41,7 @@ export function ConfirmDialog({
           {description && <AlertDialogDescription>{description}</AlertDialogDescription>}
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel className="rounded-2xl">Cancelar</AlertDialogCancel>
+          <AlertDialogCancel className="rounded-2xl">{t("Cancelar")}</AlertDialogCancel>
           <AlertDialogAction
             className={cn(
               "rounded-2xl font-bold",

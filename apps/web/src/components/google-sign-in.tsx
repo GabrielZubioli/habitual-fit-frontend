@@ -28,6 +28,8 @@ import { useTheme } from "@/components/theme-provider";
  */
 
 import { GOOGLE_WEB_CLIENT_ID } from "@forja/app-core/lib/google";
+import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 export const GOOGLE_CLIENT_ID = GOOGLE_WEB_CLIENT_ID;
 
@@ -127,7 +129,7 @@ export function GoogleSignIn({
             setEntrando(false);
             if (error) {
               toast.error("Não foi possível entrar com o Google.");
-              falha.current?.("Não foi possível entrar com o Google.");
+              falha.current?.(t("Não foi possível entrar com o Google."));
             } else sucesso.current();
           },
         });
@@ -139,7 +141,7 @@ export function GoogleSignIn({
           shape: "pill",
           text: texto,
           logo_alignment: "center",
-          locale: "pt-BR",
+          locale: LOCALE,
         });
       } catch {
         if (ativo) setFalhou(true);

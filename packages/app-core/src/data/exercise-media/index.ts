@@ -7,6 +7,7 @@ import {
   type MediaLookup,
 } from "./providers";
 import { exerciseSlugByName } from "./name-index";
+import { t } from "../../i18n";
 
 export type { ExerciseMedia, MediaAttribution, MediaLookup } from "./providers";
 
@@ -153,7 +154,7 @@ export function exerciseMedia(lookup: MediaLookup): ExerciseMedia {
  * qualquer forma.
  */
 export function videoSearchUrl(name: string): string {
-  return `https://www.youtube.com/results?search_query=${encodeURIComponent(`${name} execução correta`)}`;
+  return `https://www.youtube.com/results?search_query=${encodeURIComponent(t("{{name}} execução correta", { name }))}`;
 }
 
 /**

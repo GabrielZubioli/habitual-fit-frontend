@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Modal, Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Painel que sobe de baixo — o Drawer (vaul) do web: fundo preto 80%, cantos
@@ -27,7 +28,11 @@ export function Sheet({
       onRequestClose={onClose}
       statusBarTranslucent
     >
-      <Pressable className="flex-1 bg-black/80" onPress={onClose} accessibilityLabel="Fechar" />
+      <Pressable
+        className="flex-1 bg-black/80"
+        onPress={onClose}
+        accessibilityLabel={t("Fechar")}
+      />
       <View
         className="max-h-[80%] rounded-t-[10px] border border-border bg-background"
         style={{ paddingBottom: insets.bottom }}

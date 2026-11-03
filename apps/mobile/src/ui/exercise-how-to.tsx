@@ -1,3 +1,4 @@
+import { exerciseSteps, idiomaDiferente } from "@forja/app-core/data/exercise-library";
 import type { ReactNode } from "react";
 import { View } from "react-native";
 import { __iconNode as alertTriangle } from "lucide-react/dist/esm/icons/triangle-alert.js";
@@ -9,6 +10,7 @@ import { cn } from "@/lib/cn";
 import { useColor } from "@/theme/theme";
 import { Icon, type IconNode } from "./icon";
 import { Text } from "./text";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Como executar o exercício — o `exercise-how-to.tsx` do web: o passo a passo
@@ -19,6 +21,7 @@ export type ExerciseHowToData = {
   execution: string[] | null;
   instructions: string | null;
   execution_en: string[] | null;
+  execution_es?: string[] | null;
   cues: string[] | null;
   common_mistakes: string[] | null;
   contraindications: string[] | null;
@@ -27,28 +30,30 @@ export type ExerciseHowToData = {
 export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
   const texto = useColor("foreground");
   const branco = useColor("primary-foreground");
-  const passosPt = exercise.execution ?? [];
-  const passosEn = exercise.execution_en ?? [];
-  const textoEn = exercise.instructions?.trim() ?? "";
-
-  const passos = passosPt.length > 0 ? passosPt : passosEn;
-  const emIngles = passosPt.length === 0 && (passosEn.length > 0 || textoEn.length > 0);
-  const mostrarTextoCorrido = passosPt.length === 0 && passosEn.length === 0 && textoEn.length > 0;
+  // No idioma do app; na falta dele, no mais próximo que houver, com selo.
+  const { passos, texto: textoCorrido, idioma } = exerciseSteps(exercise);
+  const selo = idiomaDiferente(idioma);
+  const mostrarTextoCorrido = passos.length === 0 && !!textoCorrido;
 
   return (
     <View className="gap-3">
       {mostrarTextoCorrido ? (
-        <Bloco titulo="Execução" icone={listOrdered} cor={texto} extra={<EmIngles />}>
-          <Text className="text-[15px] leading-relaxed">{textoEn}</Text>
+        <Bloco
+          titulo={t("Execução")}
+          icone={listOrdered}
+          cor={texto}
+          extra={selo ? <OutroIdioma texto={selo} /> : null}
+        >
+          <Text className="text-[15px] leading-relaxed">{textoCorrido}</Text>
         </Bloco>
       ) : null}
 
       {passos.length > 0 ? (
         <Bloco
-          titulo="Passo a passo"
+          titulo={t("Passo a passo")}
           icone={listOrdered}
           cor={texto}
-          extra={emIngles ? <EmIngles /> : null}
+          extra={selo ? <OutroIdioma texto={selo} /> : null}
         >
           {/* Linha vertical ligando os números: lê como sequência, não como lista solta. */}
           <View className="gap-4">
@@ -64,10 +69,11 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
               </View>
             ))}
           </View>
-          {emIngles ? (
+          {selo ? (
             <Text className="mt-3 text-xs text-muted-foreground">
-              Sem versão em português na base de origem. O texto original é exibido sem tradução
-              automática — instrução de execução traduzida por máquina pode sair perigosa.
+              {t(
+                "Ainda sem versão neste idioma. O passo a passo aparece no idioma em que foi escrito, sem tradução automática — instrução de execução traduzida por máquina pode sair perigosa.",
+              )}
             </Text>
           ) : null}
         </Bloco>
@@ -75,7 +81,7 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
 
       {exercise.cues?.length ? (
         <ListaComIcone
-          titulo="Dicas de execução"
+          titulo={t("Dicas de execução")}
           icone={lightbulb}
           itens={exercise.cues}
           tom="primary"
@@ -83,7 +89,7 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
       ) : null}
       {exercise.common_mistakes?.length ? (
         <ListaComIcone
-          titulo="Erros comuns"
+          titulo={t("Erros comuns")}
           icone={alertTriangle}
           itens={exercise.common_mistakes}
           tom="warning"
@@ -91,7 +97,7 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
       ) : null}
       {exercise.contraindications?.length ? (
         <ListaComIcone
-          titulo="Cuidado se você tem"
+          titulo={t("Cuidado se você tem")}
           icone={alertTriangle}
           itens={exercise.contraindications.map(
             (c) => INJURY_OPTIONS.find((o) => o.value === c)?.label ?? c,
@@ -103,8 +109,9 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
       {passos.length === 0 && !mostrarTextoCorrido ? (
         <View className="rounded-[20px] border border-dashed border-border p-4">
           <Text className="text-sm text-muted-foreground">
-            Este exercício ainda não tem passo a passo cadastrado. A demonstração acima mostra o
-            movimento completo.
+            {t(
+              "Este exercício ainda não tem passo a passo cadastrado. A demonstração acima mostra o movimento completo.",
+            )}
           </Text>
         </View>
       ) : null}
@@ -112,12 +119,12 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
   );
 }
 
-function EmIngles() {
+function OutroIdioma({ texto }: { texto: string }) {
   const cor = useColor("warning");
   return (
     <View className="flex-row items-center gap-1 rounded-md bg-warning-soft px-2 py-0.5">
       <Icon node={languages} color={cor} size={12} />
-      <Text className="text-xs font-semibold text-warning">em inglês</Text>
+      <Text className="text-xs font-semibold text-warning">{texto}</Text>
     </View>
   );
 }

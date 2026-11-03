@@ -1,3 +1,4 @@
+import { exerciseName } from "@forja/app-core/data/exercise-library";
 import { useMemo, useState } from "react";
 import { Linking, Pressable, ScrollView, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
@@ -41,6 +42,8 @@ import { FavoriteButton } from "@/ui/favorite-button";
 import { Icon } from "@/ui/icon";
 import { BackButton, PageScroll } from "@/ui/page-header";
 import { Text } from "@/ui/text";
+import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 /** A ficha do exercício — o `exercises_.$id.tsx` do web: como fazer e o seu histórico. */
 export default function Tela() {
@@ -82,10 +85,14 @@ function ExerciseDetail({ id }: { id: string }) {
           {/* Volta para onde a pessoa estava: a biblioteca, uma rotina do Plano… */}
           <BackButton fallback="/exercises" />
           <Text className="text-xs font-bold uppercase tracking-[1.7px] text-muted-foreground">
-            Exercício
+            {t("Exercício")}
           </Text>
           {ex ? (
-            <FavoriteButton exerciseId={ex.id} nome={ex.name} className="h-11 w-11 bg-card" />
+            <FavoriteButton
+              exerciseId={ex.id}
+              nome={exerciseName(ex)}
+              className="h-11 w-11 bg-card"
+            />
           ) : (
             <View className="h-11 w-11" />
           )}
@@ -120,7 +127,7 @@ function ExerciseDetail({ id }: { id: string }) {
             />
           </View>
 
-          <Text className="mt-5 text-[28px] font-extrabold leading-tight">{ex.name}</Text>
+          <Text className="mt-5 text-[28px] font-extrabold leading-tight">{exerciseName(ex)}</Text>
           <View className="mt-3 flex-row flex-wrap gap-2">
             <View className="rounded-full bg-primary px-3 py-1">
               <Text className="text-sm font-bold text-primary-foreground">
@@ -132,10 +139,10 @@ function ExerciseDetail({ id }: { id: string }) {
               ex.mechanic ? label(MECHANIC_LABELS, ex.mechanic) : null,
               ex.level ? label(EXERCISE_LEVEL_LABELS, ex.level) : null,
             ]
-              .filter((t): t is string => Boolean(t))
-              .map((t) => (
-                <View key={t} className="rounded-full border border-border px-3 py-1">
-                  <Text className="text-sm font-medium text-muted-foreground">{t}</Text>
+              .filter((item): item is string => Boolean(item))
+              .map((item) => (
+                <View key={item} className="rounded-full border border-border px-3 py-1">
+                  <Text className="text-sm font-medium text-muted-foreground">{item}</Text>
                 </View>
               ))}
           </View>
@@ -147,8 +154,8 @@ function ExerciseDetail({ id }: { id: string }) {
           <View accessibilityRole="tablist" className="mt-6 flex-row rounded-2xl bg-card p-1">
             {(
               [
-                ["como", "Como fazer"],
-                ["historico", "Seu histórico"],
+                ["como", t("Como fazer")],
+                ["historico", t("Seu histórico")],
               ] as const
             ).map(([valor, rotulo]) => (
               <Pressable
@@ -185,7 +192,7 @@ function ExerciseDetail({ id }: { id: string }) {
                   <View className="mb-3 rounded-[20px] bg-card p-4">
                     <View className="mb-3 flex-row items-center gap-2">
                       <Icon node={target} color={texto} size={16} />
-                      <Text className="font-bold">Músculos trabalhados</Text>
+                      <Text className="font-bold">{t("Músculos trabalhados")}</Text>
                     </View>
                     <View className="flex-row items-center gap-4">
                       <View className="w-32">
@@ -204,7 +211,7 @@ function ExerciseDetail({ id }: { id: string }) {
                       <View className="min-w-0 flex-1 gap-3">
                         <View>
                           <Text className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                            Principal
+                            {t("Principal")}
                           </Text>
                           <View className="mt-0.5 flex-row">
                             <View className="rounded-full bg-primary px-2.5 py-0.5">
@@ -217,7 +224,7 @@ function ExerciseDetail({ id }: { id: string }) {
                         {secundarios.length > 0 ? (
                           <View>
                             <Text className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                              Secundários
+                              {t("Secundários")}
                             </Text>
                             <View className="mt-1 flex-row flex-wrap gap-1.5">
                               {secundarios.map((m) => (
@@ -240,14 +247,14 @@ function ExerciseDetail({ id }: { id: string }) {
                   <Pressable
                     onPress={() =>
                       void Linking.openURL(
-                        isSafeUrl(ex.video_url) ? ex.video_url : videoSearchUrl(ex.name),
+                        isSafeUrl(ex.video_url) ? ex.video_url : videoSearchUrl(exerciseName(ex)),
                       )
                     }
                     className="mt-3 flex-row items-center justify-between gap-3 rounded-[20px] border border-border px-4 py-3.5 active:bg-card"
                   >
                     <View className="flex-row items-center gap-2.5">
                       <Icon node={circlePlay} color={primaria} size={20} />
-                      <Text className="text-sm font-medium">Ver vídeos de execução</Text>
+                      <Text className="text-sm font-medium">{t("Ver vídeos de execução")}</Text>
                     </View>
                     <Icon node={externalLink} color={apagada} size={16} />
                   </Pressable>
@@ -330,8 +337,10 @@ function Historico({
       ) : sessions.length === 0 ? (
         <EmptyState
           icon={trendingUp}
-          title="Sem registros neste período"
-          description="Assim que você registrar séries deste exercício, a progressão de carga aparece aqui."
+          title={t("Sem registros neste período")}
+          description={t(
+            "Assim que você registrar séries deste exercício, a progressão de carga aparece aqui.",
+          )}
           action={
             <Button onPress={() => router.navigate("/plan")}>
               <Text className="font-semibold text-primary-foreground">Ir para o plano</Text>
@@ -343,41 +352,41 @@ function Historico({
           <View className="flex-row gap-2">
             <Stat
               destaque
-              label="Recorde"
+              label={t("Recorde")}
               value={recorde ? `${Math.round(recorde.bestE1rm)}` : "—"}
               unit="kg"
               sub={recorde?.bestSet ? `${recorde.bestSet.weight} × ${recorde.bestSet.reps}` : ""}
             />
             <Stat
-              label="Sessões"
+              label={t("Sessões")}
               value={String(sessions.length)}
-              sub={`${sessions.reduce((n, s) => n + s.workingSets, 0)} séries`}
+              sub={t("{{v0}} séries", { v0: sessions.reduce((n, s) => n + s.workingSets, 0) })}
             />
             <Stat
-              label="Evolução"
+              label={t("Evolução")}
               value={ganho === null ? "—" : `${ganho >= 0 ? "+" : ""}${ganho.toFixed(0)}%`}
-              sub="1RM estimado"
+              sub={t("1RM estimado")}
             />
           </View>
 
           <View className="rounded-[20px] bg-card p-4">
-            <Text className="font-bold">Progressão de carga</Text>
-            <Text className="text-xs text-muted-foreground">1RM estimado por sessão</Text>
+            <Text className="font-bold">{t("Progressão de carga")}</Text>
+            <Text className="text-xs text-muted-foreground">{t("1RM estimado por sessão")}</Text>
             <View className="mt-3">
               <AreaChart data={e1rm} height={208} />
             </View>
           </View>
 
           <View className="rounded-[20px] bg-card p-4">
-            <Text className="font-bold">Volume por sessão</Text>
-            <Text className="text-xs text-muted-foreground">peso × repetições, em kg</Text>
+            <Text className="font-bold">{t("Volume por sessão")}</Text>
+            <Text className="text-xs text-muted-foreground">{t("peso × repetições, em kg")}</Text>
             <View className="mt-3">
               <BarChart data={volume} height={176} />
             </View>
           </View>
 
           <View className="overflow-hidden rounded-[20px] bg-card">
-            <Text className="px-4 pb-1 pt-4 font-bold">Sessões</Text>
+            <Text className="px-4 pb-1 pt-4 font-bold">{t("Sessões")}</Text>
             {[...sessions].reverse().map((s, i) => (
               <Pressable
                 key={s.sessionId}
@@ -400,23 +409,30 @@ function Historico({
                 <View className="min-w-0 flex-1">
                   <View className="flex-row items-center gap-2">
                     <Text className="font-semibold">
-                      {s.bestSet ? `${s.bestSet.weight} kg × ${s.bestSet.reps}` : "—"}
+                      {s.bestSet
+                        ? t("{{weight}} kg × {{reps}}", {
+                            weight: s.bestSet.weight,
+                            reps: s.bestSet.reps,
+                          })
+                        : "—"}
                     </Text>
                     {s.hasPr ? (
                       <View className="flex-row items-center gap-1 rounded-full bg-warning/15 px-2 py-0.5">
                         <Icon node={flag} color={aviso} size={12} />
-                        <Text className="text-[11px] font-bold text-warning">Recorde</Text>
+                        <Text className="text-[11px] font-bold text-warning">{t("Recorde")}</Text>
                       </View>
                     ) : null}
                   </View>
                   <Text className="text-xs text-muted-foreground">
-                    {s.workingSets} {s.workingSets === 1 ? "série" : "séries"} ·{" "}
-                    {Math.round(s.volume).toLocaleString("pt-BR")} kg de volume
+                    {s.workingSets} {s.workingSets === 1 ? t("série") : t("séries")}{" "}
+                    {t("· {{v0}} kg de volume", {
+                      v0: Math.round(s.volume).toLocaleString(LOCALE),
+                    })}
                   </Text>
                 </View>
                 <View className="items-end">
                   <Text className="font-extrabold">{Math.round(s.bestE1rm)}</Text>
-                  <Text className="text-[10px] uppercase text-muted-foreground">1RM kg</Text>
+                  <Text className="text-[10px] uppercase text-muted-foreground">{t("1RM kg")}</Text>
                 </View>
               </Pressable>
             ))}

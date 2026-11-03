@@ -62,12 +62,14 @@ import { ConfirmDialog, Dialog } from "@/ui/dialog";
 import { Icon, type IconNode } from "@/ui/icon";
 import { ShareProfileDialog } from "@/ui/share-profile-dialog";
 import { Text } from "@/ui/text";
+import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Perfil — o `profile.tsx` do web: a identidade, a evolução e os destaques
  * (só o que foi registrado de verdade) e os dados pessoais, editáveis ali.
  */
-const fmt = (n: number) => n.toLocaleString("pt-BR", { maximumFractionDigits: 1 });
+const fmt = (n: number) => n.toLocaleString(LOCALE, { maximumFractionDigits: 1 });
 const opcao = (opcoes: { value: string; label: string }[], v: string | null | undefined) =>
   opcoes.find((o) => o.value === v)?.label ?? null;
 
@@ -135,9 +137,11 @@ export default function ProfilePage() {
   const estilo = [
     opcao(EXPERIENCE_OPTIONS, p?.experience_level),
     opcao(PLACE_OPTIONS, p?.training_place),
-    p?.days_per_week ? `${p.days_per_week}× por semana` : null,
+    p?.days_per_week
+      ? t("{{days_per_week}}× por semana", { days_per_week: p.days_per_week })
+      : null,
     p?.focus_area && p.focus_area !== "full_body"
-      ? `Foco em ${opcao(FOCUS_OPTIONS, p.focus_area)?.toLowerCase()}`
+      ? t("Foco em {{v0}}", { v0: opcao(FOCUS_OPTIONS, p.focus_area)?.toLowerCase() })
       : null,
   ].filter((s): s is string => Boolean(s));
 
@@ -153,19 +157,19 @@ export default function ProfilePage() {
           <View className="absolute -bottom-20 left-8 h-40 w-40 rounded-full bg-black/10" />
           <View className="flex-row items-start justify-between gap-3 px-5">
             <Text className="text-[32px] font-extrabold leading-none tracking-tight text-primary-foreground">
-              Perfil
+              {t("Perfil")}
             </Text>
             <View className="flex-row gap-2">
               <BotaoTopo
                 icon={share2}
-                rotulo="Compartilhar perfil"
+                rotulo={t("Compartilhar perfil")}
                 onPress={() => setCompartilhando(true)}
                 disabled={!p}
                 cor={branco}
               />
               <BotaoTopo
                 icon={logOut}
-                rotulo="Sair da conta"
+                rotulo={t("Sair da conta")}
                 onPress={() => setConfirmandoSaida(true)}
                 cor={branco}
               />
@@ -192,18 +196,20 @@ export default function ProfilePage() {
             ) : (
               <Pressable
                 onPress={() => setEditando("display_name")}
-                accessibilityLabel="Editar nome"
+                accessibilityLabel={t("Editar nome")}
                 className="mt-4 max-w-full flex-row items-center gap-2 rounded-xl px-2 py-1 active:bg-card"
               >
                 <Text numberOfLines={1} className="shrink text-3xl font-extrabold tracking-tight">
-                  {p.display_name?.trim() || "Seu nome"}
+                  {p.display_name?.trim() || t("Seu nome")}
                 </Text>
                 <Icon node={pencil} color={apagada} size={16} />
               </Pressable>
             )}
             {p?.created_at ? (
               <Text className="mt-1 text-sm text-muted-foreground">
-                No Habitual Fit desde {formatDate(p.created_at, "MMMM 'de' yyyy")}
+                {t("No Habitual Fit desde {{v0}}", {
+                  v0: formatDate(p.created_at, "MMMM 'de' yyyy"),
+                })}
               </Text>
             ) : null}
 
@@ -229,7 +235,7 @@ export default function ProfilePage() {
                 onPress={() => rolagem.current?.scrollTo({ y: yConteudo + yDados, animated: true })}
               >
                 <Icon node={pencil} color={texto} size={16} />
-                <Text className="text-sm font-medium">Editar perfil</Text>
+                <Text className="text-sm font-medium">{t("Editar perfil")}</Text>
               </Button>
               <Button
                 className="h-11 flex-1 rounded-xl"
@@ -237,7 +243,9 @@ export default function ProfilePage() {
                 disabled={!p}
               >
                 <Icon node={share2} color={branco} size={16} />
-                <Text className="text-sm font-bold text-primary-foreground">Compartilhar</Text>
+                <Text className="text-sm font-bold text-primary-foreground">
+                  {t("Compartilhar")}
+                </Text>
               </Button>
             </View>
           </View>
@@ -252,36 +260,36 @@ export default function ProfilePage() {
           ) : null}
 
           {/* Evolução: só números que existem. */}
-          <Titulo>Evolução</Titulo>
+          <Titulo>{t("Evolução")}</Titulo>
           {treinos.isPending ? (
             <View className="h-28 rounded-[20px] bg-muted" />
           ) : totalTreinos === 0 ? (
             <View className="items-center rounded-3xl border border-dashed border-primary/40 bg-primary/5 p-5">
               <Icon node={dumbbell} color={primaria} size={32} />
               <Text className="mt-2 text-lg font-bold">
-                Seu portfólio começa no primeiro treino
+                {t("Seu portfólio começa no primeiro treino")}
               </Text>
               <Text className="mt-1 text-center text-sm text-muted-foreground">
-                Treinos, sequência e recordes aparecem aqui conforme você registra.
+                {t("Treinos, sequência e recordes aparecem aqui conforme você registra.")}
               </Text>
               <Button className="mt-4 h-11 rounded-xl" onPress={() => router.push("/train")}>
-                Começar um treino
+                {t("Começar um treino")}
               </Button>
             </View>
           ) : (
             <>
               <View className="flex-row gap-3">
-                <Numero icon={dumbbell} valor={totalTreinos} rotulo="Treinos" />
-                <Numero icon={calendarHeart} valor={treinos.data?.month} rotulo="Neste mês" />
+                <Numero icon={dumbbell} valor={totalTreinos} rotulo={t("Treinos")} />
+                <Numero icon={calendarHeart} valor={treinos.data?.month} rotulo={t("Neste mês")} />
                 <Numero
                   icon={flame}
                   valor={sequencia.isPending ? null : sequencia.dias}
-                  rotulo={sequencia.dias === 1 ? "Dia seguido" : "Dias seguidos"}
+                  rotulo={sequencia.dias === 1 ? t("Dia seguido") : t("Dias seguidos")}
                 />
               </View>
               <View className="mt-3 rounded-[20px] bg-card p-4">
                 <Text className="mb-3 text-sm font-semibold text-muted-foreground">
-                  Constância no último ano
+                  {t("Constância no último ano")}
                 </Text>
                 <ActivityHeatmap />
               </View>
@@ -293,17 +301,19 @@ export default function ProfilePage() {
             <View className="mt-3 rounded-[20px] bg-card p-5">
               <View className="flex-row items-center justify-between">
                 <Text className="text-sm text-muted-foreground">
-                  Início {fmt(jornada.startKg)} kg
+                  {t("Início {{v0}} kg", { v0: fmt(jornada.startKg) })}
                 </Text>
                 <View className="flex-row items-center gap-1">
                   <Icon node={flag} color={primaria} size={16} />
                   <Text className="text-sm text-muted-foreground">
-                    Meta {fmt(jornada.goalKg)} kg
+                    {t("Meta {{v0}} kg", { v0: fmt(jornada.goalKg) })}
                   </Text>
                 </View>
               </View>
               <View
-                accessibilityLabel={`${jornada.percent}% do caminho até a meta`}
+                accessibilityLabel={t("{{percent}}% do caminho até a meta", {
+                  percent: jornada.percent,
+                })}
                 className="mt-3 h-3 overflow-hidden rounded-full bg-elevated"
               >
                 <View
@@ -313,8 +323,11 @@ export default function ProfilePage() {
               </View>
               <Text className="mt-3 text-lg font-semibold">
                 {jornada.reached
-                  ? "Você chegou à meta 🎉"
-                  : `${jornada.percent}% do caminho · faltam ${fmt(jornada.remainingKg)} kg`}
+                  ? t("Você chegou à meta 🎉")
+                  : t("{{percent}}% do caminho · faltam {{v1}} kg", {
+                      percent: jornada.percent,
+                      v1: fmt(jornada.remainingKg),
+                    })}
               </Text>
             </View>
           ) : null}
@@ -322,7 +335,7 @@ export default function ProfilePage() {
           {/* Destaques: os recordes de verdade. */}
           {destaques.length > 0 ? (
             <>
-              <Titulo>Destaques</Titulo>
+              <Titulo>{t("Destaques")}</Titulo>
               <View className="overflow-hidden rounded-[20px] bg-card">
                 {destaques.map((r, i) => (
                   <View
@@ -340,13 +353,15 @@ export default function ProfilePage() {
                         {r.exerciseName}
                       </Text>
                       <Text className="text-xs text-muted-foreground">
-                        Recorde em {formatDate(r.date, "d 'de' MMM")}
+                        {t("Recorde em {{v0}}", { v0: formatDate(r.date, "d 'de' MMM") })}
                       </Text>
                     </View>
                     <View className="items-end">
-                      <Text className="font-extrabold">{fmt(r.weightKg)} kg</Text>
+                      <Text className="font-extrabold">
+                        {t("{{v0}} kg", { v0: fmt(r.weightKg) })}
+                      </Text>
                       <Text className="text-xs font-medium text-muted-foreground">
-                        × {r.reps} {r.reps === 1 ? "repetição" : "repetições"}
+                        × {r.reps} {r.reps === 1 ? t("repetição") : t("repetições")}
                       </Text>
                     </View>
                   </View>
@@ -360,10 +375,10 @@ export default function ProfilePage() {
             onLayout={(e) => setYDados(e.nativeEvent.layout.y)}
             className="mb-3 mt-8 flex-row items-center justify-between px-1"
           >
-            <Text className="text-lg text-muted-foreground">Dados pessoais</Text>
+            <Text className="text-lg text-muted-foreground">{t("Dados pessoais")}</Text>
             <View className="flex-row items-center gap-1">
               <Icon node={lock} color={apagada} size={14} />
-              <Text className="text-xs text-muted-foreground">Só você vê</Text>
+              <Text className="text-xs text-muted-foreground">{t("Só você vê")}</Text>
             </View>
           </View>
           {!p ? (
@@ -376,51 +391,51 @@ export default function ProfilePage() {
             <View className="flex-row flex-wrap gap-3">
               <Dado
                 icon={flame}
-                rotulo="Objetivo"
+                rotulo={t("Objetivo")}
                 valor={objetivo}
                 onPress={() => setEditando("goal")}
                 pequeno
               />
               <Dado
                 icon={activity}
-                rotulo="Atividade"
+                rotulo={t("Atividade")}
                 valor={p.activity_level ? label(ACTIVITY_LABELS, p.activity_level) : null}
                 onPress={() => setEditando("activity_level")}
                 pequeno
               />
               <Dado
                 icon={cake}
-                rotulo="Idade"
+                rotulo={t("Idade")}
                 valor={idade}
                 unidade="anos"
                 onPress={() => setEditando("birth_date")}
               />
               <Dado
                 icon={ruler}
-                rotulo="Altura"
+                rotulo={t("Altura")}
                 valor={altura}
                 unidade="cm"
                 onPress={() => setEditando("height_cm")}
               />
               <Dado
                 icon={scale}
-                rotulo="Peso atual"
+                rotulo={t("Peso atual")}
                 valor={peso && fmt(peso)}
                 unidade="kg"
-                nota="Registrar em Progresso"
+                nota={t("Registrar em Progresso")}
                 acao={chevronRight}
                 onPress={() => router.push("/body")}
               />
               <Dado
                 icon={target}
-                rotulo="Meta de peso"
+                rotulo={t("Meta de peso")}
                 valor={meta && fmt(meta)}
                 unidade="kg"
                 onPress={() => setEditando("goal_weight_kg")}
               />
               <Dado
                 icon={user}
-                rotulo="Sexo"
+                rotulo={t("Sexo")}
                 valor={p.sex ? label(SEX_LABELS, p.sex) : null}
                 onPress={() => setEditando("sex")}
                 pequeno
@@ -429,7 +444,7 @@ export default function ProfilePage() {
                 icon={activity}
                 rotulo="IMC"
                 valor={imc && fmt(imc)}
-                nota={imc ? bmiBand(imc) : "Precisa de peso e altura"}
+                nota={imc ? bmiBand(imc) : t("Precisa de peso e altura")}
                 acao={null}
               />
             </View>
@@ -446,11 +461,16 @@ export default function ProfilePage() {
               </View>
               <View className="min-w-0 flex-1">
                 <Text className="font-semibold">
-                  {Math.round(num(p.daily_kcal_target)).toLocaleString("pt-BR")} kcal por dia
+                  {t("{{v0}} kcal por dia", {
+                    v0: Math.round(num(p.daily_kcal_target)).toLocaleString(LOCALE),
+                  })}
                 </Text>
                 <Text className="text-sm text-muted-foreground">
-                  P {Math.round(num(p.protein_g_target))} g · C {Math.round(num(p.carbs_g_target))}{" "}
-                  g · G {Math.round(num(p.fat_g_target))} g
+                  {t("P {{v0}} g · C {{v1}} g · G {{v2}} g", {
+                    v0: Math.round(num(p.protein_g_target)),
+                    v1: Math.round(num(p.carbs_g_target)),
+                    v2: Math.round(num(p.fat_g_target)),
+                  })}
                 </Text>
               </View>
               <Icon node={chevronRight} color={apagada} size={20} />
@@ -458,20 +478,20 @@ export default function ProfilePage() {
           ) : null}
 
           <Text numberOfLines={1} className="mt-6 px-1 text-center text-xs text-muted-foreground">
-            Conectado como {session?.user.email}
+            {t("Conectado como")} {session?.user.email}
           </Text>
           <View className="mt-2 flex-row justify-center gap-4">
             <Text
               onPress={() => void Linking.openURL(urlDoSite("/termos"))}
               className="text-xs text-muted-foreground"
             >
-              Termos de Uso
+              {t("Termos de Uso")}
             </Text>
             <Text
               onPress={() => void Linking.openURL(urlDoSite("/privacidade"))}
               className="text-xs text-muted-foreground"
             >
-              Política de Privacidade
+              {t("Política de Privacidade")}
             </Text>
           </View>
         </View>
@@ -506,9 +526,11 @@ export default function ProfilePage() {
       <ConfirmDialog
         open={confirmandoSaida}
         onClose={() => setConfirmandoSaida(false)}
-        title="Sair da conta?"
-        description="Você vai precisar entrar de novo com seu e-mail e senha. Seus dados continuam salvos."
-        confirmLabel="Sair"
+        title={t("Sair da conta?")}
+        description={t(
+          "Você vai precisar entrar de novo com seu e-mail e senha. Seus dados continuam salvos.",
+        )}
+        confirmLabel={t("Sair")}
         destructive
         onConfirm={() => void sair()}
       />
@@ -599,7 +621,7 @@ function Dado({
     <Pressable
       onPress={onPress}
       disabled={!onPress}
-      accessibilityLabel={onPress ? `Editar ${rotulo.toLowerCase()}` : undefined}
+      accessibilityLabel={onPress ? t("Editar {{v0}}", { v0: rotulo.toLowerCase() }) : undefined}
       className="w-[48%] rounded-[20px] bg-card p-4 active:bg-elevated"
     >
       <View className="flex-row items-center gap-1.5">
@@ -612,7 +634,7 @@ function Dado({
         className={cn("mt-2 font-extrabold", pequeno ? "text-lg" : "text-2xl")}
       >
         {vazio ? (
-          <Text className="text-base font-normal text-muted-foreground">Adicionar</Text>
+          <Text className="text-base font-normal text-muted-foreground">{t("Adicionar")}</Text>
         ) : (
           <>
             {texto.charAt(0).toUpperCase() + texto.slice(1)}
@@ -671,7 +693,7 @@ function EditarCampo({
           value={valor}
           maxLength={80}
           onChangeText={setValor}
-          placeholder="Como podemos te chamar?"
+          placeholder={t("Como podemos te chamar?")}
           placeholderTextColor={apagada}
           accessibilityLabel={titulo}
           className="h-12 rounded-md border border-input bg-background px-3 font-sans text-lg"
@@ -710,7 +732,7 @@ function EditarCampo({
       {erro && valor !== "" ? <Text className="text-sm text-destructive">{erro}</Text> : null}
       <View className="flex-row gap-2">
         <Button variant="outline" className="h-12 flex-1" onPress={onClose}>
-          Cancelar
+          {t("Cancelar")}
         </Button>
         <Button
           className="h-12 flex-1"
@@ -718,7 +740,7 @@ function EditarCampo({
           loading={salvar.isPending}
           onPress={() => salvar.mutate()}
         >
-          Salvar
+          {t("Salvar")}
         </Button>
       </View>
     </Dialog>

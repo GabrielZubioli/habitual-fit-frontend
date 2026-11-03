@@ -26,6 +26,7 @@ import {
   type PlanInput,
   type ScheduleInput,
 } from "@forja/domain";
+import { t } from "../i18n";
 
 /**
  * O catálogo agora **declara** o padrão de movimento (coluna
@@ -165,7 +166,9 @@ export async function buildRoutineDraft(
 export class PlanLimitationError extends Error {
   constructor() {
     super(
-      "Com as lesões ou dores que você informou, não conseguimos montar um treino automático coerente. Procure um profissional de saúde e de educação física para montar um plano adequado — você pode criar suas rotinas manualmente na tela Plano.",
+      t(
+        "Com as lesões ou dores que você informou, não conseguimos montar um treino automático coerente. Procure um profissional de saúde e de educação física para montar um plano adequado — você pode criar suas rotinas manualmente na tela Plano.",
+      ),
     );
     this.name = "PlanLimitationError";
   }
@@ -454,7 +457,7 @@ export function scheduleInputOf(routine: {
   const splitCount = Math.max(1, routine.templates.length);
   if (routine.scheduleMode === "fixed") {
     const fixed = Array.from({ length: 7 }, (_, dia) =>
-      routine.templates.flatMap((t, i) => (t.weekdays.includes(dia) ? [i] : [])),
+      routine.templates.flatMap((item2, i) => (item2.weekdays.includes(dia) ? [i] : [])),
     );
     return { weekdays: [], splitCount, currentIndex: routine.currentIndex, fixed };
   }
@@ -532,7 +535,7 @@ export async function createTemplate(
 ): Promise<string> {
   const limpo = name.trim();
   if (!limpo) throw new Error("Dê um nome à rotina.");
-  const usadas = new Set(existing.map((t) => t.letter));
+  const usadas = new Set(existing.map((item2) => item2.letter));
   const letter = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"].find((l) => !usadas.has(l)) ?? null;
   return insertRow("criar a rotina", "workout_templates", {
     user_id: userId,
@@ -588,14 +591,14 @@ export async function fetchActiveRoutine(): Promise<ActiveRoutine | null> {
     currentIndex: routine.current_index,
     trainingWeekdays: routine.training_weekdays ?? [],
     scheduleMode: routine.schedule_mode === "fixed" ? "fixed" : "rotation",
-    templates: templates.map((t, i) => ({
-      id: t.id,
-      name: t.name,
-      letter: t.routine_letter,
-      icon: t.icon,
-      order: t.routine_order ?? i,
-      exerciseCount: t.workout_template_exercises?.[0]?.count ?? 0,
-      weekdays: t.weekdays ?? [],
+    templates: templates.map((item2, i) => ({
+      id: item2.id,
+      name: item2.name,
+      letter: item2.routine_letter,
+      icon: item2.icon,
+      order: item2.routine_order ?? i,
+      exerciseCount: item2.workout_template_exercises?.[0]?.count ?? 0,
+      weekdays: item2.weekdays ?? [],
     })),
   };
 }
@@ -640,14 +643,14 @@ async function rotinaAtivaLocal(): Promise<ActiveRoutine | null> {
     currentIndex: routine.current_index,
     trainingWeekdays: jsonList<number>(routine.training_weekdays),
     scheduleMode: routine.schedule_mode === "fixed" ? "fixed" : "rotation",
-    templates: templates.map((t, i) => ({
-      id: t.id,
-      name: t.name,
-      letter: t.routine_letter,
-      icon: t.icon,
-      order: t.routine_order ?? i,
-      exerciseCount: t.exercicios,
-      weekdays: jsonList<number>(t.weekdays),
+    templates: templates.map((item2, i) => ({
+      id: item2.id,
+      name: item2.name,
+      letter: item2.routine_letter,
+      icon: item2.icon,
+      order: item2.routine_order ?? i,
+      exerciseCount: item2.exercicios,
+      weekdays: jsonList<number>(item2.weekdays),
     })),
   };
 }
@@ -697,7 +700,10 @@ export async function saveSuggestedRoutine(
     userId,
     planInput,
     rascunho,
-    `${objectiveLabel} · ${planInput.daysPerWeek}× por semana`,
+    t("{{objectiveLabel}} · {{daysPerWeek}}× por semana", {
+      objectiveLabel,
+      daysPerWeek: planInput.daysPerWeek,
+    }),
     dias,
   );
 }
@@ -758,7 +764,7 @@ export async function createEmptyRoutine(userId: string): Promise<string> {
     userId,
     planInput,
     { plan: generatePlan(planInput), splits: [] },
-    "Meu plano",
+    t("Meu plano"),
     [],
   );
 }
@@ -821,8 +827,8 @@ export async function fetchCompletedWorkouts(
             .select("id, routine_order")
             .in("id", templateIds),
         );
-    for (const t of templates) {
-      if (t.routine_order !== null) orderByTemplate.set(t.id, t.routine_order);
+    for (const item2 of templates) {
+      if (item2.routine_order !== null) orderByTemplate.set(item2.id, item2.routine_order);
     }
   }
 
@@ -861,16 +867,16 @@ export type CompletedWorkoutDay = {
 export async function advanceRoutineForTemplate(templateId: string): Promise<void> {
   const db = localDb();
   if (db) {
-    const t = await db.getOptional<{ routine_id: string | null }>(
+    const item2 = await db.getOptional<{ routine_id: string | null }>(
       "SELECT routine_id FROM workout_templates WHERE id = ?",
       [templateId],
     );
-    if (!t?.routine_id) return;
+    if (!item2?.routine_id) return;
     const n = await db.getOptional<{ n: number }>(
       "SELECT count(*) AS n FROM workout_templates WHERE routine_id = ? AND deleted_at IS NULL",
-      [t.routine_id],
+      [item2.routine_id],
     );
-    await advanceRoutine(t.routine_id, n?.n ?? 0);
+    await advanceRoutine(item2.routine_id, n?.n ?? 0);
     return;
   }
   const template = unwrapMaybe(

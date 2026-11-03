@@ -5,8 +5,9 @@
  * a partir do perfil, do plano, dos treinos e das pesagens. Por isso respondem
  * instantaneamente, sem custo e mesmo com o treinador de IA desligado.
  */
+import { WEEKDAY_LABELS } from "../lib/labels";
 import { addDays, startOfWeek } from "date-fns";
-import { WEEKDAY_LABELS, weekdayOf, weeklyStreak } from "@forja/domain";
+import { weekdayOf, weeklyStreak } from "@forja/domain";
 import { supabase } from "../supabase";
 import { num, unwrapMaybe } from "./supabase-helpers";
 import { fetchWorkoutWeek } from "./workout-week";
@@ -14,28 +15,30 @@ import { fetchCompletedWorkouts } from "./routines";
 import { fetchWeighIns } from "./body";
 import { fetchPersonalRecords } from "./workouts";
 import { toISODate, todayISO } from "../lib/date";
+import { LOCALE } from "../i18n";
+import { t } from "../i18n";
 
 export type FaqKey =
   "calorias" | "proteina" | "treino-hoje" | "semana" | "peso" | "agua" | "recordes" | "carga";
 
 export const COACH_FAQ: { key: FaqKey; pergunta: string }[] = [
-  { key: "treino-hoje", pergunta: "Qual é o meu treino de hoje?" },
-  { key: "semana", pergunta: "Como está minha semana de treinos?" },
-  { key: "calorias", pergunta: "Quantas calorias devo comer por dia?" },
-  { key: "proteina", pergunta: "Quanto de proteína eu preciso?" },
-  { key: "peso", pergunta: "Como está a evolução do meu peso?" },
-  { key: "agua", pergunta: "Quanta água devo beber?" },
-  { key: "recordes", pergunta: "Quais são meus recordes?" },
-  { key: "carga", pergunta: "Quando devo aumentar a carga?" },
+  { key: "treino-hoje", pergunta: t("Qual é o meu treino de hoje?") },
+  { key: "semana", pergunta: t("Como está minha semana de treinos?") },
+  { key: "calorias", pergunta: t("Quantas calorias devo comer por dia?") },
+  { key: "proteina", pergunta: t("Quanto de proteína eu preciso?") },
+  { key: "peso", pergunta: t("Como está a evolução do meu peso?") },
+  { key: "agua", pergunta: t("Quanta água devo beber?") },
+  { key: "recordes", pergunta: t("Quais são meus recordes?") },
+  { key: "carga", pergunta: t("Quando devo aumentar a carga?") },
 ];
 
 const OBJETIVO: Record<string, string> = {
-  lose: "perder gordura",
-  maintain: "manter o peso",
-  gain: "ganhar massa",
+  lose: t("perder gordura"),
+  maintain: t("manter o peso"),
+  gain: t("ganhar massa"),
 };
 
-const n = (v: number, casas = 0) => v.toLocaleString("pt-BR", { maximumFractionDigits: casas });
+const n = (v: number, casas = 0) => v.toLocaleString(LOCALE, { maximumFractionDigits: casas });
 
 async function perfil() {
   return unwrapMaybe("carregar perfil", await supabase.from("profiles").select("*").maybeSingle());
@@ -51,8 +54,9 @@ export async function answerFaq(key: FaqKey): Promise<string> {
     case "calorias": {
       const p = await perfil();
       const kcal = num(p?.daily_kcal_target);
-      const naoPrescreve =
-        "O Habitual Fit não calcula nem prescreve calorias: quanto comer depende de você e deve ser orientado por um nutricionista.";
+      const naoPrescreve = t(
+        "O Habitual Fit não calcula nem prescreve calorias: quanto comer depende de você e deve ser orientado por um nutricionista.",
+      );
       if (!kcal) {
         return [
           naoPrescreve,
@@ -64,34 +68,55 @@ export async function answerFaq(key: FaqKey): Promise<string> {
     case "proteina": {
       const p = await perfil();
       const g = num(p?.protein_g_target);
-      const naoPrescreve =
-        "A quantidade de proteína ideal é individual — defina-a com um nutricionista.";
+      const naoPrescreve = t(
+        "A quantidade de proteína ideal é individual — defina-a com um nutricionista.",
+      );
       if (!g) {
-        return `${naoPrescreve}\n\nSe já tiver uma meta, registre em Configurações → Metas nutricionais e acompanhe o consumo na Dieta.`;
+        return t(
+          "{{naoPrescreve}}\n\nSe já tiver uma meta, registre em Configurações → Metas nutricionais e acompanhe o consumo na Dieta.",
+          { naoPrescreve },
+        );
       }
-      return `A meta que você registrou é de ${n(g)} g de proteína por dia.\n\n${naoPrescreve}`;
+      return t("A meta que você registrou é de {{v0}} g de proteína por dia.\n\n{{naoPrescreve}}", {
+        v0: n(g),
+        naoPrescreve,
+      });
     }
     case "treino-hoje": {
       const semana = await fetchWorkoutWeek();
       if (!semana)
-        return "Você ainda não tem um plano de treino. Monte um na tela Plano e eu passo a te dizer o treino de cada dia.";
+        return t(
+          "Você ainda não tem um plano de treino. Monte um na tela Plano e eu passo a te dizer o treino de cada dia.",
+        );
       const hoje = weekdayOf(todayISO());
       const doDia = semana.splits.filter((s) => s.weekdays.includes(hoje));
       if (doDia.length === 0) {
         const proximo = [1, 2, 3, 4, 5, 6, 7]
           .map((d) => (hoje + d) % 7)
           .find((d) => semana.splits.some((s) => s.weekdays.includes(d)));
-        return `Hoje (${WEEKDAY_LABELS[hoje].toLowerCase()}) é dia de descanso no seu plano. Descansar também é treino: é quando o músculo se recupera e cresce.${proximo !== undefined ? `\n\nO próximo treino é ${WEEKDAY_LABELS[proximo as 0].toLowerCase()}.` : ""}`;
+        return t(
+          "Hoje ({{v0}}) é dia de descanso no seu plano. Descansar também é treino: é quando o músculo se recupera e cresce.{{v1}}",
+          {
+            v0: WEEKDAY_LABELS[hoje].toLowerCase(),
+            v1:
+              proximo !== undefined
+                ? `\n\nO próximo treino é ${WEEKDAY_LABELS[proximo as 0].toLowerCase()}.`
+                : "",
+          },
+        );
       }
       return doDia
         .map((s) => {
           const nomes = s.exercises
             .slice(0, 6)
             .map((e) => `• ${e.name} — ${e.targetSets}×${e.targetReps}`);
-          return `Hoje é ${s.name.replace(/^[A-Z]\s*—\s*/, "")}:\n${nomes.join("\n")}`;
+          return t("Hoje é {{v0}}:\n{{v1}}", {
+            v0: s.name.replace(/^[A-Z]\s*—\s*/, ""),
+            v1: nomes.join("\n"),
+          });
         })
         .join("\n\n")
-        .concat("\n\nPara começar, toque no botão Treinar.");
+        .concat(t("\n\nPara começar, toque no botão Treinar."));
     }
     case "semana": {
       const inicio = startOfWeek(new Date(), { weekStartsOn: 1 });
@@ -100,10 +125,10 @@ export async function answerFaq(key: FaqKey): Promise<string> {
         fetchCompletedWorkouts(toISODate(addDays(inicio, -7 * 25)), todayISO()),
       ]);
       const meta = semana?.daysPerWeek ?? 0;
-      const nestaSemana = treinos.filter((t) => t.date >= toISODate(inicio)).length;
+      const nestaSemana = treinos.filter((item) => item.date >= toISODate(inicio)).length;
       const seq = meta
         ? weeklyStreak(
-            treinos.map((t) => t.date),
+            treinos.map((item) => item.date),
             meta,
             todayISO(),
           )
@@ -111,10 +136,13 @@ export async function answerFaq(key: FaqKey): Promise<string> {
       const falta = Math.max(0, meta - nestaSemana);
       return [
         `Esta semana você fez ${nestaSemana} de ${meta || "?"} treinos${falta === 0 && meta ? " — meta batida! 🎉" : "."}`,
-        falta > 0 ? `Faltam ${falta} para fechar a semana.` : null,
+        falta > 0 ? t("Faltam {{falta}} para fechar a semana.", { falta }) : null,
         seq > 0
-          ? `Você está há ${seq} ${seq === 1 ? "semana" : "semanas"} seguidas cumprindo a meta.`
-          : "Cumpra a meta desta semana para começar uma sequência.",
+          ? t("Você está há {{seq}} {{v1}} seguidas cumprindo a meta.", {
+              seq,
+              v1: seq === 1 ? "semana" : "semanas",
+            })
+          : t("Cumpra a meta desta semana para começar uma sequência."),
       ]
         .filter(Boolean)
         .join("\n\n");
@@ -122,7 +150,9 @@ export async function answerFaq(key: FaqKey): Promise<string> {
     case "peso": {
       const [pesos, p] = await Promise.all([fetchWeighIns(60), perfil()]);
       if (pesos.length === 0)
-        return "Você ainda não registrou nenhum peso. Registre em Progresso — com 2 ou mais pesagens eu te mostro a tendência.";
+        return t(
+          "Você ainda não registrou nenhum peso. Registre em Progresso — com 2 ou mais pesagens eu te mostro a tendência.",
+        );
       const ultimo = pesos[pesos.length - 1]!;
       const linhas = [`Seu último registro: ${n(ultimo.kg, 1)} kg.`];
       if (pesos.length >= 2) {
@@ -136,8 +166,11 @@ export async function answerFaq(key: FaqKey): Promise<string> {
         const falta = alvo - ultimo.kg;
         linhas.push(
           Math.abs(falta) < 0.3
-            ? `Você está na sua meta de ${n(alvo, 1)} kg. 👏`
-            : `Faltam ${n(Math.abs(falta), 1)} kg para a meta de ${n(alvo, 1)} kg.`,
+            ? t("Você está na sua meta de {{v0}} kg. 👏", { v0: n(alvo, 1) })
+            : t("Faltam {{v0}} kg para a meta de {{v1}} kg.", {
+                v0: n(Math.abs(falta), 1),
+                v1: n(alvo, 1),
+              }),
         );
       }
       linhas.push(
@@ -149,19 +182,32 @@ export async function answerFaq(key: FaqKey): Promise<string> {
       const [p, kg] = await Promise.all([perfil(), ultimoPeso()]);
       const ml = p?.water_ml_target ?? (kg ? Math.round((kg * 35) / 250) * 250 : null);
       if (!ml)
-        return "Registre seu peso em Progresso e eu calculo sua meta de água (cerca de 35 ml por kg).";
-      return `Sua meta é de ${n(ml / 1000, 2)} L por dia — uns ${Math.round(ml / 250)} copos de 250 ml.${p?.water_ml_target ? "" : ` Calculei pelo seu peso (${n(kg ?? 0, 1)} kg × 35 ml).`}\n\nNos dias de treino, some mais 500 ml a 1 L.`;
+        return t(
+          "Registre seu peso em Progresso e eu calculo sua meta de água (cerca de 35 ml por kg).",
+        );
+      return t(
+        "Sua meta é de {{v0}} L por dia — uns {{v1}} copos de 250 ml.{{v2}}\n\nNos dias de treino, some mais 500 ml a 1 L.",
+        {
+          v0: n(ml / 1000, 2),
+          v1: Math.round(ml / 250),
+          v2: p?.water_ml_target ? "" : ` Calculei pelo seu peso (${n(kg ?? 0, 1)} kg × 35 ml).`,
+        },
+      );
     }
     case "recordes": {
       const rs = await fetchPersonalRecords(5);
       if (rs.length === 0)
-        return "Você ainda não tem recordes. Eles aparecem depois do primeiro treino com carga registrada.";
-      return `Seus melhores (1RM estimado):\n${rs
-        .map(
-          (r) =>
-            `• ${r.exerciseName}: ${n(r.weightKg, 1)} kg × ${r.reps} (≈ ${Math.round(r.e1rm)} kg)`,
-        )
-        .join("\n")}`;
+        return t(
+          "Você ainda não tem recordes. Eles aparecem depois do primeiro treino com carga registrada.",
+        );
+      return t("Seus melhores (1RM estimado):\n{{v0}}", {
+        v0: rs
+          .map(
+            (r) =>
+              `• ${r.exerciseName}: ${n(r.weightKg, 1)} kg × ${r.reps} (≈ ${Math.round(r.e1rm)} kg)`,
+          )
+          .join("\n"),
+      });
     }
     case "carga":
       return [

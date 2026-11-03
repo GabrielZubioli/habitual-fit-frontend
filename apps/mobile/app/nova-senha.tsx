@@ -10,6 +10,7 @@ import { useColor } from "@/theme/theme";
 import { BrandLogo } from "@/ui/brand-logo";
 import { Button } from "@/ui/button";
 import { Text } from "@/ui/text";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * O `routes/nova-senha.tsx` do web. O link do e-mail ("esqueci a senha" pedido
@@ -19,10 +20,10 @@ import { Text } from "@/ui/text";
  */
 const passSchema = z
   .string()
-  .min(8, "Use pelo menos 8 caracteres")
+  .min(8, t("Use pelo menos 8 caracteres"))
   .max(72)
-  .regex(/[A-Za-z]/, "Use pelo menos uma letra")
-  .regex(/[0-9]/, "Use pelo menos um número");
+  .regex(/[A-Za-z]/, t("Use pelo menos uma letra"))
+  .regex(/[0-9]/, t("Use pelo menos um número"));
 
 export default function NovaSenha() {
   const url = Linking.useURL();
@@ -51,7 +52,7 @@ export default function NovaSenha() {
     const pw = passSchema.safeParse(senha);
     const next: typeof erros = {};
     if (!pw.success) next.senha = pw.error.issues[0]?.message;
-    else if (senha !== confirma) next.confirma = "As senhas não são iguais";
+    else if (senha !== confirma) next.confirma = t("As senhas não são iguais");
     setErros(next);
     if (next.senha || next.confirma) return;
 
@@ -98,27 +99,32 @@ export default function NovaSenha() {
 
       {estado === "invalido" ? (
         <View className="items-center">
-          <Text className="text-center text-2xl font-bold tracking-tight">Link inválido</Text>
+          <Text className="text-center text-2xl font-bold tracking-tight">
+            {t("Link inválido")}
+          </Text>
           <Text className="mt-3 text-center text-sm leading-relaxed text-muted-foreground">
-            O link de redefinição vale por 1 hora e só pode ser usado uma vez. Peça um novo para
-            continuar.
+            {t(
+              "O link de redefinição vale por 1 hora e só pode ser usado uma vez. Peça um novo para continuar.",
+            )}
           </Text>
           <Button
             className="mt-8 h-12 w-full rounded-xl"
             onPress={() => router.replace("/esqueci-senha")}
           >
-            Pedir um novo link
+            {t("Pedir um novo link")}
           </Button>
         </View>
       ) : (
         <View>
-          <Text className="text-center text-2xl font-bold tracking-tight">Crie uma nova senha</Text>
+          <Text className="text-center text-2xl font-bold tracking-tight">
+            {t("Crie uma nova senha")}
+          </Text>
           <Text className="mt-2 text-center text-sm text-muted-foreground">
-            Use pelo menos 8 caracteres, com letras e números.
+            {t("Use pelo menos 8 caracteres, com letras e números.")}
           </Text>
           <View className="mt-8 gap-3.5">
-            {campo(senha, setSenha, "Nova senha", erros.senha)}
-            {campo(confirma, setConfirma, "Confirme a nova senha", erros.confirma)}
+            {campo(senha, setSenha, t("Nova senha"), erros.senha)}
+            {campo(confirma, setConfirma, t("Confirme a nova senha"), erros.confirma)}
             {erros.geral ? <Text className="text-sm text-destructive">{erros.geral}</Text> : null}
             <Button
               size="lg"
@@ -127,7 +133,7 @@ export default function NovaSenha() {
               loading={salvando || estado === "verificando"}
               onPress={salvar}
             >
-              Salvar nova senha
+              {t("Salvar nova senha")}
             </Button>
           </View>
         </View>

@@ -1,6 +1,7 @@
 import { supabase } from "../supabase";
 import { assertOk, num, unwrap, unwrapList } from "./supabase-helpers";
 import { atualizar, inserir, jsonList, localDb, marcadores } from "../local";
+import { t } from "../i18n";
 
 /**
  * A semana de treino: divisões, exercícios e o que cada um estimula.
@@ -106,7 +107,7 @@ export async function fetchWorkoutWeek(): Promise<WorkoutWeek | null> {
       )
       .in(
         "template_id",
-        templates.map((t) => t.id),
+        templates.map((item2) => item2.id),
       )
       .order("position"),
   );
@@ -119,7 +120,7 @@ export async function fetchWorkoutWeek(): Promise<WorkoutWeek | null> {
     lista.push({
       itemId: item.id,
       exerciseId: item.exercise_id,
-      name: ex?.name ?? "Exercício",
+      name: ex?.name ?? t("Exercício"),
       position: item.position,
       targetSets: num(item.target_sets, 3),
       targetReps: num(item.target_reps, 10),
@@ -152,14 +153,14 @@ export async function fetchWorkoutWeek(): Promise<WorkoutWeek | null> {
     currentIndex: routine.current_index,
     trainingWeekdays: routine.training_weekdays ?? [],
     scheduleMode: routine.schedule_mode === "fixed" ? "fixed" : "rotation",
-    splits: templates.map((t, i) => ({
-      templateId: t.id,
-      letter: t.routine_letter,
-      icon: t.icon,
-      name: t.name,
-      order: t.routine_order ?? i,
-      weekdays: t.weekdays ?? [],
-      exercises: (porTemplate.get(t.id) ?? []).sort((a, b) => a.position - b.position),
+    splits: templates.map((item2, i) => ({
+      templateId: item2.id,
+      letter: item2.routine_letter,
+      icon: item2.icon,
+      name: item2.name,
+      order: item2.routine_order ?? i,
+      weekdays: item2.weekdays ?? [],
+      exercises: (porTemplate.get(item2.id) ?? []).sort((a, b) => a.position - b.position),
     })),
   };
 }
@@ -193,7 +194,7 @@ async function semanaLocal(): Promise<WorkoutWeek | null> {
     [routine.id],
   );
 
-  const ids = templates.map((t) => t.id);
+  const ids = templates.map((item2) => item2.id);
   const itens = ids.length
     ? await db.getAll<{
         id: string;
@@ -247,7 +248,7 @@ async function semanaLocal(): Promise<WorkoutWeek | null> {
     lista.push({
       itemId: item.id,
       exerciseId: item.exercise_id,
-      name: item.name ?? "Exercício",
+      name: item.name ?? t("Exercício"),
       position: item.position,
       targetSets: num(item.target_sets, 3),
       targetReps: num(item.target_reps, 10),
@@ -276,14 +277,14 @@ async function semanaLocal(): Promise<WorkoutWeek | null> {
     currentIndex: routine.current_index,
     trainingWeekdays: jsonList<number>(routine.training_weekdays),
     scheduleMode: routine.schedule_mode === "fixed" ? "fixed" : "rotation",
-    splits: templates.map((t, i) => ({
-      templateId: t.id,
-      letter: t.routine_letter,
-      icon: t.icon,
-      name: t.name,
-      order: t.routine_order ?? i,
-      weekdays: jsonList<number>(t.weekdays),
-      exercises: (porTemplate.get(t.id) ?? []).sort((a, b) => a.position - b.position),
+    splits: templates.map((item2, i) => ({
+      templateId: item2.id,
+      letter: item2.routine_letter,
+      icon: item2.icon,
+      name: item2.name,
+      order: item2.routine_order ?? i,
+      weekdays: jsonList<number>(item2.weekdays),
+      exercises: (porTemplate.get(item2.id) ?? []).sort((a, b) => a.position - b.position),
     })),
   };
 }

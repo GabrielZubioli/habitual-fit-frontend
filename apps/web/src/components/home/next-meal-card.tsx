@@ -10,6 +10,7 @@ import { queryKeys } from "@forja/app-core/data/query-keys";
 import { errorMessage } from "@forja/app-core/data/supabase-helpers";
 import { setMealConsumed, type DayEntry } from "@forja/app-core/data/diet-day";
 import { nutritionTotals, type MealSlot } from "@forja/domain";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * A próxima refeição pendente.
@@ -52,7 +53,7 @@ export function NextMealCard({
   const concluir = useMutation({
     mutationFn: (slot: MealSlot) => setMealConsumed(date, slot, true),
     onSuccess: () => {
-      toast.success("Refeição concluída");
+      toast.success(t("Refeição concluída"));
       void qc.invalidateQueries({ queryKey: queryKeys.diet.log(date) });
     },
     onError: (e) => toast.error(errorMessage(e)),
@@ -78,15 +79,15 @@ export function NextMealCard({
           </span>
           <div className="min-w-0 flex-1">
             <p className="font-semibold leading-tight">
-              {temItens ? "Todas as refeições concluídas" : "Nenhuma refeição planejada"}
+              {temItens ? t("Todas as refeições concluídas") : t("Nenhuma refeição planejada")}
             </p>
             <p className="mt-0.5 text-sm text-muted-foreground">
               {temItens
-                ? "Dia cumprido. Bom trabalho."
-                : "Monte seu cardápio ou registre o que comeu."}
+                ? t("Dia cumprido. Bom trabalho.")
+                : t("Monte seu cardápio ou registre o que comeu.")}
             </p>
           </div>
-          <Button asChild variant="ghost" size="icon" aria-label="Abrir dieta">
+          <Button asChild variant="ghost" size="icon" aria-label={t("Abrir dieta")}>
             <Link to="/diet">
               <ChevronRight className="size-5" />
             </Link>
@@ -119,14 +120,23 @@ export function NextMealCard({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              {isToday ? "Próxima refeição" : "Pendente"}
+              {isToday ? t("Próxima refeição") : t("Pendente")}
             </p>
             <h3 className="mt-0.5 font-bold leading-tight">{label(MEAL_LABELS, proximoSlot)}</h3>
             <p className="mt-0.5 text-xs tabular-nums text-muted-foreground">
-              {Math.round(totals.kcal)} kcal · P {Math.round(totals.proteinG)} g
+              {t("{{v0}} kcal · P {{v1}} g", {
+                v0: Math.round(totals.kcal),
+                v1: Math.round(totals.proteinG),
+              })}
             </p>
           </div>
-          <Button asChild variant="ghost" size="icon" className="shrink-0" aria-label="Abrir dieta">
+          <Button
+            asChild
+            variant="ghost"
+            size="icon"
+            className="shrink-0"
+            aria-label={t("Abrir dieta")}
+          >
             <Link to="/diet">
               <ChevronRight className="size-5" />
             </Link>
@@ -138,13 +148,13 @@ export function NextMealCard({
             <li key={i.id} className="flex items-baseline justify-between gap-3 text-sm">
               <span className="min-w-0 truncate">{i.name}</span>
               <span className="shrink-0 tabular-nums text-muted-foreground">
-                {Math.round(i.grams)} g
+                {t("{{v0}} g", { v0: Math.round(i.grams) })}
               </span>
             </li>
           ))}
           {pendentes.length > 4 && (
             <li className="text-sm text-muted-foreground">
-              e mais {pendentes.length - 4}
+              {t("e mais {{v0}}", { v0: pendentes.length - 4 })}
               {pendentes.length - 4 === 1 ? " item" : " itens"}
             </li>
           )}
@@ -156,7 +166,7 @@ export function NextMealCard({
           disabled={concluir.isPending}
         >
           <Check className="mr-1.5 size-4" aria-hidden />
-          Marcar como consumida
+          {t("Marcar como consumida")}
         </Button>
       </CardContent>
     </Card>

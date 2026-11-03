@@ -30,6 +30,8 @@ import {
 import { ConfirmButton } from "@/components/confirm-button";
 import { ErrorState } from "@/components/query-boundary";
 import { cn } from "@/lib/utils";
+import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Receitas: as prontas do app, por categoria, e as da pessoa.
@@ -41,15 +43,15 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/_authenticated/recipes")({
   head: () => ({
     meta: [
-      { title: "Receitas — Habitual Fit" },
-      { name: "description", content: "Receitas prontas e suas, com macros por porção." },
+      { title: t("Receitas — Habitual Fit") },
+      { name: "description", content: t("Receitas prontas e suas, com macros por porção.") },
       { name: "robots", content: "noindex" },
     ],
   }),
   component: RecipesPage,
 });
 
-const kcal = (n: number) => Math.round(n).toLocaleString("pt-BR");
+const kcal = (n: number) => Math.round(n).toLocaleString(LOCALE);
 
 function RecipesPage() {
   const qc = useQueryClient();
@@ -78,7 +80,7 @@ function RecipesPage() {
   const copiar = useMutation({
     mutationFn: (r: RecipeSummary) => copyRecipe(userId, r),
     onSuccess: (id) => {
-      toast.success("Copiada para suas receitas");
+      toast.success(t("Copiada para suas receitas"));
       void invalidar();
       void navigate({ to: "/recipes/$id", params: { id } });
     },
@@ -92,9 +94,9 @@ function RecipesPage() {
     },
     onSuccess: (id) => {
       void invalidar();
-      toast.success("Receita excluída", {
+      toast.success(t("Receita excluída"), {
         action: {
-          label: "Desfazer",
+          label: t("Desfazer"),
           onClick: () => void deleteRecipe(id, true).then(() => invalidar()),
         },
       });
@@ -103,10 +105,10 @@ function RecipesPage() {
   });
 
   const filtradas = useMemo(() => {
-    const t = busca.trim().toLowerCase();
+    const item = busca.trim().toLowerCase();
     return (receitas.data ?? []).filter(
       (r) =>
-        (!t || r.name.toLowerCase().includes(t)) &&
+        (!item || r.name.toLowerCase().includes(item)) &&
         (!categoria || (categoria === "minhas" ? !r.isSystem : r.category === categoria)),
     );
   }, [receitas.data, busca, categoria]);
@@ -117,10 +119,12 @@ function RecipesPage() {
   return (
     <>
       <PageHeader
-        title="Receitas"
+        title={t("Receitas")}
         description={
           receitas.data
-            ? `${receitas.data.filter((r) => r.isSystem).length} receitas prontas`
+            ? t("{{length}} receitas prontas", {
+                length: receitas.data.filter((r) => r.isSystem).length,
+              })
             : undefined
         }
         action={
@@ -140,20 +144,20 @@ function RecipesPage() {
           <Input
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
-            placeholder="Buscar receita…"
+            placeholder={t("Buscar receita…")}
             className="h-12 rounded-2xl border-transparent bg-card pl-12"
-            aria-label="Buscar receita"
+            aria-label={t("Buscar receita")}
           />
         </div>
         <div
           className="-mx-4 mt-3 flex gap-1.5 overflow-x-auto px-4 pb-1 [scrollbar-width:none]"
           role="radiogroup"
-          aria-label="Categoria"
+          aria-label={t("Categoria")}
         >
           {[
-            { key: null, label: "Todas" },
+            { key: null, label: t("Todas") },
             ...RECIPE_CATEGORIES.map((c) => ({ key: c.key, label: `${c.emoji} ${c.label}` })),
-            { key: "minhas", label: "Minhas" },
+            { key: "minhas", label: t("Minhas") },
           ].map((c) => (
             <button
               key={c.key ?? "todas"}
@@ -184,8 +188,8 @@ function RecipesPage() {
         ) : (
           <>
             {minhas.length > 0 && (
-              <section className="mt-6" aria-label="Suas receitas">
-                <h2 className="mb-3 px-1 text-lg font-semibold">Suas receitas</h2>
+              <section className="mt-6" aria-label={t("Suas receitas")}>
+                <h2 className="mb-3 px-1 text-lg font-semibold">{t("Suas receitas")}</h2>
                 <ul className="space-y-2">
                   {minhas.map((r) => (
                     <li
@@ -203,15 +207,18 @@ function RecipesPage() {
                       <Link
                         to="/recipes/$id"
                         params={{ id: r.id }}
-                        aria-label={`Editar ${r.name}`}
+                        aria-label={t("Editar {{name}}", { name: r.name })}
                         className="grid size-9 place-items-center rounded-full text-muted-foreground hover:bg-elevated hover:text-foreground"
                       >
                         <Pencil className="size-4" />
                       </Link>
                       <ConfirmButton
-                        aria-label={`Excluir receita ${r.name}`}
-                        title="Excluir esta receita?"
-                        description={`“${r.name}” sai da lista. Lançamentos já feitos no diário não são afetados.`}
+                        aria-label={t("Excluir receita {{name}}", { name: r.name })}
+                        title={t("Excluir esta receita?")}
+                        description={t(
+                          "“{{name}}” sai da lista. Lançamentos já feitos no diário não são afetados.",
+                          { name: r.name },
+                        )}
                         onConfirm={() => excluir.mutate(r.id)}
                       >
                         <Trash2 className="size-4" />
@@ -224,8 +231,8 @@ function RecipesPage() {
 
             {/* Sem filtro: um destaque e cada categoria numa fileira que rola de lado. */}
             {!busca.trim() && !categoria && prontas.length > 0 && (
-              <section className="mt-6" aria-label="Mais proteína">
-                <Titulo icone={<Zap className="size-4" />} texto="Mais proteína por caloria" />
+              <section className="mt-6" aria-label={t("Mais proteína")}>
+                <Titulo icone={<Zap className="size-4" />} texto={t("Mais proteína por caloria")} />
                 <Fileira>
                   {[...prontas]
                     .sort(
@@ -272,7 +279,7 @@ function RecipesPage() {
             {filtradas.length === 0 && (
               <div className="mt-10 text-center text-muted-foreground">
                 <BookOpen className="mx-auto size-8" aria-hidden />
-                <p className="mt-2">Nenhuma receita encontrada.</p>
+                <p className="mt-2">{t("Nenhuma receita encontrada.")}</p>
               </div>
             )}
           </>
@@ -300,11 +307,12 @@ function RecipesPage() {
                   {aberta.name}
                 </DialogTitle>
                 <DialogDescription className="flex items-center gap-1">
-                  Rende {aberta.servings} {aberta.servings === 1 ? "porção" : "porções"}
+                  Rende {aberta.servings} {aberta.servings === 1 ? t("porção") : t("porções")}
                   {aberta.prepMinutes && (
                     <>
                       {" "}
-                      · <Clock className="size-3.5" aria-hidden /> {aberta.prepMinutes} min
+                      · <Clock className="size-3.5" aria-hidden />{" "}
+                      {t("{{prepMinutes}} min", { prepMinutes: aberta.prepMinutes })}
                     </>
                   )}
                 </DialogDescription>
@@ -312,15 +320,15 @@ function RecipesPage() {
               <div className="space-y-5 px-5 pb-5">
                 <div>
                   <p className="mb-2 text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">
-                    Por porção
+                    {t("Por porção")}
                   </p>
                   <div className="grid grid-cols-2 gap-2">
                     {(
                       [
-                        ["Calorias", aberta.perServing.kcal, "kcal", "var(--primary)"],
-                        ["Proteína", aberta.perServing.proteinG, "g", MACRO_COLORS.protein],
-                        ["Carboidrato", aberta.perServing.carbsG, "g", MACRO_COLORS.carbs],
-                        ["Gordura", aberta.perServing.fatG, "g", MACRO_COLORS.fat],
+                        [t("Calorias"), aberta.perServing.kcal, "kcal", "var(--primary)"],
+                        [t("Proteína"), aberta.perServing.proteinG, "g", MACRO_COLORS.protein],
+                        [t("Carboidrato"), aberta.perServing.carbsG, "g", MACRO_COLORS.carbs],
+                        [t("Gordura"), aberta.perServing.fatG, "g", MACRO_COLORS.fat],
                       ] as const
                     ).map(([rotulo, valor, unidade, cor]) => (
                       <div key={rotulo} className="rounded-2xl bg-card px-3.5 py-3">
@@ -345,7 +353,9 @@ function RecipesPage() {
                 <div>
                   <p className="mb-2 flex items-baseline justify-between text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">
                     Ingredientes
-                    <span className="font-normal normal-case tracking-normal">receita inteira</span>
+                    <span className="font-normal normal-case tracking-normal">
+                      {t("receita inteira")}
+                    </span>
                   </p>
                   <ul className="divide-y divide-border/50 rounded-2xl bg-card px-4">
                     {aberta.items.map((i) => (
@@ -355,7 +365,7 @@ function RecipesPage() {
                       >
                         <span className="min-w-0 break-words">{i.name}</span>
                         <span className="shrink-0 rounded-full bg-elevated px-2.5 py-1 text-xs font-semibold tabular-nums">
-                          {i.grams} g
+                          {t("{{grams}} g", { grams: i.grams })}
                         </span>
                       </li>
                     ))}
@@ -364,13 +374,13 @@ function RecipesPage() {
                 {aberta.instructions && (
                   <div>
                     <p className="mb-2 text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">
-                      Modo de preparo
+                      {t("Modo de preparo")}
                     </p>
                     <p className="text-sm leading-relaxed">{aberta.instructions}</p>
                   </div>
                 )}
                 <p className="text-sm text-muted-foreground">
-                  Para comer, use <b>Dieta → Adicionar → Receitas</b> na refeição.
+                  Para comer, use <b>{t("Dieta → Adicionar → Receitas")}</b> na refeição.
                 </p>
                 <Button
                   variant="outline"
@@ -410,7 +420,10 @@ function Linha({ r }: { r: RecipeSummary }) {
     <span className="min-w-0 flex-1">
       <span className="line-clamp-2 break-words font-semibold leading-snug">{r.name}</span>
       <span className="mt-0.5 block text-xs text-muted-foreground tabular-nums">
-        {kcal(r.perServing.kcal)} kcal · P {Math.round(r.perServing.proteinG)} g por porção
+        {t("{{v0}} kcal · P {{v1}} g por porção", {
+          v0: kcal(r.perServing.kcal),
+          v1: Math.round(r.perServing.proteinG),
+        })}
         {r.prepMinutes ? ` · ${r.prepMinutes} min` : ""}
       </span>
     </span>
@@ -503,14 +516,14 @@ function CartaoReceita({
         </span>
         <span className="mt-2 flex flex-wrap gap-1 text-[11px] font-semibold tabular-nums">
           <span className="rounded-full bg-elevated px-2 py-0.5">
-            {kcal(r.perServing.kcal)} kcal
+            {t("{{v0}} kcal", { v0: kcal(r.perServing.kcal) })}
           </span>
           <span className="rounded-full bg-primary/12 px-2 py-0.5 text-primary">
-            {Math.round(r.perServing.proteinG)} g P
+            {t("{{v0}} g P", { v0: Math.round(r.perServing.proteinG) })}
           </span>
           {r.prepMinutes ? (
             <span className="rounded-full bg-elevated px-2 py-0.5 text-muted-foreground">
-              {r.prepMinutes} min
+              {t("{{prepMinutes}} min", { prepMinutes: r.prepMinutes })}
             </span>
           ) : null}
         </span>

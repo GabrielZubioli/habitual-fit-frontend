@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { Bell, BellOff, Minus, Plus, X } from "lucide-react";
 import type { RestTimer } from "@/hooks/use-rest-timer";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * A barra do descanso entre séries. O relógio é `useRestTimer` (alvo em
@@ -30,7 +31,7 @@ export function RestTimerBar({ timer }: { timer: RestTimer }) {
         style={recorte.style}
         className="mx-auto max-w-md overflow-hidden rounded-[1.5rem] bg-(--t-surface) text-(--t-on) shadow-2xl shadow-black/40 animate-in fade-in slide-in-from-bottom-4 duration-300"
         role="timer"
-        aria-label="Descanso"
+        aria-label={t("Descanso")}
       >
         {/* O tempo que falta, encolhendo. */}
         <div className="h-1 bg-(--t-raised)" aria-hidden>
@@ -49,13 +50,13 @@ export function RestTimerBar({ timer }: { timer: RestTimer }) {
               type="button"
               className={botaoPequeno}
               onClick={() => timer.adjust(-15)}
-              aria-label="Menos 15 segundos"
+              aria-label={t("Menos 15 segundos")}
             >
               <Minus className="size-4" />
             </button>
             <div className="w-[3.4rem] text-center">
               <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-(--t-on-soft)">
-                Descanso
+                {t("Descanso")}
               </p>
               <p
                 className="text-2xl font-extrabold leading-none tabular-nums text-(--t-accent)"
@@ -68,7 +69,7 @@ export function RestTimerBar({ timer }: { timer: RestTimer }) {
               type="button"
               className={botaoPequeno}
               onClick={() => timer.adjust(15)}
-              aria-label="Mais 15 segundos"
+              aria-label={t("Mais 15 segundos")}
             >
               <Plus className="size-4" />
             </button>
@@ -81,7 +82,7 @@ export function RestTimerBar({ timer }: { timer: RestTimer }) {
                 setSom(!som);
                 writeSound(!som);
               }}
-              aria-label={som ? "Desligar som do descanso" : "Ligar som do descanso"}
+              aria-label={som ? t("Desligar som do descanso") : t("Ligar som do descanso")}
               aria-pressed={som}
             >
               {som ? <Bell className="size-5" /> : <BellOff className="size-5" />}
@@ -89,7 +90,7 @@ export function RestTimerBar({ timer }: { timer: RestTimer }) {
             <button
               type="button"
               onClick={timer.stop}
-              aria-label="Pular descanso"
+              aria-label={t("Pular descanso")}
               className="grid size-11 shrink-0 place-items-center rounded-full bg-(--t-accent) text-(--t-accent-fg) transition active:scale-90"
             >
               <X className="size-5" strokeWidth={2.75} />

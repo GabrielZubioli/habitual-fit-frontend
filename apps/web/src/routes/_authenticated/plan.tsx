@@ -1,3 +1,4 @@
+import { WEEKDAY_LABELS } from "@forja/app-core/lib/labels";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -16,7 +17,7 @@ import {
   Wand2,
   X,
 } from "lucide-react";
-import { TRAINING_PROGRAMS, WEEKDAY_LABELS, weekdayOf, type Weekday } from "@forja/domain";
+import { TRAINING_PROGRAMS, weekdayOf, type Weekday } from "@forja/domain";
 import { queryKeys } from "@forja/app-core/data/query-keys";
 import { errorMessage } from "@forja/app-core/data/supabase-helpers";
 import {
@@ -65,6 +66,7 @@ import { BodyMap, aggregateMuscleIntensities } from "@/components/body-map/body-
 import { exerciseImages } from "@forja/app-core/data/exercise-media";
 import { todayISO } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * O Plano: a semana e as rotinas.
@@ -79,8 +81,8 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/_authenticated/plan")({
   head: () => ({
     meta: [
-      { title: "Plano — Habitual Fit" },
-      { name: "description", content: "Sua rotina semanal e as rotinas de treino." },
+      { title: t("Plano — Habitual Fit") },
+      { name: "description", content: t("Sua rotina semanal e as rotinas de treino.") },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -126,7 +128,7 @@ function PlanPage() {
   const [iniciar, setIniciar] = useState<{ templateId: string; nome: string } | null>(null);
   const pedirInicio = (templateId: string) => {
     const s = week.data?.splits.find((x) => x.templateId === templateId);
-    setIniciar({ templateId, nome: s ? splitDisplayName(s.name) : "este treino" });
+    setIniciar({ templateId, nome: s ? splitDisplayName(s.name) : t("este treino") });
   };
 
   /** Rotina com a exclusão pedida, aguardando confirmação. */
@@ -135,7 +137,7 @@ function PlanPage() {
     mutationFn: (templateId: string) => deleteTemplate(templateId),
     onSuccess: () => {
       setAberta(null);
-      toast.success("Rotina excluída");
+      toast.success(t("Rotina excluída"));
       void invalidar();
     },
     onError: (e) => toast.error(errorMessage(e)),
@@ -149,7 +151,9 @@ function PlanPage() {
     onSuccess: (_, para) => {
       setAberta(null);
       setAba(para === "sugerido" ? "agenda" : "rotinas");
-      toast.success(para === "sugerido" ? "Plano sugerido ativado" : "Plano em branco criado");
+      toast.success(
+        para === "sugerido" ? t("Plano sugerido ativado") : t("Plano em branco criado"),
+      );
       void invalidar();
     },
     onError: (e) => toast.error(errorMessage(e)),
@@ -172,8 +176,8 @@ function PlanPage() {
 
   const header = (
     <PageHeader
-      title="Plano"
-      description={week.data?.routineName ?? "Sua rotina semanal"}
+      title={t("Plano")}
+      description={week.data?.routineName ?? t("Sua rotina semanal")}
       action={
         <Link
           to="/workouts/routines/new"
@@ -193,10 +197,11 @@ function PlanPage() {
         <PageBody>
           {/* Sem plano nenhum: as mesmas duas saídas do fim do questionário. */}
           <section className="rounded-[1.25rem] border border-dashed border-primary/40 bg-primary/5 p-5">
-            <h2 className="text-lg font-bold">Você ainda não tem um plano de treino</h2>
+            <h2 className="text-lg font-bold">{t("Você ainda não tem um plano de treino")}</h2>
             <p className="mt-1 text-pretty text-sm text-muted-foreground">
-              Use o plano sugerido para as suas respostas ou comece um plano em branco e monte tudo
-              do seu jeito.
+              {t(
+                "Use o plano sugerido para as suas respostas ou comece um plano em branco e monte tudo do seu jeito.",
+              )}
             </p>
             <div className="mt-4 grid gap-2 sm:grid-cols-2">
               <Button
@@ -205,7 +210,7 @@ function PlanPage() {
                 onClick={() => trocar.mutate("sugerido")}
               >
                 <Sparkles className="mr-1.5 size-4" aria-hidden />
-                Usar o plano sugerido
+                {t("Usar o plano sugerido")}
               </Button>
               <Button
                 variant="outline"
@@ -214,7 +219,7 @@ function PlanPage() {
                 onClick={() => trocar.mutate("zero")}
               >
                 <PencilRuler className="mr-1.5 size-4" aria-hidden />
-                Começar do zero
+                {t("Começar do zero")}
               </Button>
             </div>
           </section>
@@ -234,7 +239,7 @@ function PlanPage() {
       const id = await createTemplate(userId, dados.routineId, dados.splits, nome);
       setAba("rotinas");
       setAberta(id);
-      toast.success("Rotina criada. Adicione os exercícios.");
+      toast.success(t("Rotina criada. Adicione os exercícios."));
     }
     await invalidar();
     setNomeando(null);
@@ -250,23 +255,24 @@ function PlanPage() {
           value={aba}
           onChange={setAba}
           options={[
-            { value: "agenda", label: "Agenda" },
-            { value: "rotinas", label: "Rotinas" },
+            { value: "agenda", label: t("Agenda") },
+            { value: "rotinas", label: t("Rotinas") },
           ]}
-          label="Seção do plano"
+          label={t("Seção do plano")}
         />
 
         {emBranco && (
           <section className="mt-5 rounded-[1.25rem] border border-dashed border-primary/40 bg-primary/5 p-5">
-            <h2 className="text-lg font-bold">Seu plano está em branco</h2>
+            <h2 className="text-lg font-bold">{t("Seu plano está em branco")}</h2>
             <p className="mt-1 text-pretty text-sm text-muted-foreground">
-              Crie suas rotinas, escolha os exercícios e vincule cada uma aos dias da semana. Se
-              preferir, use o plano sugerido para as suas respostas.
+              {t(
+                "Crie suas rotinas, escolha os exercícios e vincule cada uma aos dias da semana. Se preferir, use o plano sugerido para as suas respostas.",
+              )}
             </p>
             <div className="mt-4 grid gap-2 sm:grid-cols-2">
               <Button className="h-12 rounded-xl" onClick={() => setNomeando({ tipo: "nova" })}>
                 <Plus className="mr-1.5 size-4" aria-hidden />
-                Criar rotina
+                {t("Criar rotina")}
               </Button>
               <Button
                 variant="outline"
@@ -274,7 +280,7 @@ function PlanPage() {
                 onClick={() => setTrocando("sugerido")}
               >
                 <Sparkles className="mr-1.5 size-4" aria-hidden />
-                Usar o plano sugerido
+                {t("Usar o plano sugerido")}
               </Button>
             </div>
           </section>
@@ -299,7 +305,7 @@ function PlanPage() {
             }
           />
         ) : (
-          <section aria-label="Rotinas" className="mt-5">
+          <section aria-label={t("Rotinas")} className="mt-5">
             <ul className="space-y-3">
               {dados.splits.map((split) => {
                 const expandida = aberta === split.templateId;
@@ -324,7 +330,7 @@ function PlanPage() {
                         </span>
                         <span className="block text-sm text-muted-foreground">
                           {split.exercises.length}{" "}
-                          {split.exercises.length === 1 ? "exercício" : "exercícios"} ·{" "}
+                          {split.exercises.length === 1 ? t("exercício") : t("exercícios")} ·{" "}
                           {estimarDuracao(split)}
                         </span>
                       </button>
@@ -338,7 +344,7 @@ function PlanPage() {
                             atual: splitDisplayName(split.name),
                           })
                         }
-                        aria-label={`Renomear ${splitDisplayName(split.name)}`}
+                        aria-label={t("Renomear {{v0}}", { v0: splitDisplayName(split.name) })}
                         className="grid size-9 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-elevated"
                       >
                         <Pencil className="size-4" />
@@ -348,14 +354,14 @@ function PlanPage() {
                         className="shrink-0 rounded-full"
                         onClick={() => pedirInicio(split.templateId)}
                         disabled={abrir.isPending || split.exercises.length === 0}
-                        aria-label={`Começar ${splitDisplayName(split.name)}`}
+                        aria-label={t("Começar {{v0}}", { v0: splitDisplayName(split.name) })}
                       >
                         <Play className="size-4 fill-current" aria-hidden />
                       </Button>
                       <button
                         type="button"
                         onClick={() => setAberta(expandida ? null : split.templateId)}
-                        aria-label={expandida ? "Fechar rotina" : "Editar rotina"}
+                        aria-label={expandida ? t("Fechar rotina") : t("Editar rotina")}
                         className="grid size-9 place-items-center rounded-full text-muted-foreground hover:bg-elevated"
                       >
                         <ChevronDown
@@ -384,20 +390,20 @@ function PlanPage() {
                           ))}
                         </ul>
                         <ExercisePicker
-                          title="Adicionar exercício"
+                          title={t("Adicionar exercício")}
                           onPick={async (exercise) => {
                             await addTemplateItem(
                               split.templateId,
                               exercise.id,
                               split.exercises.length + 1,
                             );
-                            toast.success("Exercício adicionado");
+                            toast.success(t("Exercício adicionado"));
                             await invalidar();
                           }}
                           trigger={
                             <Button variant="ghost" className="mt-2 w-full text-primary">
                               <Plus className="mr-1.5 size-4" aria-hidden />
-                              Adicionar exercício
+                              {t("Adicionar exercício")}
                             </Button>
                           }
                         />
@@ -412,7 +418,7 @@ function PlanPage() {
                           }
                         >
                           <Trash2 className="mr-1.5 size-4" aria-hidden />
-                          Excluir rotina
+                          {t("Excluir rotina")}
                         </Button>
                       </div>
                     )}
@@ -430,19 +436,22 @@ function PlanPage() {
                 <Plus className="size-6" aria-hidden />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-lg font-semibold">Criar rotina personalizada</span>
+                <span className="block text-lg font-semibold">
+                  {t("Criar rotina personalizada")}
+                </span>
                 <span className="block text-sm text-muted-foreground">
-                  Dê um nome e escolha os exercícios
+                  {t("Dê um nome e escolha os exercícios")}
                 </span>
               </span>
             </button>
 
             {!emBranco && (
               <>
-                <h2 className="mb-1 mt-8 px-1 text-lg font-semibold">Trocar de plano</h2>
+                <h2 className="mb-1 mt-8 px-1 text-lg font-semibold">{t("Trocar de plano")}</h2>
                 <p className="mb-3 px-1 text-sm text-muted-foreground">
-                  As rotinas atuais saem do plano; os treinos que você já fez continuam no
-                  histórico.
+                  {t(
+                    "As rotinas atuais saem do plano; os treinos que você já fez continuam no histórico.",
+                  )}
                 </p>
                 <div className="grid gap-2">
                   <button
@@ -452,9 +461,9 @@ function PlanPage() {
                   >
                     <Sparkles className="size-5 shrink-0 text-primary" aria-hidden />
                     <span className="min-w-0 flex-1">
-                      <span className="block font-semibold">Usar o plano sugerido</span>
+                      <span className="block font-semibold">{t("Usar o plano sugerido")}</span>
                       <span className="block text-sm text-muted-foreground">
-                        Montado a partir das suas respostas do questionário
+                        {t("Montado a partir das suas respostas do questionário")}
                       </span>
                     </span>
                   </button>
@@ -465,9 +474,9 @@ function PlanPage() {
                   >
                     <PencilRuler className="size-5 shrink-0 text-primary" aria-hidden />
                     <span className="min-w-0 flex-1">
-                      <span className="block font-semibold">Começar do zero</span>
+                      <span className="block font-semibold">{t("Começar do zero")}</span>
                       <span className="block text-sm text-muted-foreground">
-                        Um plano em branco, sem rotinas nem exercícios
+                        {t("Um plano em branco, sem rotinas nem exercícios")}
                       </span>
                     </span>
                   </button>
@@ -475,7 +484,9 @@ function PlanPage() {
               </>
             )}
 
-            <h2 className="mb-3 mt-8 px-1 text-lg text-muted-foreground">Programas prontos</h2>
+            <h2 className="mb-3 mt-8 px-1 text-lg text-muted-foreground">
+              {t("Programas prontos")}
+            </h2>
             <ul className="space-y-3">
               {TRAINING_PROGRAMS.map((p) => (
                 <li key={p.slug}>
@@ -487,7 +498,10 @@ function PlanPage() {
                     <span className="min-w-0 flex-1">
                       <span className="block font-semibold">{p.name}</span>
                       <span className="block text-sm text-muted-foreground">
-                        {p.input.daysPerWeek}× por semana · {p.weeks} semanas
+                        {t("{{daysPerWeek}}× por semana · {{weeks}} semanas", {
+                          daysPerWeek: p.input.daysPerWeek,
+                          weeks: p.weeks,
+                        })}
                       </span>
                     </span>
                     <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden />
@@ -502,24 +516,29 @@ function PlanPage() {
       <ConfirmDialog
         open={iniciar !== null}
         onOpenChange={(o) => !o && setIniciar(null)}
-        title="Deseja iniciar esse treino?"
+        title={t("Deseja iniciar esse treino?")}
         description={
-          iniciar ? `${iniciar.nome} começa agora e o cronômetro passa a contar.` : undefined
+          iniciar
+            ? t("{{nome}} começa agora e o cronômetro passa a contar.", { nome: iniciar.nome })
+            : undefined
         }
-        confirmLabel="Iniciar treino"
+        confirmLabel={t("Iniciar treino")}
         onConfirm={() => iniciar && abrir.mutate(iniciar.templateId)}
       />
 
       <ConfirmDialog
         open={excluindo !== null}
         onOpenChange={(o) => !o && setExcluindo(null)}
-        title="Excluir esta rotina?"
+        title={t("Excluir esta rotina?")}
         description={
           excluindo
-            ? `“${excluindo.nome}” sai do plano e dos dias da semana. Os treinos que você já fez com ela continuam no histórico.`
+            ? t(
+                "“{{nome}}” sai do plano e dos dias da semana. Os treinos que você já fez com ela continuam no histórico.",
+                { nome: excluindo.nome },
+              )
             : undefined
         }
-        confirmLabel="Excluir rotina"
+        confirmLabel={t("Excluir rotina")}
         destructive
         onConfirm={() => excluindo && excluir.mutate(excluindo.templateId)}
       />
@@ -527,15 +546,21 @@ function PlanPage() {
       <ConfirmDialog
         open={trocando !== null}
         onOpenChange={(o) => !o && setTrocando(null)}
-        title={trocando === "zero" ? "Começar um plano do zero?" : "Usar o plano sugerido?"}
+        title={trocando === "zero" ? t("Começar um plano do zero?") : t("Usar o plano sugerido?")}
         description={
           trocando === "zero"
-            ? "Suas rotinas atuais saem do plano e você começa com um plano em branco. Os treinos que você já fez continuam no histórico."
+            ? t(
+                "Suas rotinas atuais saem do plano e você começa com um plano em branco. Os treinos que você já fez continuam no histórico.",
+              )
             : emBranco
-              ? "Montamos as rotinas, os exercícios e os dias a partir das suas respostas do questionário. Você pode ajustar tudo depois. Lembre: é uma referência geral, que não substitui a orientação de um profissional de educação física."
-              : "Suas rotinas atuais saem do plano e dão lugar às sugeridas para as suas respostas. Os treinos que você já fez continuam no histórico. O plano sugerido é uma referência geral, que não substitui a orientação de um profissional de educação física."
+              ? t(
+                  "Montamos as rotinas, os exercícios e os dias a partir das suas respostas do questionário. Você pode ajustar tudo depois. Lembre: é uma referência geral, que não substitui a orientação de um profissional de educação física.",
+                )
+              : t(
+                  "Suas rotinas atuais saem do plano e dão lugar às sugeridas para as suas respostas. Os treinos que você já fez continuam no histórico. O plano sugerido é uma referência geral, que não substitui a orientação de um profissional de educação física.",
+                )
         }
-        confirmLabel={trocando === "zero" ? "Começar do zero" : "Usar o plano sugerido"}
+        confirmLabel={trocando === "zero" ? t("Começar do zero") : t("Usar o plano sugerido")}
         destructive={trocando === "zero" || !emBranco}
         onConfirm={() => trocando && trocar.mutate(trocando)}
       />
@@ -544,9 +569,9 @@ function PlanPage() {
         key={nomeando ? JSON.stringify(nomeando) : "fechado"}
         open={nomeando !== null}
         onOpenChange={(o) => !o && setNomeando(null)}
-        titulo={nomeando?.tipo === "nova" ? "Nova rotina" : "Nome da rotina"}
+        titulo={nomeando?.tipo === "nova" ? t("Nova rotina") : t("Nome da rotina")}
         inicial={nomeando?.tipo === "rotina" ? nomeando.atual : ""}
-        confirmar={nomeando?.tipo === "nova" ? "Criar" : "Salvar"}
+        confirmar={nomeando?.tipo === "nova" ? t("Criar") : t("Salvar")}
         onSave={salvarNome}
       />
     </>
@@ -603,9 +628,13 @@ function AgendaDia({
   const nomeDia = WEEKDAY_LABELS[dia].toLowerCase();
 
   return (
-    <section aria-label="Agenda" className="mt-5">
+    <section aria-label={t("Agenda")} className="mt-5">
       {/* Seletor dos sete dias: sete colunas iguais, sem rolagem lateral. */}
-      <div role="radiogroup" aria-label="Dia da programação" className="grid grid-cols-7 gap-1.5">
+      <div
+        role="radiogroup"
+        aria-label={t("Dia da programação")}
+        className="grid grid-cols-7 gap-1.5"
+      >
         {ORDEM_SEMANA.map((d, i) => {
           const ativo = d === dia;
           const ehHoje = d === hoje;
@@ -618,7 +647,12 @@ function AgendaDia({
               type="button"
               role="radio"
               aria-checked={ativo}
-              aria-label={`Dia ${i + 1}, ${WEEKDAY_LABELS[d]}${ehHoje ? ", hoje" : ""}${temTreino ? "" : ", descanso"}`}
+              aria-label={t("Dia {{v0}}, {{v1}}{{v2}}{{v3}}", {
+                v0: i + 1,
+                v1: WEEKDAY_LABELS[d],
+                v2: ehHoje ? ", hoje" : "",
+                v3: temTreino ? "" : ", descanso",
+              })}
               onClick={() => {
                 setDia(d);
                 setEscolhida(null);
@@ -633,7 +667,7 @@ function AgendaDia({
               )}
             >
               <span className="text-[10px] font-semibold uppercase tracking-wide opacity-80">
-                Dia
+                {t("Dia")}
               </span>
               <span className="text-lg font-bold leading-none tabular-nums">{i + 1}</span>
               <span className="text-[11px] font-medium">
@@ -660,11 +694,11 @@ function AgendaDia({
         <header className="flex items-start gap-3 px-1">
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium text-muted-foreground">
-              Dia {numero} · {WEEKDAY_LABELS[dia]}
+              {t("Dia {{numero}} · {{v1}}", { numero, v1: WEEKDAY_LABELS[dia] })}
               {dia === hoje && " · hoje"}
             </p>
             <h2 className="mt-0.5 text-balance text-2xl font-bold leading-tight tracking-tight">
-              {split ? splitDisplayName(split.name) : "Dia de descanso"}
+              {split ? splitDisplayName(split.name) : t("Dia de descanso")}
             </h2>
             <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
               <span
@@ -676,15 +710,15 @@ function AgendaDia({
                 )}
               >
                 {status === "treino"
-                  ? "Treino programado"
+                  ? t("Treino programado")
                   : status === "vazio"
-                    ? "Sem exercícios"
-                    : "Descanso"}
+                    ? t("Sem exercícios")
+                    : t("Descanso")}
               </span>
               {split && status === "treino" && (
                 <span>
                   {split.exercises.length}{" "}
-                  {split.exercises.length === 1 ? "exercício" : "exercícios"} ·{" "}
+                  {split.exercises.length === 1 ? t("exercício") : t("exercícios")} ·{" "}
                   {estimarDuracao(split)}
                 </span>
               )}
@@ -698,16 +732,16 @@ function AgendaDia({
                 variant="ghost"
                 size="icon"
                 className="shrink-0 rounded-full"
-                aria-label={`Ajustar as rotinas de ${nomeDia}`}
+                aria-label={t("Ajustar as rotinas de {{nomeDia}}", { nomeDia })}
               >
                 <CalendarCog className="size-5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Rotinas de {nomeDia}</DropdownMenuLabel>
+              <DropdownMenuLabel>{t("Rotinas de {{nomeDia}}", { nomeDia })}</DropdownMenuLabel>
               {dados.splits.length === 0 && (
                 <DropdownMenuItem disabled>
-                  Crie uma rotina na aba Rotinas primeiro
+                  {t("Crie uma rotina na aba Rotinas primeiro")}
                 </DropdownMenuItem>
               )}
               {outras.map((s) => (
@@ -726,7 +760,7 @@ function AgendaDia({
                   className="text-destructive focus:text-destructive"
                 >
                   <X className="mr-2 size-4" aria-hidden />
-                  Tirar {splitDisplayName(s.name)} deste dia
+                  {t("Tirar {{v0}} deste dia", { v0: splitDisplayName(s.name) })}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -737,7 +771,7 @@ function AgendaDia({
         {doDia.length > 1 && (
           <div
             role="radiogroup"
-            aria-label="Rotina do dia"
+            aria-label={t("Rotina do dia")}
             className="mt-3 flex flex-wrap gap-2 px-1"
           >
             {doDia.map((s) => {
@@ -773,7 +807,7 @@ function AgendaDia({
                 <>
                   <BodyMap muscles={[]} size="lg" showToggle={false} />
                   <p className="mt-3 text-center text-sm text-muted-foreground">
-                    Os exercícios deste treino ainda não têm os músculos cadastrados.
+                    {t("Os exercícios deste treino ainda não têm os músculos cadastrados.")}
                   </p>
                 </>
               )}
@@ -781,7 +815,9 @@ function AgendaDia({
 
             {/* C — exercícios do dia, na ordem da rotina */}
             <div>
-              <h3 className="mb-2 px-1 text-sm font-semibold text-muted-foreground">Exercícios</h3>
+              <h3 className="mb-2 px-1 text-sm font-semibold text-muted-foreground">
+                {t("Exercícios")}
+              </h3>
               <ol className="divide-y divide-border/60 overflow-hidden rounded-[1.5rem] bg-card">
                 {split.exercises.map((e, i) => (
                   <li key={e.itemId}>
@@ -808,8 +844,8 @@ function AgendaDia({
                           {e.targetSets} ×{" "}
                           {e.targetRepMin && e.targetRepMax
                             ? `${e.targetRepMin}–${e.targetRepMax}`
-                            : e.targetReps}{" "}
-                          · descanso {e.restSeconds} s
+                            : e.targetReps}
+                          {t("· descanso {{restSeconds}} s", { restSeconds: e.restSeconds })}
                           {e.targetRpe !== null && ` · RPE ${e.targetRpe}`}
                         </span>
                       </span>
@@ -838,12 +874,19 @@ function AgendaDia({
           <div className="mt-5 flex flex-col items-center rounded-[1.5rem] bg-card px-6 pb-8 pt-6 text-center">
             <BodyMap muscles={[]} size="md" showToggle={false} showLegend={false} />
             <p className="mt-5 text-lg font-semibold">
-              {status === "vazio" ? "Nenhum exercício nesta rotina" : "Nenhum treino programado"}
+              {status === "vazio"
+                ? t("Nenhum exercício nesta rotina")
+                : t("Nenhum treino programado")}
             </p>
             <p className="mt-1 max-w-sm text-pretty text-sm text-muted-foreground">
               {status === "vazio"
-                ? "Adicione exercícios a ela na aba Rotinas para poder iniciar o treino deste dia."
-                : `${WEEKDAY_LABELS[dia]} é dia de descanso. Para treinar neste dia, vincule uma rotina pelo botão de ajustar.`}
+                ? t(
+                    "Adicione exercícios a ela na aba Rotinas para poder iniciar o treino deste dia.",
+                  )
+                : t(
+                    "{{v0}} é dia de descanso. Para treinar neste dia, vincule uma rotina pelo botão de ajustar.",
+                    { v0: WEEKDAY_LABELS[dia] },
+                  )}
             </p>
           </div>
         )}
@@ -890,7 +933,7 @@ function NomeDialog({
             value={nome}
             onChange={(e) => setNome(e.target.value)}
             maxLength={60}
-            placeholder="Ex.: Peito e tríceps"
+            placeholder={t("Ex.: Peito e tríceps")}
             aria-label={titulo}
             className="h-12 text-lg"
           />
@@ -950,7 +993,7 @@ function Segmented<T extends string>({
 function PlanSkeleton() {
   return (
     <>
-      <PageHeader title="Plano" description="Sua rotina semanal" />
+      <PageHeader title={t("Plano")} description={t("Sua rotina semanal")} />
       <PageBody>
         <Skeleton className="mb-6 h-24 w-full rounded-[1.5rem]" />
         <div className="space-y-3">

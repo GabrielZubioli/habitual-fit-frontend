@@ -28,6 +28,7 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { ExerciseDemo } from "@/components/workouts/exercise-demo-images";
 import { ExercisePicker } from "@/components/pickers/exercise-picker";
 import { EQUIPMENT_LABELS, label } from "@forja/app-core/lib/labels";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Uma linha de exercício.
@@ -63,7 +64,7 @@ export function RoutineExerciseRow({
   const remover = useMutation({
     mutationFn: () => removeTemplateItem(exercise.itemId),
     onSuccess: () => {
-      toast.success("Exercício removido");
+      toast.success(t("Exercício removido"));
       void onChanged();
     },
     onError: (e) => toast.error(errorMessage(e)),
@@ -72,7 +73,7 @@ export function RoutineExerciseRow({
   const duplicar = useMutation({
     mutationFn: () => duplicateTemplateItem(exercise, templateId),
     onSuccess: () => {
-      toast.success("Exercício duplicado");
+      toast.success(t("Exercício duplicado"));
       void onChanged();
     },
     onError: (e) => toast.error(errorMessage(e)),
@@ -81,7 +82,7 @@ export function RoutineExerciseRow({
   const trocar = useMutation({
     mutationFn: (newId: string) => swapTemplateExercise(exercise.itemId, newId),
     onSuccess: () => {
-      toast.success("Exercício trocado — séries e descanso preservados");
+      toast.success(t("Exercício trocado — séries e descanso preservados"));
       void onChanged();
     },
     onError: (e) => toast.error(errorMessage(e)),
@@ -105,7 +106,7 @@ export function RoutineExerciseRow({
               type="button"
               onClick={onOpenDetail}
               className="shrink-0"
-              aria-label={`Ver detalhes de ${exercise.name}`}
+              aria-label={t("Ver detalhes de {{name}}", { name: exercise.name })}
             >
               <ExerciseDemo
                 images={exerciseImages(exercise.name, exercise.imageUrls)}
@@ -135,7 +136,7 @@ export function RoutineExerciseRow({
                       size="icon"
                       variant="ghost"
                       className="size-8 shrink-0"
-                      aria-label={`Opções de ${exercise.name}`}
+                      aria-label={t("Opções de {{name}}", { name: exercise.name })}
                     >
                       <MoreVertical className="size-4" />
                     </Button>
@@ -143,25 +144,25 @@ export function RoutineExerciseRow({
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onSelect={onOpenDetail}>
                       <Info className="mr-2 size-4" />
-                      Ver execução
+                      {t("Ver execução")}
                     </DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => setExpandido((v) => !v)}>
                       <Timer className="mr-2 size-4" />
-                      {expandido ? "Ocultar ajustes" : "Ajustar séries e descanso"}
+                      {expandido ? t("Ocultar ajustes") : t("Ajustar séries e descanso")}
                     </DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => duplicar.mutate()}>
                       <Copy className="mr-2 size-4" />
-                      Duplicar
+                      {t("Duplicar")}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <ExercisePicker
-                      title={`Trocar ${exercise.name}`}
+                      title={t("Trocar {{name}}", { name: exercise.name })}
                       muscle={exercise.primaryMuscle}
                       onPick={async (ex) => trocar.mutateAsync(ex.id)}
                       trigger={
                         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                           <Repeat className="mr-2 size-4" />
-                          Trocar exercício
+                          {t("Trocar exercício")}
                         </DropdownMenuItem>
                       }
                     />
@@ -171,7 +172,7 @@ export function RoutineExerciseRow({
                       className="text-destructive focus:text-destructive"
                     >
                       <Trash2 className="mr-2 size-4" />
-                      Remover do plano
+                      {t("Remover do plano")}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -182,11 +183,11 @@ export function RoutineExerciseRow({
                   {exercise.targetSets} × {faixaReps}
                 </Badge>
                 <Badge variant="outline" className="tabular-nums font-normal">
-                  {exercise.restSeconds}s descanso
+                  {t("{{restSeconds}}s descanso", { restSeconds: exercise.restSeconds })}
                 </Badge>
                 {exercise.targetRpe && (
                   <Badge variant="outline" className="tabular-nums font-normal">
-                    RPE {exercise.targetRpe}
+                    {t("RPE {{targetRpe}}", { targetRpe: exercise.targetRpe })}
                   </Badge>
                 )}
                 {exercise.cadence && (
@@ -201,21 +202,21 @@ export function RoutineExerciseRow({
           {expandido && (
             <div className="mt-3 grid grid-cols-2 gap-3 border-t border-border pt-3 sm:grid-cols-4">
               <NumberInput
-                label="Séries"
+                label={t("Séries")}
                 value={exercise.targetSets}
                 min={1}
                 max={12}
                 onCommit={(v) => salvar.mutate({ target_sets: v })}
               />
               <NumberInput
-                label="Repetições"
+                label={t("Repetições")}
                 value={exercise.targetReps}
                 min={1}
                 max={100}
                 onCommit={(v) => salvar.mutate({ target_reps: v })}
               />
               <NumberInput
-                label="Descanso (s)"
+                label={t("Descanso (s)")}
                 value={exercise.restSeconds}
                 min={0}
                 max={600}
@@ -223,7 +224,7 @@ export function RoutineExerciseRow({
                 onCommit={(v) => salvar.mutate({ rest_seconds: v })}
               />
               <NumberInput
-                label="RPE alvo"
+                label={t("RPE alvo")}
                 value={exercise.targetRpe ?? 8}
                 min={1}
                 max={10}
@@ -232,14 +233,17 @@ export function RoutineExerciseRow({
 
               <div className="col-span-2 flex items-end sm:col-span-4">
                 <ConfirmButton
-                  aria-label={`Remover ${exercise.name} do treino`}
-                  title="Remover do treino?"
-                  description={`“${exercise.name}” sai desta divisão. Seu histórico de séries continua salvo.`}
-                  confirmLabel="Remover"
+                  aria-label={t("Remover {{name}} do treino", { name: exercise.name })}
+                  title={t("Remover do treino?")}
+                  description={t(
+                    "“{{name}}” sai desta divisão. Seu histórico de séries continua salvo.",
+                    { name: exercise.name },
+                  )}
+                  confirmLabel={t("Remover")}
                   onConfirm={() => remover.mutate()}
                 >
                   <Trash2 className="mr-1.5 size-4" />
-                  Remover exercício
+                  {t("Remover exercício")}
                 </ConfirmButton>
               </div>
             </div>
@@ -249,9 +253,11 @@ export function RoutineExerciseRow({
       <ConfirmDialog
         open={confirmarRemocao}
         onOpenChange={setConfirmarRemocao}
-        title="Remover do plano?"
-        description={`“${exercise.name}” sai desta rotina. Seu histórico de séries continua salvo.`}
-        confirmLabel="Remover"
+        title={t("Remover do plano?")}
+        description={t("“{{name}}” sai desta rotina. Seu histórico de séries continua salvo.", {
+          name: exercise.name,
+        })}
+        confirmLabel={t("Remover")}
         destructive
         onConfirm={() => remover.mutate()}
       />

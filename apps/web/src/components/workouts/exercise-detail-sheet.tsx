@@ -1,3 +1,8 @@
+import {
+  exerciseName,
+  exerciseSteps,
+  idiomaDiferente,
+} from "@forja/app-core/data/exercise-library";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, ListChecks, PlayCircle, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,6 +28,7 @@ import {
   MUSCLE_LABELS,
   label,
 } from "@forja/app-core/lib/labels";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Ficha completa do exercício.
@@ -55,7 +61,7 @@ export function ExerciseDetailSheet({
         await supabase
           .from("exercises")
           .select(
-            "id, name, name_en, instructions, execution, execution_en, cues, common_mistakes, default_cadence, image_urls, external_id, media_id, media_ref, media_source, video_url, equipment, category, level, mechanic, movement_pattern, primary_muscle, secondary_muscles, contraindications, exercise_muscles(muscle, contribution)",
+            "id, name, name_en, name_es, instructions, execution, execution_en, execution_es, cues, common_mistakes, default_cadence, image_urls, external_id, media_id, media_ref, media_source, video_url, equipment, category, level, mechanic, movement_pattern, primary_muscle, secondary_muscles, contraindications, exercise_muscles(muscle, contribution)",
           )
           .eq("id", exerciseId!)
           .maybeSingle(),
@@ -64,11 +70,9 @@ export function ExerciseDetailSheet({
 
   const ex = exercise.data;
 
-  // Passo a passo: português primeiro, inglês da base importada como reserva.
-  const passosPt = ex?.execution ?? [];
-  const passosEn = ex?.execution_en ?? [];
-  const passos = passosPt.length > 0 ? passosPt : passosEn;
-  const passosEmIngles = passosPt.length === 0 && passosEn.length > 0;
+  // Passo a passo no idioma do app; na falta dele, o mais próximo, com selo.
+  const { passos, idioma } = exerciseSteps(ex ?? {});
+  const selo = idiomaDiferente(idioma);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -79,12 +83,16 @@ export function ExerciseDetailSheet({
         {exercise.isPending ? (
           <DetailSkeleton />
         ) : !ex ? (
-          <div className="py-12 text-center text-muted-foreground">Exercício não encontrado.</div>
+          <div className="py-12 text-center text-muted-foreground">
+            {t("Exercício não encontrado.")}
+          </div>
         ) : (
           <>
             <SheetHeader className="text-left">
-              <SheetTitle className="text-balance text-xl leading-tight">{ex.name}</SheetTitle>
-              {ex.name_en && ex.name_en !== ex.name && (
+              <SheetTitle className="text-balance text-xl leading-tight">
+                {exerciseName(ex)}
+              </SheetTitle>
+              {ex.name_en && ex.name_en !== exerciseName(ex) && (
                 <SheetDescription className="text-xs">{ex.name_en}</SheetDescription>
               )}
             </SheetHeader>
@@ -111,12 +119,12 @@ export function ExerciseDetailSheet({
                   movimento. */}
               <Button asChild variant="outline" className="w-full">
                 <a
-                  href={ex.video_url ?? videoSearchUrl(ex.name)}
+                  href={ex.video_url ?? videoSearchUrl(exerciseName(ex))}
                   target="_blank"
                   rel="noreferrer noopener"
                 >
                   <PlayCircle className="mr-1.5 size-4" aria-hidden />
-                  Ver vídeo da execução
+                  {t("Ver vídeo da execução")}
                 </a>
               </Button>
 
@@ -135,7 +143,7 @@ export function ExerciseDetailSheet({
                 )}
                 {ex.default_cadence && (
                   <Badge variant="outline" className="tabular-nums">
-                    Cadência {ex.default_cadence}
+                    {t("Cadência {{default_cadence}}", { default_cadence: ex.default_cadence })}
                   </Badge>
                 )}
               </div>
@@ -144,7 +152,7 @@ export function ExerciseDetailSheet({
                   "onde", a lista responde "quanto". */}
               <section>
                 <SectionTitle icon={<Target className="size-4" />}>
-                  Músculos trabalhados
+                  {t("Músculos trabalhados")}
                 </SectionTitle>
                 <div className="mt-3 flex flex-col items-center gap-4 sm:flex-row">
                   <BodyMap
@@ -161,14 +169,14 @@ export function ExerciseDetailSheet({
                   <dl className="w-full space-y-2 text-sm">
                     <div>
                       <dt className="text-xs uppercase tracking-wider text-muted-foreground">
-                        Principal
+                        {t("Principal")}
                       </dt>
                       <dd className="font-medium">{label(MUSCLE_LABELS, ex.primary_muscle)}</dd>
                     </div>
                     {(ex.secondary_muscles ?? []).length > 0 && (
                       <div>
                         <dt className="text-xs uppercase tracking-wider text-muted-foreground">
-                          Secundários
+                          {t("Secundários")}
                         </dt>
                         <dd className="font-medium">
                           {(ex.secondary_muscles ?? [])
@@ -191,11 +199,11 @@ export function ExerciseDetailSheet({
               {passos.length > 0 && (
                 <section>
                   <SectionTitle icon={<ListChecks className="size-4" />}>
-                    Execução correta
+                    {t("Execução correta")}
                   </SectionTitle>
-                  {passosEmIngles && (
+                  {selo && (
                     <Badge variant="warning" className="mt-2">
-                      Texto original em inglês
+                      {selo}
                     </Badge>
                   )}
                   <ol className="mt-3 space-y-2.5">
@@ -204,7 +212,10 @@ export function ExerciseDetailSheet({
                         <span className="grid size-5 shrink-0 place-items-center rounded-full bg-primary-soft text-[11px] font-bold text-primary-soft-foreground">
                           {i + 1}
                         </span>
-                        <span className="text-pretty" lang={passosEmIngles ? "en" : undefined}>
+                        <span
+                          className="text-pretty"
+                          lang={idioma === "pt" ? "pt-BR" : (idioma ?? undefined)}
+                        >
                           {passo}
                         </span>
                       </li>
@@ -215,7 +226,7 @@ export function ExerciseDetailSheet({
 
               {(ex.cues ?? []).length > 0 && (
                 <section>
-                  <SectionTitle>Pontos de atenção</SectionTitle>
+                  <SectionTitle>{t("Pontos de atenção")}</SectionTitle>
                   <ul className="mt-3 space-y-1.5">
                     {(ex.cues ?? []).map((c) => (
                       <li key={c} className="flex gap-2 text-sm leading-relaxed">
@@ -233,7 +244,7 @@ export function ExerciseDetailSheet({
               {(ex.common_mistakes ?? []).length > 0 && (
                 <section>
                   <SectionTitle icon={<AlertTriangle className="size-4 text-destructive" />}>
-                    Erros comuns
+                    {t("Erros comuns")}
                   </SectionTitle>
                   <ul className="mt-3 space-y-1.5">
                     {(ex.common_mistakes ?? []).map((m) => (
@@ -254,10 +265,11 @@ export function ExerciseDetailSheet({
                   automática ruim se passando por conteúdo próprio. */}
               {(ex.execution ?? []).length === 0 && ex.instructions && (
                 <section>
-                  <SectionTitle>Descrição original</SectionTitle>
+                  <SectionTitle>{t("Descrição original")}</SectionTitle>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Ainda sem versão em português para este exercício. O texto abaixo é o da base de
-                    origem, em inglês.
+                    {t(
+                      "Ainda sem versão em português para este exercício. O texto abaixo é o da base de origem, em inglês.",
+                    )}
                   </p>
                   <p className="mt-2 text-pretty text-sm leading-relaxed text-muted-foreground">
                     {ex.instructions}
@@ -267,11 +279,14 @@ export function ExerciseDetailSheet({
 
               {(ex.contraindications ?? []).length > 0 && (
                 <p className="rounded-xl bg-muted/50 p-3 text-xs leading-relaxed text-muted-foreground">
-                  Exige atenção em caso de lesão em{" "}
-                  {(ex.contraindications ?? [])
-                    .map((c) => label(MUSCLE_LABELS, c).toLowerCase())
-                    .join(", ")}
-                  . Na dúvida, procure orientação profissional.
+                  {t(
+                    "Exige atenção em caso de lesão em {{v0}} . Na dúvida, procure orientação profissional.",
+                    {
+                      v0: (ex.contraindications ?? [])
+                        .map((c) => label(MUSCLE_LABELS, c).toLowerCase())
+                        .join(", "),
+                    },
+                  )}
                 </p>
               )}
             </div>

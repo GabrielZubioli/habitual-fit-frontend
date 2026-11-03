@@ -61,17 +61,19 @@ import { Dialog } from "@/ui/dialog";
 import { Icon, type IconNode } from "@/ui/icon";
 import { PageHeader, PageScroll } from "@/ui/page-header";
 import { Text } from "@/ui/text";
+import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Configurações — o `settings.tsx` do web. Cada seção é uma opção do Menu e
  * abre sozinha (`?secao=treino`); sem `secao`, todas.
  */
 const SECOES = [
-  { key: "metas", title: "Metas nutricionais" },
-  { key: "treino", title: "Treino" },
-  { key: "alimentacao", title: "Alimentação" },
-  { key: "saude", title: "Saúde" },
-  { key: "conta", title: "Dados e conta" },
+  { key: "metas", title: t("Metas nutricionais") },
+  { key: "treino", title: t("Treino") },
+  { key: "alimentacao", title: t("Alimentação") },
+  { key: "saude", title: t("Saúde") },
+  { key: "conta", title: t("Dados e conta") },
 ] as const;
 type Secao = (typeof SECOES)[number]["key"];
 
@@ -106,7 +108,7 @@ export default function SettingsPage() {
       await savePreferences(profileId, prefs);
     },
     onSuccess: () => {
-      avisar("Preferências salvas — valem para os próximos planos gerados.");
+      avisar(t("Preferências salvas — valem para os próximos planos gerados."));
       setPrefsTouched(false);
       void qc.invalidateQueries({ queryKey: queryKeys.profile() });
     },
@@ -169,8 +171,8 @@ export default function SettingsPage() {
               {mostra("metas") ? (
                 <SecaoView
                   icon={target}
-                  title="Metas nutricionais"
-                  description="Opcionais — o app não calcula nem sugere metas."
+                  title={t("Metas nutricionais")}
+                  description={t("Opcionais — o app não calcula nem sugere metas.")}
                   sozinha={Boolean(secao)}
                 >
                   {profile.data ? (
@@ -187,11 +189,11 @@ export default function SettingsPage() {
               {mostra("treino") ? (
                 <SecaoView
                   icon={dumbbell}
-                  title="Treino"
-                  description="Define como os próximos planos são montados."
+                  title={t("Treino")}
+                  description={t("Define como os próximos planos são montados.")}
                   sozinha={Boolean(secao)}
                 >
-                  <Cartao titulo="Dias por semana" icone={calendarDays}>
+                  <Cartao titulo={t("Dias por semana")} icone={calendarDays}>
                     <NumeroPicker
                       options={DAYS_PER_WEEK_OPTIONS}
                       value={prefs.days_per_week}
@@ -199,14 +201,14 @@ export default function SettingsPage() {
                       sufixo="×"
                     />
                   </Cartao>
-                  <Cartao titulo="Experiência" icone={award}>
+                  <Cartao titulo={t("Experiência")} icone={award}>
                     <Chips
                       options={EXPERIENCE_OPTIONS}
                       ativo={(v) => prefs.experience_level === v}
                       onPress={(v) => updatePref("experience_level", v)}
                     />
                   </Cartao>
-                  <Cartao titulo="Tempo por sessão" icone={clock}>
+                  <Cartao titulo={t("Tempo por sessão")} icone={clock}>
                     <Chips
                       options={DURATION_OPTIONS.map((o) => ({
                         value: o.value,
@@ -216,7 +218,7 @@ export default function SettingsPage() {
                       onPress={(v) => updatePref("session_duration", v)}
                     />
                   </Cartao>
-                  <Cartao titulo="Onde você treina" icone={mapPin}>
+                  <Cartao titulo={t("Onde você treina")} icone={mapPin}>
                     <Chips
                       options={PLACE_OPTIONS}
                       ativo={(v) => prefs.training_place === v}
@@ -224,7 +226,7 @@ export default function SettingsPage() {
                     />
                   </Cartao>
                   <Cartao
-                    titulo="Equipamentos disponíveis"
+                    titulo={t("Equipamentos disponíveis")}
                     icone={dumbbell}
                     contador={prefs.equipment_available.length}
                   >
@@ -235,7 +237,7 @@ export default function SettingsPage() {
                       onPress={(v) => alternar("equipment_available", v)}
                     />
                   </Cartao>
-                  <Cartao titulo="Foco" icone={crosshair}>
+                  <Cartao titulo={t("Foco")} icone={crosshair}>
                     <Chips
                       options={FOCUS_OPTIONS}
                       ativo={(v) => prefs.focus_area === v}
@@ -248,18 +250,18 @@ export default function SettingsPage() {
               {mostra("alimentacao") ? (
                 <SecaoView
                   icon={utensils}
-                  title="Alimentação"
-                  description="Quantas refeições aparecem na sua dieta e quanto de água beber."
+                  title={t("Alimentação")}
+                  description={t("Quantas refeições aparecem na sua dieta e quanto de água beber.")}
                   sozinha={Boolean(secao)}
                 >
-                  <Cartao titulo="Refeições por dia" icone={utensils}>
+                  <Cartao titulo={t("Refeições por dia")} icone={utensils}>
                     <NumeroPicker
                       options={[...MEALS_PER_DAY_OPTIONS]}
                       value={prefs.meals_per_day}
                       onChange={(v) => updatePref("meals_per_day", v)}
                     />
                   </Cartao>
-                  <Cartao titulo="Meta de água" icone={droplet}>
+                  <Cartao titulo={t("Meta de água")} icone={droplet}>
                     <AguaStepper
                       value={prefs.water_ml_target}
                       onChange={(v) => updatePref("water_ml_target", v)}
@@ -271,12 +273,14 @@ export default function SettingsPage() {
               {mostra("saude") ? (
                 <SecaoView
                   icon={heartPulse}
-                  title="Saúde"
-                  description="Exercícios que carregam as regiões marcadas saem dos planos gerados."
+                  title={t("Saúde")}
+                  description={t(
+                    "Exercícios que carregam as regiões marcadas saem dos planos gerados.",
+                  )}
                   sozinha={Boolean(secao)}
                 >
                   <Cartao
-                    titulo="Regiões a preservar"
+                    titulo={t("Regiões a preservar")}
                     icone={shieldCheck}
                     contador={prefs.injuries.length}
                   >
@@ -312,7 +316,9 @@ export default function SettingsPage() {
             onPress={() => salvarPrefs.mutate()}
             loading={salvarPrefs.isPending}
           >
-            <Text className="text-base font-bold text-primary-foreground">Salvar alterações</Text>
+            <Text className="text-base font-bold text-primary-foreground">
+              {t("Salvar alterações")}
+            </Text>
           </Button>
         </View>
       ) : null}
@@ -481,24 +487,26 @@ function AguaStepper({
       <View className="flex-row items-center justify-between gap-3">
         <Pressable
           onPress={() => mudar(-250)}
-          accessibilityLabel="Menos 250 ml"
+          accessibilityLabel={t("Menos 250 ml")}
           className="h-12 w-12 items-center justify-center rounded-full border-2 border-border"
         >
           <Icon node={minus} color={texto} size={20} />
         </Pressable>
         <View className="items-center">
           <Text className="text-4xl font-extrabold">
-            {value === null ? "Auto" : `${(value / 1000).toLocaleString("pt-BR")} L`}
+            {value === null
+              ? t("Auto")
+              : t("{{v0}} L", { v0: (value / 1000).toLocaleString(LOCALE) })}
           </Text>
           <Text className="text-xs text-muted-foreground">
             {value === null
-              ? "estimada pelo seu peso"
-              : `${Math.round(value / 250)} copos de 250 ml`}
+              ? t("estimada pelo seu peso")
+              : t("{{v0}} copos de 250 ml", { v0: Math.round(value / 250) })}
           </Text>
         </View>
         <Pressable
           onPress={() => mudar(250)}
-          accessibilityLabel="Mais 250 ml"
+          accessibilityLabel={t("Mais 250 ml")}
           className="h-12 w-12 items-center justify-center rounded-full bg-primary"
         >
           <Icon node={plus} color={branco} size={20} />
@@ -506,7 +514,7 @@ function AguaStepper({
       </View>
       {value !== null ? (
         <Pressable onPress={() => onChange(null)} className="mt-3 items-center">
-          <Text className="text-sm font-semibold text-primary">Deixar o app estimar</Text>
+          <Text className="text-sm font-semibold text-primary">{t("Deixar o app estimar")}</Text>
         </Pressable>
       ) : null}
     </View>
@@ -519,8 +527,9 @@ function InfoSaude() {
     <View className="flex-row gap-2.5 rounded-[20px] border border-border p-4">
       <Icon node={info} color={primaria} size={16} />
       <Text className="flex-1 text-sm text-muted-foreground">
-        O app não substitui orientação médica. Em caso de dor durante um exercício, pare e procure
-        um profissional.
+        {t(
+          "O app não substitui orientação médica. Em caso de dor durante um exercício, pare e procure um profissional.",
+        )}
       </Text>
     </View>
   );
@@ -534,7 +543,7 @@ function ManualNutritionTargets({
   avisar,
 }: {
   profile: Perfil;
-  avisar: (t: string, erro?: boolean) => void;
+  avisar: (item: string, erro?: boolean) => void;
 }) {
   const qc = useQueryClient();
   const texto = useColor("foreground");
@@ -546,7 +555,9 @@ function ManualNutritionTargets({
     mutationFn: (patch: Record<NutritionTargetKey, number | null>) =>
       updateProfile(profile.id, patch, "salvar metas nutricionais"),
     onSuccess: (_, patch) => {
-      avisar(Object.values(patch).every((v) => v === null) ? "Metas removidas" : "Metas salvas");
+      avisar(
+        Object.values(patch).every((v) => v === null) ? t("Metas removidas") : t("Metas salvas"),
+      );
       void qc.invalidateQueries({ queryKey: queryKeys.profile() });
     },
     onError: (e) => avisar(errorMessage(e), true),
@@ -562,21 +573,24 @@ function ManualNutritionTargets({
   return (
     <View className="rounded-[20px] bg-card p-4">
       <Text className="text-sm text-muted-foreground">
-        Opcional. Se você tem acompanhamento, preencha com as metas definidas pelo seu
-        nutricionista. Deixe em branco para não usar metas — as telas mostram só o que você
-        consumiu.
+        {t(
+          "Opcional. Se você tem acompanhamento, preencha com as metas definidas pelo seu nutricionista. Deixe em branco para não usar metas — as telas mostram só o que você consumiu.",
+        )}
       </Text>
       <View className="mt-4 flex-row flex-wrap gap-3">
         {NUTRITION_TARGET_FIELDS.map((c) => (
           <View key={c.key} className={c.key === "daily_kcal_target" ? "w-full" : "w-[47%]"}>
             <Text className="text-sm font-medium">
-              {c.rotulo} <Text className="text-sm text-muted-foreground">({c.unidade}/dia)</Text>
+              {c.rotulo}{" "}
+              <Text className="text-sm text-muted-foreground">
+                {t("({{unidade}}/dia)", { unidade: c.unidade })}
+              </Text>
             </Text>
             <TextInput
               value={valores[c.key]}
               onChangeText={(v) => setValores((s) => ({ ...s, [c.key]: v }))}
               keyboardType="number-pad"
-              placeholder="Sem meta"
+              placeholder={t("Sem meta")}
               placeholderTextColor={apagada}
               accessibilityLabel={c.rotulo}
               className={cn(
@@ -593,7 +607,7 @@ function ManualNutritionTargets({
       </View>
       <View className="mt-4 gap-2">
         <Button className="h-12 rounded-xl" onPress={enviar} loading={salvar.isPending}>
-          Salvar metas
+          {t("Salvar metas")}
         </Button>
         {algumaMeta ? (
           <Button
@@ -611,7 +625,7 @@ function ManualNutritionTargets({
               );
             }}
           >
-            Remover metas
+            {t("Remover metas")}
           </Button>
         ) : null}
       </View>
@@ -623,7 +637,7 @@ function ManualNutritionTargets({
  * Exportar — o `export-data-card.tsx` do web. No celular o arquivo é gravado
  * numa pasta que a pessoa escolhe (o seletor do sistema).
  */
-function ExportDataCard({ avisar }: { avisar: (t: string, erro?: boolean) => void }) {
+function ExportDataCard({ avisar }: { avisar: (item: string, erro?: boolean) => void }) {
   const [exporting, setExporting] = useState<ExportFormat | null>(null);
   const texto = useColor("foreground");
 
@@ -633,7 +647,7 @@ function ExportDataCard({ avisar }: { avisar: (t: string, erro?: boolean) => voi
       const { conteudo, nome, mime } = await buildExportFile(format);
       const pasta = await Directory.pickDirectoryAsync();
       pasta.createFile(nome, mime).write(conteudo);
-      avisar(`Exportação concluída: ${nome}`);
+      avisar(t("Exportação concluída: {{nome}}", { nome }));
     } catch (e) {
       // Fechar o seletor de pasta não é erro.
       if (!/cancel/i.test(errorMessage(e))) avisar(errorMessage(e), true);
@@ -647,11 +661,12 @@ function ExportDataCard({ avisar }: { avisar: (t: string, erro?: boolean) => voi
       <View className="gap-3 p-4">
         <View className="flex-row items-center gap-2">
           <Icon node={download} color={texto} size={16} />
-          <Text className="text-base font-semibold">Seus dados</Text>
+          <Text className="text-base font-semibold">{t("Seus dados")}</Text>
         </View>
         <Text className="text-sm text-muted-foreground">
-          Baixe tudo o que você registrou: treinos, séries, diário alimentar, receitas, pesos e
-          medidas. Seus dados são seus — leve-os quando quiser.
+          {t(
+            "Baixe tudo o que você registrou: treinos, séries, diário alimentar, receitas, pesos e medidas. Seus dados são seus — leve-os quando quiser.",
+          )}
         </Text>
         <View className="flex-row flex-wrap gap-2">
           <Button
@@ -661,7 +676,7 @@ function ExportDataCard({ avisar }: { avisar: (t: string, erro?: boolean) => voi
           >
             <Icon node={fileJson} color={texto} size={16} />
             <Text className="text-sm font-medium">
-              {exporting === "json" ? "Exportando…" : "Exportar JSON"}
+              {exporting === "json" ? t("Exportando…") : t("Exportar JSON")}
             </Text>
           </Button>
           <Button
@@ -671,13 +686,14 @@ function ExportDataCard({ avisar }: { avisar: (t: string, erro?: boolean) => voi
           >
             <Icon node={fileSpreadsheet} color={texto} size={16} />
             <Text className="text-sm font-medium">
-              {exporting === "csv" ? "Exportando…" : "Exportar CSV"}
+              {exporting === "csv" ? t("Exportando…") : t("Exportar CSV")}
             </Text>
           </Button>
         </View>
         <Text className="text-xs text-muted-foreground">
-          JSON preserva a estrutura completa (ideal para backup ou migração). CSV abre direto no
-          Excel e no Google Planilhas.
+          {t(
+            "JSON preserva a estrutura completa (ideal para backup ou migração). CSV abre direto no Excel e no Google Planilhas.",
+          )}
         </Text>
       </View>
     </Card>
@@ -688,7 +704,7 @@ function ExportDataCard({ avisar }: { avisar: (t: string, erro?: boolean) => voi
 const MAX_BYTES = 20 * 1024 * 1024;
 
 /** Importar de outro app — o `import-data-card.tsx` do web. */
-function ImportDataCard({ avisar }: { avisar: (t: string, erro?: boolean) => void }) {
+function ImportDataCard({ avisar }: { avisar: (item: string, erro?: boolean) => void }) {
   const userId = useCurrentUserId();
   const qc = useQueryClient();
   const branco = useColor("primary-foreground");
@@ -707,14 +723,16 @@ function ImportDataCard({ avisar }: { avisar: (t: string, erro?: boolean) => voi
   const importar = async () => {
     if (!arquivo) return;
     if ((arquivo.size ?? 0) > MAX_BYTES)
-      return avisar("Arquivo grande demais: o limite é 20 MB.", true);
+      return avisar(t("Arquivo grande demais: o limite é 20 MB."), true);
     setImportando(true);
     setResultado(null);
     try {
       const parsed = parseWorkoutCsv(await arquivo.text(), unidade);
       if (parsed.workouts.length === 0) {
         avisar(
-          "Nenhum treino encontrado. Confira se é o CSV exportado pelo app (com colunas de data e exercício).",
+          t(
+            "Nenhum treino encontrado. Confira se é o CSV exportado pelo app (com colunas de data e exercício).",
+          ),
           true,
         );
         return;
@@ -724,7 +742,7 @@ function ImportDataCard({ avisar }: { avisar: (t: string, erro?: boolean) => voi
       void qc.invalidateQueries({ queryKey: queryKeys.workouts.all });
       void qc.invalidateQueries({ queryKey: queryKeys.exercises.all });
     } catch (e) {
-      avisar(`Não foi possível importar: ${errorMessage(e)}`, true);
+      avisar(t("Não foi possível importar: {{v0}}", { v0: errorMessage(e) }), true);
     } finally {
       setImportando(false);
     }
@@ -733,19 +751,19 @@ function ImportDataCard({ avisar }: { avisar: (t: string, erro?: boolean) => voi
   return (
     <Card>
       <View className="gap-3 p-4">
-        <Text className="text-base font-semibold">Importar de outro app</Text>
+        <Text className="text-base font-semibold">{t("Importar de outro app")}</Text>
         <Text className="text-sm text-muted-foreground">
-          Traga seu histórico do Strong, Hevy ou FitNotes: exporte o CSV no app e envie aqui. Os
-          exercícios são reconhecidos pelo nome; os que não estiverem na biblioteca viram exercícios
-          seus.
+          {t(
+            "Traga seu histórico do Strong, Hevy ou FitNotes: exporte o CSV no app e envie aqui. Os exercícios são reconhecidos pelo nome; os que não estiverem na biblioteca viram exercícios seus.",
+          )}
         </Text>
         <Button variant="outline" onPress={() => void escolher()}>
           <Text numberOfLines={1} className="text-sm font-medium">
-            {arquivo ? arquivo.name : "Escolher arquivo CSV"}
+            {arquivo ? arquivo.name : t("Escolher arquivo CSV")}
           </Text>
         </Button>
         <View className="flex-row items-center gap-2">
-          <Text className="text-sm text-muted-foreground">Pesos em</Text>
+          <Text className="text-sm text-muted-foreground">{t("Pesos em")}</Text>
           {(["kg", "lb"] as const).map((u) => (
             <Pressable
               key={u}
@@ -768,12 +786,15 @@ function ImportDataCard({ avisar }: { avisar: (t: string, erro?: boolean) => voi
             loading={importando}
           >
             <Icon node={upload} color={branco} size={16} />
-            <Text className="text-sm font-medium text-primary-foreground">Importar</Text>
+            <Text className="text-sm font-medium text-primary-foreground">{t("Importar")}</Text>
           </Button>
         </View>
         {resultado ? (
           <Text className="text-sm">
-            {resultado.workouts} treinos e {resultado.sets} séries importados
+            {t("{{workouts}} treinos e {{sets}} séries importados", {
+              workouts: resultado.workouts,
+              sets: resultado.sets,
+            })}
             {resultado.duplicates > 0 ? ` · ${resultado.duplicates} já existiam` : ""}
             {resultado.skipped > 0 ? ` · ${resultado.skipped} linhas ignoradas` : ""}
             {resultado.newExercises.length > 0
@@ -790,7 +811,7 @@ function ImportDataCard({ avisar }: { avisar: (t: string, erro?: boolean) => voi
 const PALAVRA = "EXCLUIR";
 
 /** Exclusão da conta — o `delete-account-card.tsx` do web: digitar a palavra confirma. */
-function DeleteAccountCard({ avisar }: { avisar: (t: string, erro?: boolean) => void }) {
+function DeleteAccountCard({ avisar }: { avisar: (item: string, erro?: boolean) => void }) {
   const [aberto, setAberto] = useState(false);
   const [texto, setTexto] = useState("");
   const [excluindo, setExcluindo] = useState(false);
@@ -803,7 +824,7 @@ function DeleteAccountCard({ avisar }: { avisar: (t: string, erro?: boolean) => 
       await deleteAccount();
       router.replace("/");
     } catch (e) {
-      avisar(`Não foi possível excluir a conta: ${errorMessage(e)}`, true);
+      avisar(t("Não foi possível excluir a conta: {{v0}}", { v0: errorMessage(e) }), true);
       setExcluindo(false);
     }
   };
@@ -811,16 +832,16 @@ function DeleteAccountCard({ avisar }: { avisar: (t: string, erro?: boolean) => 
   return (
     <Card className="border border-destructive/40">
       <View className="gap-3 p-4">
-        <Text className="text-base font-semibold">Excluir conta</Text>
+        <Text className="text-base font-semibold">{t("Excluir conta")}</Text>
         <Text className="text-sm text-muted-foreground">
-          Apaga seus treinos, dieta, medidas, fotos e a conta. Não dá para desfazer — se quiser
-          guardar algo, exporte antes. Assinaturas feitas na App Store ou no Google Play são
-          canceladas na própria loja.
+          {t(
+            "Apaga seus treinos, dieta, medidas, fotos e a conta. Não dá para desfazer — se quiser guardar algo, exporte antes. Assinaturas feitas na App Store ou no Google Play são canceladas na própria loja.",
+          )}
         </Text>
         <View className="flex-row">
           <Button variant="outline" onPress={() => setAberto(true)}>
             <Icon node={trash2} color={destrutiva} size={16} />
-            <Text className="text-sm font-medium text-destructive">Excluir minha conta</Text>
+            <Text className="text-sm font-medium text-destructive">{t("Excluir minha conta")}</Text>
           </Button>
         </View>
       </View>
@@ -831,17 +852,17 @@ function DeleteAccountCard({ avisar }: { avisar: (t: string, erro?: boolean) => 
           setAberto(false);
           setTexto("");
         }}
-        title="Excluir a conta para sempre?"
+        title={t("Excluir a conta para sempre?")}
       >
         <Text className="text-center text-sm text-muted-foreground">
-          Digite {PALAVRA} para confirmar. Todos os seus dados serão apagados.
+          {t("Digite {{PALAVRA}} para confirmar. Todos os seus dados serão apagados.", { PALAVRA })}
         </Text>
         <TextInput
           value={texto}
           onChangeText={setTexto}
           autoCapitalize="characters"
           autoCorrect={false}
-          accessibilityLabel={`Digite ${PALAVRA} para confirmar`}
+          accessibilityLabel={t("Digite {{PALAVRA}} para confirmar", { PALAVRA })}
           className="h-10 rounded-md border border-input bg-background px-3 font-sans text-base"
           style={{ color: cor }}
         />
@@ -850,7 +871,7 @@ function DeleteAccountCard({ avisar }: { avisar: (t: string, erro?: boolean) => 
           disabled={texto.trim().toUpperCase() !== PALAVRA || excluindo}
           onPress={() => void excluir()}
         >
-          {excluindo ? "Excluindo…" : "Excluir para sempre"}
+          {excluindo ? t("Excluindo…") : t("Excluir para sempre")}
         </Button>
         <Button
           variant="outline"
@@ -860,7 +881,7 @@ function DeleteAccountCard({ avisar }: { avisar: (t: string, erro?: boolean) => 
             setTexto("");
           }}
         >
-          Cancelar
+          {t("Cancelar")}
         </Button>
       </Dialog>
     </Card>
@@ -872,7 +893,7 @@ function SairButton() {
   return (
     <Button variant="outline" className="w-full" onPress={() => void supabase.auth.signOut()}>
       <Icon node={logOut} color={texto} size={16} />
-      <Text className="text-sm font-medium">Sair da conta</Text>
+      <Text className="text-sm font-medium">{t("Sair da conta")}</Text>
     </Button>
   );
 }

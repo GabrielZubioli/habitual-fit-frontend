@@ -1,0 +1,6 @@
+{
+  "ios": {
+    "NSCameraUsageDescription": "Habitual Fit usa la cámara para tomar tu foto de perfil.",
+    "NSPhotoLibraryUsageDescription": "Habitual Fit usa tus fotos para que elijas tu foto de perfil."
+  }
+}

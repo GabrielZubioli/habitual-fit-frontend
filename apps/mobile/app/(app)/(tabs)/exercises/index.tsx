@@ -1,3 +1,4 @@
+import { exerciseName } from "@forja/app-core/data/exercise-library";
 import { useMemo, useState, type ReactElement } from "react";
 import { ActivityIndicator, FlatList, Image, Pressable, TextInput, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
@@ -44,6 +45,8 @@ import { FavoriteButton } from "@/ui/favorite-button";
 import { Icon } from "@/ui/icon";
 import { HeaderFrame, HeaderSpacer, PageHeader, PageScroll } from "@/ui/page-header";
 import { Text } from "@/ui/text";
+import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Exercícios — o `exercises.tsx` do web: busca, as abas Músculos /
@@ -86,10 +89,12 @@ export default function ExerciseLibrary() {
 
   const topo = (
     <PageHeader
-      title="Exercícios"
+      title={t("Exercícios")}
       description={
         contagem.data
-          ? `${contagem.data.total.toLocaleString("pt-BR")} exercícios com demonstração`
+          ? t("{{v0}} exercícios com demonstração", {
+              v0: contagem.data.total.toLocaleString(LOCALE),
+            })
           : undefined
       }
     />
@@ -123,9 +128,9 @@ export default function ExerciseLibrary() {
         <View accessibilityRole="tablist" className="mt-4 flex-row rounded-2xl bg-card p-1">
           {(
             [
-              ["musculos", "Músculos"],
-              ["equipamentos", "Equipamentos"],
-              ["favoritos", "Favoritos"],
+              ["musculos", t("Músculos")],
+              ["equipamentos", t("Equipamentos")],
+              ["favoritos", t("Favoritos")],
             ] as const
           ).map(([v, rotulo]) => (
             <Pressable
@@ -158,17 +163,17 @@ export default function ExerciseLibrary() {
   );
 }
 
-function Busca({ term, setTerm }: { term: string; setTerm: (t: string) => void }) {
+function Busca({ term, setTerm }: { term: string; setTerm: (item2: string) => void }) {
   const apagada = useColor("muted-foreground");
   const texto = useColor("foreground");
   return (
     <View className="h-[52px] justify-center">
       <TextInput
-        placeholder="Buscar exercício…"
+        placeholder={t("Buscar exercício…")}
         placeholderTextColor={apagada}
         value={term}
         onChangeText={setTerm}
-        accessibilityLabel="Buscar exercício"
+        accessibilityLabel={t("Buscar exercício")}
         returnKeyType="search"
         className="h-[52px] rounded-2xl bg-card pl-12 pr-10 font-sans text-base"
         style={{ color: texto }}
@@ -179,7 +184,7 @@ function Busca({ term, setTerm }: { term: string; setTerm: (t: string) => void }
       {term ? (
         <Pressable
           onPress={() => setTerm("")}
-          accessibilityLabel="Limpar busca"
+          accessibilityLabel={t("Limpar busca")}
           className="absolute right-3 rounded-full p-1"
         >
           <Icon node={xIcon} color={apagada} size={16} />
@@ -223,7 +228,7 @@ function AbaMusculos({ porMusculo }: { porMusculo?: Map<string, number> }) {
                 </View>
                 <Text className="mt-2 text-center font-bold leading-tight">{g.nome}</Text>
                 <Text className="text-xs text-muted-foreground">
-                  {n === null ? "…" : `${n} ${n === 1 ? "exercício" : "exercícios"}`}
+                  {n === null ? "…" : `${n} ${n === 1 ? t("exercício") : t("exercícios")}`}
                 </Text>
               </Pressable>
             </Animated.View>
@@ -238,8 +243,8 @@ function AbaMusculos({ porMusculo }: { porMusculo?: Map<string, number> }) {
           <Icon node={sparkles} color={primaria} size={20} />
         </View>
         <View className="min-w-0 flex-1">
-          <Text className="font-bold">Criar seu exercício</Text>
-          <Text className="text-sm text-muted-foreground">Nome e músculo, sem animação</Text>
+          <Text className="font-bold">{t("Criar seu exercício")}</Text>
+          <Text className="text-sm text-muted-foreground">{t("Nome e músculo, sem animação")}</Text>
         </View>
         <Icon node={chevronRight} color={primaria} size={20} />
       </Pressable>
@@ -323,7 +328,7 @@ function CartaoEquipamento({
       <View className="p-3">
         <Text className="font-bold leading-tight">{equipamento.nome}</Text>
         <Text className="text-xs text-muted-foreground">
-          {n === null ? "…" : `${n} ${n === 1 ? "exercício" : "exercícios"}`}
+          {n === null ? "…" : `${n} ${n === 1 ? t("exercício") : t("exercícios")}`}
         </Text>
       </View>
     </Pressable>
@@ -342,8 +347,8 @@ function AbaFavoritos({ rotina }: { rotina: ActiveRoutine | null }) {
     return (
       <EmptyState
         icon={heart}
-        title="Nenhum favorito ainda"
-        description="Toque no coração de um exercício para guardá-lo aqui."
+        title={t("Nenhum favorito ainda")}
+        description={t("Toque no coração de um exercício para guardá-lo aqui.")}
       />
     );
   }
@@ -385,7 +390,7 @@ function TelaFiltrada({
         {/* Nas abas, trocar o filtro não cria histórico: voltar é limpar o filtro. */}
         <Pressable
           onPress={() => router.setParams({ grupo: undefined, equipamento: undefined })}
-          accessibilityLabel="Voltar"
+          accessibilityLabel={t("Voltar")}
           className="h-11 w-11 items-center justify-center rounded-full bg-card active:bg-elevated"
         >
           <Icon node={arrowLeft} color={texto} size={20} />
@@ -400,21 +405,27 @@ function TelaFiltrada({
     <View className="px-4 pt-2">
       <Busca term={term} setTerm={setTerm} />
       <View className="mt-3 flex-row gap-2">
-        <Seletor rotulo="Nível" valor={nivel} onChange={setNivel} todos="Nível" opcoes={NIVEIS} />
+        <Seletor
+          rotulo={t("Nível")}
+          valor={nivel}
+          onChange={setNivel}
+          todos={t("Nível")}
+          opcoes={NIVEIS}
+        />
         {musculos ? (
           <Seletor
-            rotulo="Equipamento"
+            rotulo={t("Equipamento")}
             valor={equip}
             onChange={setEquip}
-            todos="Equipamento"
+            todos={t("Equipamento")}
             opcoes={EQUIPAMENTOS.map((e) => ({ value: e.key, label: e.nome }))}
           />
         ) : (
           <Seletor
-            rotulo="Grupo muscular"
+            rotulo={t("Grupo muscular")}
             valor={grupo}
             onChange={setGrupo}
-            todos="Músculo"
+            todos={t("Músculo")}
             opcoes={GRUPOS.map((g) => ({ value: g.key, label: g.nome }))}
           />
         )}
@@ -458,17 +469,17 @@ function BuscaComFiltros({
           {cabecalho}
           <View className="mt-3 flex-row gap-2 px-4">
             <Seletor
-              rotulo="Nível"
+              rotulo={t("Nível")}
               valor={nivel}
               onChange={setNivel}
-              todos="Nível"
+              todos={t("Nível")}
               opcoes={NIVEIS}
             />
             <Seletor
-              rotulo="Grupo muscular"
+              rotulo={t("Grupo muscular")}
               valor={grupo}
               onChange={setGrupo}
-              todos="Músculo"
+              todos={t("Músculo")}
               opcoes={GRUPOS.map((g) => ({ value: g.key, label: g.nome }))}
             />
           </View>
@@ -527,11 +538,13 @@ function ListaExercicios({
     vazio = (
       <EmptyState
         icon={searchX}
-        title="Nenhum exercício encontrado"
+        title={t("Nenhum exercício encontrado")}
         description={
           termo
-            ? `Nada corresponde a “${termo}”. A busca também aceita o nome em inglês.`
-            : "Nenhum exercício com esta combinação de filtros."
+            ? t("Nada corresponde a “{{termo}}”. A busca também aceita o nome em inglês.", {
+                termo,
+              })
+            : t("Nenhum exercício com esta combinação de filtros.")
         }
       />
     );
@@ -563,7 +576,7 @@ function ListaExercicios({
           lista.isFetchingNextPage ? (
             <View className="flex-row items-center justify-center gap-2 py-6">
               <ActivityIndicator size="small" color={apagada} />
-              <Text className="text-sm text-muted-foreground">Carregando mais…</Text>
+              <Text className="text-sm text-muted-foreground">{t("Carregando mais…")}</Text>
             </View>
           ) : null
         }
@@ -587,8 +600,8 @@ function ExerciseListRow({
   const primaria = useColor("primary");
   const miniatura = miniaturaDe(exercise);
   const adicionar = useMutation({
-    mutationFn: (t: { id: string; exerciseCount: number }) =>
-      addTemplateItem(t.id, exercise.id, t.exerciseCount + 1),
+    mutationFn: (item2: { id: string; exerciseCount: number }) =>
+      addTemplateItem(item2.id, exercise.id, item2.exerciseCount + 1),
     onSuccess: () => void qc.invalidateQueries({ queryKey: queryKeys.workouts.all }),
   });
 
@@ -596,7 +609,7 @@ function ExerciseListRow({
     <View className="flex-row items-center gap-3 rounded-[20px] bg-card p-3">
       <Pressable
         onPress={() => router.push({ pathname: "/exercises/[id]", params: { id: exercise.id } })}
-        accessibilityLabel={`Abrir ${exercise.name}`}
+        accessibilityLabel={t("Abrir {{name}}", { name: exerciseName(exercise) })}
         className="min-w-0 flex-1 flex-row items-center gap-3.5"
       >
         <View className="h-16 w-16 items-center justify-center overflow-hidden rounded-xl bg-white">
@@ -607,7 +620,7 @@ function ExerciseListRow({
           )}
         </View>
         <View className="min-w-0 flex-1">
-          <Text className="font-semibold leading-snug">{exercise.name}</Text>
+          <Text className="font-semibold leading-snug">{exerciseName(exercise)}</Text>
           <Text className="text-sm text-muted-foreground">
             {label(MUSCLE_LABELS, exercise.primary_muscle)} ·{" "}
             {label(EQUIPMENT_LABELS, exercise.equipment)}
@@ -615,12 +628,14 @@ function ExerciseListRow({
           </Text>
         </View>
       </Pressable>
-      <FavoriteButton exerciseId={exercise.id} nome={exercise.name} />
+      <FavoriteButton exerciseId={exercise.id} nome={exerciseName(exercise)} />
       {rotina && rotina.templates.length > 0 ? (
         <>
           <Pressable
             onPress={() => setMenu(true)}
-            accessibilityLabel={`Adicionar ${exercise.name} a uma rotina`}
+            accessibilityLabel={t("Adicionar {{name}} a uma rotina", {
+              name: exerciseName(exercise),
+            })}
             className="h-10 w-10 items-center justify-center rounded-full border border-primary/40 active:bg-primary/10"
           >
             <Icon node={plus} color={primaria} size={20} />
@@ -628,11 +643,11 @@ function ExerciseListRow({
           <MenuSheet
             open={menu}
             onClose={() => setMenu(false)}
-            title="Adicionar à rotina"
+            title={t("Adicionar à rotina")}
             corIcone={primaria}
-            opcoes={rotina.templates.map((t) => ({
-              label: t.name.replace(/^[A-Z]\s*—\s*/, ""),
-              onPress: () => adicionar.mutate(t),
+            opcoes={rotina.templates.map((item2) => ({
+              label: item2.name.replace(/^[A-Z]\s*—\s*/, ""),
+              onPress: () => adicionar.mutate(item2),
             }))}
           />
         </>

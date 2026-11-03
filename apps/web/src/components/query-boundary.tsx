@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { errorMessage } from "@forja/app-core/data/supabase-helpers";
+import { t } from "@forja/app-core/i18n";
 
 type QueryLike<T> = {
   data: T | undefined;
@@ -71,13 +72,13 @@ export function ErrorState({
           <AlertCircle className="size-5" />
         </span>
         <div>
-          <p className="font-medium">Não foi possível carregar</p>
+          <p className="font-medium">{t("Não foi possível carregar")}</p>
           <p className="mt-1 text-sm text-muted-foreground">{message}</p>
         </div>
         {onRetry && (
           <Button variant="outline" size="sm" onClick={onRetry}>
             <RefreshCw className="mr-1.5 size-4" />
-            Tentar novamente
+            {t("Tentar novamente")}
           </Button>
         )}
       </CardContent>

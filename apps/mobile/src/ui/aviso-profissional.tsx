@@ -6,32 +6,37 @@ import { cn } from "@/lib/cn";
 import { useColor } from "@/theme/theme";
 import { Icon } from "./icon";
 import { Text } from "./text";
+import { t } from "@forja/app-core/i18n";
 
 /** Avisos de orientação profissional — os mesmos textos de `aviso-profissional.tsx` do web. */
 const AVISOS = {
   treino: {
     icon: dumbbell,
-    titulo: "O plano sugerido é uma referência geral",
-    texto:
+    titulo: t("O plano sugerido é uma referência geral"),
+    texto: t(
       "Ele é montado a partir das suas respostas e não substitui a orientação individualizada de um profissional de educação física.",
+    ),
   },
   dieta: {
     icon: apple,
-    titulo: "O app não prescreve dietas",
-    texto:
+    titulo: t("O app não prescreve dietas"),
+    texto: t(
       "Monte e registre suas refeições aqui. O planejamento alimentar — o que, quanto e quando comer — deve ser orientado por um nutricionista.",
+    ),
   },
   lesao: {
     icon: info,
-    titulo: "Você informou uma lesão ou dor",
-    texto:
+    titulo: t("Você informou uma lesão ou dor"),
+    texto: t(
       "Deixamos de fora os exercícios que carregam essa região, mas a seleção automática é só uma referência geral — não é avaliação clínica. Antes de treinar, procure orientação de um profissional de saúde e de educação física.",
+    ),
   },
   app: {
     icon: info,
-    titulo: "Para que serve o Habitual Fit",
-    texto:
+    titulo: t("Para que serve o Habitual Fit"),
+    texto: t(
       "É uma ferramenta para organizar, acompanhar e gerenciar seus treinos e hábitos. Não é um serviço de consulta profissional.",
+    ),
   },
 } as const;
 
@@ -47,13 +52,13 @@ export function AvisoProfissional({
   const primaria = useColor("primary");
   return (
     <View
-      accessibilityLabel="Avisos sobre orientação profissional"
+      accessibilityLabel={t("Avisos sobre orientação profissional")}
       className={cn("gap-3 rounded-[20px] border border-border bg-card p-4", className)}
     >
-      {tipos.map((t) => {
-        const { icon, titulo, texto } = AVISOS[t];
+      {tipos.map((item) => {
+        const { icon, titulo, texto } = AVISOS[item];
         return (
-          <View key={t} className="flex-row gap-3">
+          <View key={item} className="flex-row gap-3">
             <View className="h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
               <Icon node={icon} color={primaria} size={16} />
             </View>

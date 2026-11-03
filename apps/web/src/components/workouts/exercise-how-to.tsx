@@ -1,8 +1,10 @@
+import { exerciseSteps, idiomaDiferente } from "@forja/app-core/data/exercise-library";
 import { AlertTriangle, Languages, Lightbulb, ListOrdered } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { INJURY_OPTIONS } from "@forja/app-core/lib/onboarding/options";
 import { cn } from "@/lib/utils";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Como executar o exercício.
@@ -33,6 +35,7 @@ export type ExerciseHowToData = {
   /** Texto original da fonte importada, em inglês. */
   instructions: string | null;
   execution_en: string[] | null;
+  execution_es?: string[] | null;
   cues: string[] | null;
   common_mistakes: string[] | null;
   contraindications: string[] | null;
@@ -50,42 +53,43 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
    * falta dele, o original em inglês — em passos (`execution_en`) ou corrido
    * (`instructions`), sempre com o rótulo "em inglês".
    */
-  const passosPt = exercise.execution ?? [];
-  const passosEn = exercise.execution_en ?? [];
-  const textoEn = exercise.instructions?.trim() ?? "";
-
-  const passos = passosPt.length > 0 ? passosPt : passosEn;
-  const emIngles = passosPt.length === 0 && (passosEn.length > 0 || textoEn.length > 0);
-  const mostrarTextoCorrido = passosPt.length === 0 && passosEn.length === 0 && textoEn.length > 0;
+  // No idioma do app; na falta dele, no mais próximo que houver, com selo.
+  const { passos, texto: textoCorrido, idioma } = exerciseSteps(exercise);
+  const selo = idiomaDiferente(idioma);
+  const lang =
+    idioma === "en" ? "en" : idioma === "es" ? "es" : idioma === "pt" ? "pt-BR" : undefined;
+  const mostrarTextoCorrido = passos.length === 0 && !!textoCorrido;
 
   return (
     <div className="space-y-3">
       {mostrarTextoCorrido && (
         <Bloco
-          titulo="Execução"
+          titulo={t("Execução")}
           icone={<ListOrdered className="size-4" aria-hidden />}
           extra={
-            <Badge variant="warning" className="normal-case tracking-normal">
-              <Languages aria-hidden />
-              em inglês
-            </Badge>
+            selo ? (
+              <Badge variant="warning" className="normal-case tracking-normal">
+                <Languages aria-hidden />
+                {selo}
+              </Badge>
+            ) : null
           }
         >
-          <p className="whitespace-pre-line text-[15px] leading-relaxed" lang="en">
-            {textoEn}
+          <p className="whitespace-pre-line text-[15px] leading-relaxed" lang={lang}>
+            {textoCorrido}
           </p>
         </Bloco>
       )}
 
       {passos.length > 0 && (
         <Bloco
-          titulo="Passo a passo"
+          titulo={t("Passo a passo")}
           icone={<ListOrdered className="size-4" aria-hidden />}
           extra={
-            emIngles ? (
+            selo ? (
               <Badge variant="warning" className="normal-case tracking-normal">
                 <Languages aria-hidden />
-                em inglês
+                {selo}
               </Badge>
             ) : null
           }
@@ -101,16 +105,17 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
                 >
                   {i + 1}
                 </span>
-                <span className="pt-0.5" lang={emIngles ? "en" : undefined}>
+                <span className="pt-0.5" lang={lang}>
                   {passo}
                 </span>
               </li>
             ))}
           </ol>
-          {emIngles && (
+          {selo && (
             <p className="mt-3 text-xs text-muted-foreground">
-              Sem versão em português na base de origem. O texto original é exibido sem tradução
-              automática — instrução de execução traduzida por máquina pode sair perigosa.
+              {t(
+                "Ainda sem versão neste idioma. O passo a passo aparece no idioma em que foi escrito, sem tradução automática — instrução de execução traduzida por máquina pode sair perigosa.",
+              )}
             </p>
           )}
         </Bloco>
@@ -118,7 +123,7 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
 
       {exercise.cues && exercise.cues.length > 0 && (
         <ListaComIcone
-          titulo="Dicas de execução"
+          titulo={t("Dicas de execução")}
           icone={<Lightbulb className="size-4" aria-hidden />}
           itens={exercise.cues}
           tom="primary"
@@ -127,7 +132,7 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
 
       {exercise.common_mistakes && exercise.common_mistakes.length > 0 && (
         <ListaComIcone
-          titulo="Erros comuns"
+          titulo={t("Erros comuns")}
           icone={<AlertTriangle className="size-4" aria-hidden />}
           itens={exercise.common_mistakes}
           tom="warning"
@@ -136,7 +141,7 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
 
       {exercise.contraindications && exercise.contraindications.length > 0 && (
         <ListaComIcone
-          titulo="Cuidado se você tem"
+          titulo={t("Cuidado se você tem")}
           icone={<AlertTriangle className="size-4" aria-hidden />}
           itens={exercise.contraindications.map(
             (c) => INJURY_OPTIONS.find((o) => o.value === c)?.label ?? c,
@@ -147,8 +152,9 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
 
       {passos.length === 0 && !mostrarTextoCorrido && (
         <p className="rounded-[1.25rem] border border-dashed border-border p-4 text-sm text-muted-foreground">
-          Este exercício ainda não tem passo a passo cadastrado. A demonstração acima mostra o
-          movimento completo.
+          {t(
+            "Este exercício ainda não tem passo a passo cadastrado. A demonstração acima mostra o movimento completo.",
+          )}
         </p>
       )}
     </div>

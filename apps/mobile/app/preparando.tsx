@@ -19,7 +19,7 @@ import { __iconNode as moon } from "lucide-react/dist/esm/icons/moon.js";
 import { __iconNode as triangleAlert } from "lucide-react/dist/esm/icons/triangle-alert.js";
 import { __iconNode as user } from "lucide-react/dist/esm/icons/user.js";
 import { __iconNode as utensils } from "lucide-react/dist/esm/icons/utensils.js";
-import { WEEKDAY_LABELS, type Weekday } from "@forja/domain";
+import { type Weekday } from "@forja/domain";
 import { errorMessage, num } from "@forja/app-core/data/supabase-helpers";
 import { queryKeys } from "@forja/app-core/data/query-keys";
 import { fetchProfile } from "@forja/app-core/data/profile";
@@ -34,7 +34,7 @@ import {
 } from "@forja/app-core/data/onboarding";
 import { isComplete, type Answers } from "@forja/app-core/lib/onboarding/schema";
 import { derivedObjective } from "@forja/app-core/lib/onboarding/options";
-import { MEAL_LABELS, label } from "@forja/app-core/lib/labels";
+import { MEAL_LABELS, label, WEEKDAY_LABELS } from "@forja/app-core/lib/labels";
 import { supabase } from "@/lib/supabase";
 import { clearDraft, loadDraft } from "@/lib/onboarding-storage";
 import { cn } from "@/lib/cn";
@@ -46,6 +46,8 @@ import { Button } from "@/ui/button";
 import { Icon, type IconNode } from "@/ui/icon";
 import { RoutineIcon } from "@/ui/routine-icon";
 import { Text } from "@/ui/text";
+import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Onde o plano é montado — e depois apresentado. O `routes/preparando.tsx` do
@@ -55,20 +57,20 @@ import { Text } from "@/ui/text";
 const ETAPAS: { stage: GenerationStage; titulo: string; detalhe: string; icon: IconNode }[] = [
   {
     stage: "profile",
-    titulo: "Salvando seu perfil",
-    detalhe: "Objetivo, experiência e rotina de treino",
+    titulo: t("Salvando seu perfil"),
+    detalhe: t("Objetivo, experiência e rotina de treino"),
     icon: user,
   },
   {
     stage: "workout",
-    titulo: "Preparando seu treino",
-    detalhe: "Os exercícios e os dias da sua semana",
+    titulo: t("Preparando seu treino"),
+    detalhe: t("Os exercícios e os dias da sua semana"),
     icon: dumbbell,
   },
   {
     stage: "diet",
-    titulo: "Criando suas refeições",
-    detalhe: "Vazias, prontas para você preencher",
+    titulo: t("Criando suas refeições"),
+    detalhe: t("Vazias, prontas para você preencher"),
     icon: utensils,
   },
 ];
@@ -148,7 +150,7 @@ export default function Preparando() {
             message={error}
             onRetry={() => {
               setStatus("checking");
-              setTentativa((t) => t + 1);
+              setTentativa((item) => item + 1);
             }}
           />
         ) : (
@@ -215,10 +217,10 @@ function Building({ stage }: { stage: GenerationStage }) {
       </View>
 
       <Text className="mt-8 text-center text-[28px] font-extrabold leading-tight tracking-tight">
-        {pronto ? "Plano pronto!" : "Montando seu plano"}
+        {pronto ? t("Plano pronto!") : t("Montando seu plano")}
       </Text>
       <Text className="mt-2 text-center text-muted-foreground">
-        {pronto ? "Preparando o resumo para você" : atual.detalhe}
+        {pronto ? t("Preparando o resumo para você") : atual.detalhe}
       </Text>
 
       <View className="mt-8 gap-2">
@@ -271,7 +273,7 @@ function Building({ stage }: { stage: GenerationStage }) {
 
 /** Segunda primeiro. */
 const ORDEM_SEMANA: Weekday[] = [1, 2, 3, 4, 5, 6, 0];
-const kg = (n: number) => n.toLocaleString("pt-BR", { maximumFractionDigits: 1 });
+const kg = (n: number) => n.toLocaleString(LOCALE, { maximumFractionDigits: 1 });
 
 /** Entrada em sequência: cada seção chega um pouco depois da anterior. */
 const entra = (i: number) => FadeInDown.delay(120 + i * 110).duration(700);
@@ -340,10 +342,10 @@ function PlanReady({
           <Glow size={260} color={primaria} opacity={0.25} style={{ top: -60 }} />
           <BrandSymbol width={80} />
           <Text className="mt-6 text-center text-[36px] font-extrabold leading-[38px] tracking-tight">
-            {nome ? `${nome}, seu plano está pronto` : "Seu plano está pronto"}
+            {nome ? t("{{nome}}, seu plano está pronto", { nome }) : t("Seu plano está pronto")}
           </Text>
           <Text className="mt-3 text-center text-muted-foreground">
-            Seu treino foi montado a partir das suas respostas.
+            {t("Seu treino foi montado a partir das suas respostas.")}
           </Text>
           <View className="mt-4 flex-row flex-wrap justify-center gap-2">
             {objetivo ? (
@@ -355,20 +357,24 @@ function PlanReady({
             ) : null}
             {diasTreino > 0 ? (
               <View className="rounded-full bg-card px-3 py-1.5">
-                <Text className="text-sm text-muted-foreground">{diasTreino}× por semana</Text>
+                <Text className="text-sm text-muted-foreground">
+                  {t("{{diasTreino}}× por semana", { diasTreino })}
+                </Text>
               </View>
             ) : null}
           </View>
         </Animated.View>
 
         {pesoAtual && pesoMeta && Math.abs(pesoAtual - pesoMeta) >= 0.1 ? (
-          <Secao titulo="Sua jornada" i={2}>
+          <Secao titulo={t("Sua jornada")} i={2}>
             <View className="flex-row items-center gap-4 rounded-3xl bg-card p-5">
               <View className="items-center">
-                <Text className="text-xs uppercase tracking-wide text-muted-foreground">Hoje</Text>
+                <Text className="text-xs uppercase tracking-wide text-muted-foreground">
+                  {t("Hoje")}
+                </Text>
                 <Text className="text-2xl font-extrabold">
                   {kg(pesoAtual)}
-                  <Text className="text-sm font-semibold text-muted-foreground"> kg</Text>
+                  <Text className="text-sm font-semibold text-muted-foreground"> {t("kg")}</Text>
                 </Text>
               </View>
               <View className="flex-1 flex-row items-center">
@@ -378,22 +384,26 @@ function PlanReady({
               <View className="items-center">
                 <View className="flex-row items-center gap-1">
                   <Icon node={flag} color={primaria} size={12} />
-                  <Text className="text-xs uppercase tracking-wide text-primary">Meta</Text>
+                  <Text className="text-xs uppercase tracking-wide text-primary">{t("Meta")}</Text>
                 </View>
                 <Text className="text-2xl font-extrabold">
                   {kg(pesoMeta)}
-                  <Text className="text-sm font-semibold text-muted-foreground"> kg</Text>
+                  <Text className="text-sm font-semibold text-muted-foreground"> {t("kg")}</Text>
                 </Text>
               </View>
             </View>
           </Secao>
         ) : null}
 
-        <Secao titulo="Sua semana de treino" i={3}>
+        <Secao titulo={t("Sua semana de treino")} i={3}>
           {semana.isPending ? (
             <View className="h-64 rounded-3xl bg-muted" />
           ) : splits.length === 0 ? (
-            <Vazio texto="Não conseguimos montar o treino agora. Na tela Plano você pode tentar de novo ou montar o seu." />
+            <Vazio
+              texto={t(
+                "Não conseguimos montar o treino agora. Na tela Plano você pode tentar de novo ou montar o seu.",
+              )}
+            />
           ) : (
             <>
               <View className="flex-row gap-1.5 rounded-3xl bg-card p-3">
@@ -428,12 +438,14 @@ function PlanReady({
                           {splitDisplayName(s.name)}
                         </Text>
                         <Text className="text-sm text-muted-foreground">
-                          {[...s.weekdays]
-                            .sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7))
-                            .map((d) => WEEKDAY_LABELS[d as Weekday].slice(0, 3))
-                            .join(" · ") || "Sem dia fixo"}
-                          {" · "}
-                          {s.exercises.length} exercícios
+                          {t("{{v0}} · {{length}} exercícios", {
+                            v0:
+                              [...s.weekdays]
+                                .sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7))
+                                .map((d) => WEEKDAY_LABELS[d as Weekday].slice(0, 3))
+                                .join(" · ") || t("Sem dia fixo"),
+                            length: s.exercises.length,
+                          })}
                         </Text>
                       </View>
                     </View>
@@ -449,14 +461,17 @@ function PlanReady({
                           <Text className="text-sm text-muted-foreground">
                             {e.targetSets} ×{" "}
                             {e.targetRepMin && e.targetRepMax
-                              ? `${e.targetRepMin}–${e.targetRepMax}`
+                              ? t("{{targetRepMin}}–{{targetRepMax}}", {
+                                  targetRepMin: e.targetRepMin,
+                                  targetRepMax: e.targetRepMax,
+                                })
                               : e.targetReps}
                           </Text>
                         </View>
                       ))}
                       {s.exercises.length > 4 ? (
                         <Text className="text-sm text-primary">
-                          + {s.exercises.length - 4} exercícios
+                          {t("+ {{v0}} exercícios", { v0: s.exercises.length - 4 })}
                         </Text>
                       ) : null}
                     </View>
@@ -467,11 +482,13 @@ function PlanReady({
           )}
         </Secao>
 
-        <Secao titulo="Suas refeições" i={4}>
+        <Secao titulo={t("Suas refeições")} i={4}>
           {cardapio.isPending ? (
             <View className="h-40 rounded-3xl bg-muted" />
           ) : !cardapio.data || cardapio.data.meals.length === 0 ? (
-            <Vazio texto="Suas refeições aparecem na tela Dieta, prontas para você preencher." />
+            <Vazio
+              texto={t("Suas refeições aparecem na tela Dieta, prontas para você preencher.")}
+            />
           ) : (
             <>
               <View className="rounded-3xl bg-card">
@@ -488,14 +505,17 @@ function PlanReady({
                       {m.label?.trim() || label(MEAL_LABELS, m.slot)}
                     </Text>
                     <Text className="text-sm text-muted-foreground">
-                      {m.items.length === 0 ? "vazia" : `${m.items.length} itens`}
+                      {m.items.length === 0
+                        ? "vazia"
+                        : t("{{length}} itens", { length: m.items.length })}
                     </Text>
                   </View>
                 ))}
               </View>
               <Text className="mt-3 px-1 text-sm text-muted-foreground">
-                Dê nomes, horários e adicione os alimentos na tela Dieta — por conta própria ou com
-                a orientação de um nutricionista.
+                {t(
+                  "Dê nomes, horários e adicione os alimentos na tela Dieta — por conta própria ou com a orientação de um nutricionista.",
+                )}
               </Text>
             </>
           )}
@@ -515,7 +535,7 @@ function PlanReady({
           >
             <View className="mb-2 flex-row items-center gap-2">
               <Icon node={triangleAlert} color={aviso} size={16} />
-              <Text className="text-sm font-semibold">Vale saber</Text>
+              <Text className="text-sm font-semibold">{t("Vale saber")}</Text>
             </View>
             <View className="gap-1.5">
               {warnings.map((w) => (
@@ -529,7 +549,7 @@ function PlanReady({
 
         <Animated.View entering={entra(6)}>
           <Text className="mt-6 text-center text-sm text-muted-foreground">
-            Tudo isso pode ser ajustado depois, no Plano e na Dieta.
+            {t("Tudo isso pode ser ajustado depois, no Plano e na Dieta.")}
           </Text>
           {erro ? <Text className="mt-2 text-center text-sm text-destructive">{erro}</Text> : null}
         </Animated.View>
@@ -548,7 +568,7 @@ function PlanReady({
           onPress={onContinue}
           disabled={semPlano.isPending}
         >
-          <Text className="text-lg font-bold text-primary-foreground">Ir para o app</Text>
+          <Text className="text-lg font-bold text-primary-foreground">{t("Ir para o app")}</Text>
           <Icon node={arrowRight} color={branco} size={20} />
         </Button>
         <Button
@@ -558,7 +578,7 @@ function PlanReady({
           onPress={() => semPlano.mutate()}
           loading={semPlano.isPending}
         >
-          Começar sem um plano
+          {t("Começar sem um plano")}
         </Button>
       </Animated.View>
     </View>
@@ -590,14 +610,14 @@ function ErrorState({ message, onRetry }: { message: string | null; onRetry: () 
         <Icon node={triangleAlert} color={destrutiva} size={32} />
       </View>
       <Text className="mt-6 text-center text-xl font-bold tracking-tight">
-        Não conseguimos montar seu plano
+        {t("Não conseguimos montar seu plano")}
       </Text>
       <Text className="mt-2 text-center text-sm text-muted-foreground">{message}</Text>
       <Text className="mt-4 text-center text-sm text-muted-foreground">
-        Sua conta foi criada e suas respostas estão salvas — nada se perdeu.
+        {t("Sua conta foi criada e suas respostas estão salvas — nada se perdeu.")}
       </Text>
       <Button className="mt-6 h-12 w-full rounded-xl" onPress={onRetry}>
-        Tentar de novo
+        {t("Tentar de novo")}
       </Button>
     </View>
   );

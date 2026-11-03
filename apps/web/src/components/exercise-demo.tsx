@@ -14,6 +14,7 @@ import { ExternalLink, PlayCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { isSafeUrl, videoSearchUrl } from "@forja/app-core/data/exercise-media";
+import { t } from "@forja/app-core/i18n";
 
 export { isSafeUrl };
 
@@ -45,8 +46,10 @@ export function ExerciseDemoButton({
         rel="noopener noreferrer"
         aria-label={
           curado
-            ? `Ver demonstração de ${exerciseName}`
-            : `Buscar vídeos de execução de ${exerciseName} (abre em nova aba)`
+            ? t("Ver demonstração de {{exerciseName}}", { exerciseName })
+            : t("Buscar vídeos de execução de {{exerciseName}} (abre em nova aba)", {
+                exerciseName,
+              })
         }
       >
         {curado ? (
@@ -54,7 +57,7 @@ export function ExerciseDemoButton({
         ) : (
           <ExternalLink className="mr-1.5 size-4" aria-hidden />
         )}
-        {curado ? "Ver demonstração" : "Buscar execução"}
+        {curado ? t("Ver demonstração") : t("Buscar execução")}
       </a>
     </Button>
   );
@@ -90,7 +93,7 @@ export function ExerciseDemoEmbed({
     >
       <iframe
         src={embed}
-        title={`Demonstração: ${exerciseName}`}
+        title={t("Demonstração: {{exerciseName}}", { exerciseName })}
         className="size-full"
         loading="lazy"
         allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"

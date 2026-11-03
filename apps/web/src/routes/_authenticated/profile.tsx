@@ -71,6 +71,8 @@ import {
 import { weightJourney } from "@forja/app-core/lib/weight-journey";
 import { formatDate, todayISO } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
+import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Perfil: a vitrine da pessoa no Habitual Fit — e onde ela muda os dados.
@@ -83,12 +85,12 @@ import { cn } from "@/lib/utils";
  */
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({
-    meta: [{ title: "Perfil — Habitual Fit" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: t("Perfil — Habitual Fit") }, { name: "robots", content: "noindex" }],
   }),
   component: ProfilePage,
 });
 
-const fmt = (n: number) => n.toLocaleString("pt-BR", { maximumFractionDigits: 1 });
+const fmt = (n: number) => n.toLocaleString(LOCALE, { maximumFractionDigits: 1 });
 const opcao = (opcoes: { value: string; label: string }[], v: string | null | undefined) =>
   opcoes.find((o) => o.value === v)?.label ?? null;
 
@@ -156,9 +158,11 @@ function ProfilePage() {
   const estilo = [
     opcao(EXPERIENCE_OPTIONS, p?.experience_level),
     opcao(PLACE_OPTIONS, p?.training_place),
-    p?.days_per_week ? `${p.days_per_week}× por semana` : null,
+    p?.days_per_week
+      ? t("{{days_per_week}}× por semana", { days_per_week: p.days_per_week })
+      : null,
     p?.focus_area && p.focus_area !== "full_body"
-      ? `Foco em ${opcao(FOCUS_OPTIONS, p.focus_area)?.toLowerCase()}`
+      ? t("Foco em {{v0}}", { v0: opcao(FOCUS_OPTIONS, p.focus_area)?.toLowerCase() })
       : null,
   ].filter((s): s is string => Boolean(s));
 
@@ -173,18 +177,18 @@ function ProfilePage() {
         <div className="absolute -bottom-20 left-8 size-40 rounded-full bg-black/10" aria-hidden />
         <div className="relative flex items-start justify-between gap-3 px-5 pt-6">
           <h1 className="text-[2rem] font-extrabold leading-none tracking-tight text-primary-foreground">
-            Perfil
+            {t("Perfil")}
           </h1>
           <div className="flex gap-2">
             <BotaoTopo
               icon={Share2}
-              rotulo="Compartilhar perfil"
+              rotulo={t("Compartilhar perfil")}
               onClick={() => setCompartilhando(true)}
               disabled={!p}
             />
             <BotaoTopo
               icon={LogOut}
-              rotulo="Sair da conta"
+              rotulo={t("Sair da conta")}
               onClick={() => setConfirmandoSaida(true)}
             />
           </div>
@@ -210,22 +214,27 @@ function ProfilePage() {
               type="button"
               onClick={() => setEditando("display_name")}
               className="group mt-4 flex max-w-full items-center gap-2 rounded-xl px-2 py-1 transition-colors hover:bg-card"
-              aria-label="Editar nome"
+              aria-label={t("Editar nome")}
             >
               <h2 className="truncate text-3xl font-extrabold tracking-tight">
-                {p?.display_name?.trim() || "Seu nome"}
+                {p?.display_name?.trim() || t("Seu nome")}
               </h2>
               <Pencil className="size-4 shrink-0 text-muted-foreground group-hover:text-foreground" />
             </button>
           )}
           {p?.created_at && (
             <p className="mt-1 text-sm text-muted-foreground">
-              No Habitual Fit desde {formatDate(p.created_at, "MMMM 'de' yyyy")}
+              {t("No Habitual Fit desde {{v0}}", {
+                v0: formatDate(p.created_at, "MMMM 'de' yyyy"),
+              })}
             </p>
           )}
 
           {(objetivo || estilo.length > 0) && (
-            <ul className="mt-4 flex flex-wrap justify-center gap-2" aria-label="Como você treina">
+            <ul
+              className="mt-4 flex flex-wrap justify-center gap-2"
+              aria-label={t("Como você treina")}
+            >
               {objetivo && (
                 <li className="rounded-full bg-primary px-3 py-1 text-sm font-bold text-primary-foreground">
                   {objetivo}
@@ -251,7 +260,7 @@ function ProfilePage() {
               }
             >
               <Pencil className="mr-1.5 size-4" aria-hidden />
-              Editar perfil
+              {t("Editar perfil")}
             </Button>
             <Button
               className="h-11 rounded-xl font-bold"
@@ -259,43 +268,43 @@ function ProfilePage() {
               disabled={!p}
             >
               <Share2 className="mr-1.5 size-4" aria-hidden />
-              Compartilhar
+              {t("Compartilhar")}
             </Button>
           </div>
         </section>
 
         {/* Evolução: só números que existem. */}
-        <Titulo>Evolução</Titulo>
+        <Titulo>{t("Evolução")}</Titulo>
         {treinos.isPending ? (
           <Skeleton className="h-28 rounded-[1.25rem]" />
         ) : totalTreinos === 0 ? (
           <div className="rounded-[1.5rem] border border-dashed border-primary/40 bg-primary/5 p-5 text-center">
             <Dumbbell className="mx-auto size-8 text-primary" aria-hidden />
-            <p className="mt-2 text-lg font-bold">Seu portfólio começa no primeiro treino</p>
+            <p className="mt-2 text-lg font-bold">{t("Seu portfólio começa no primeiro treino")}</p>
             <p className="mt-1 text-pretty text-sm text-muted-foreground">
-              Treinos, sequência e recordes aparecem aqui conforme você registra.
+              {t("Treinos, sequência e recordes aparecem aqui conforme você registra.")}
             </p>
             <Button asChild className="mt-4 h-11 rounded-xl">
-              <Link to="/train">Começar um treino</Link>
+              <Link to="/train">{t("Começar um treino")}</Link>
             </Button>
           </div>
         ) : (
           <>
             <div className="grid grid-cols-3 gap-3">
-              <Numero icon={Dumbbell} valor={totalTreinos} rotulo="Treinos" />
-              <Numero icon={CalendarHeart} valor={treinos.data?.month} rotulo="Neste mês" />
+              <Numero icon={Dumbbell} valor={totalTreinos} rotulo={t("Treinos")} />
+              <Numero icon={CalendarHeart} valor={treinos.data?.month} rotulo={t("Neste mês")} />
               <Numero
                 icon={Flame}
                 valor={sequencia.isPending ? null : sequencia.dias}
-                rotulo={sequencia.dias === 1 ? "Dia seguido" : "Dias seguidos"}
+                rotulo={sequencia.dias === 1 ? t("Dia seguido") : t("Dias seguidos")}
               />
             </div>
             <section
               className="mt-3 rounded-[1.25rem] bg-card p-4"
-              aria-label="Constância no último ano"
+              aria-label={t("Constância no último ano")}
             >
               <p className="mb-3 text-sm font-semibold text-muted-foreground">
-                Constância no último ano
+                {t("Constância no último ano")}
               </p>
               <ActivityHeatmap />
             </section>
@@ -304,18 +313,18 @@ function ProfilePage() {
 
         {/* A jornada até a meta. */}
         {jornada && (
-          <section className="mt-3 rounded-[1.25rem] bg-card p-5" aria-label="Jornada de peso">
+          <section className="mt-3 rounded-[1.25rem] bg-card p-5" aria-label={t("Jornada de peso")}>
             <div className="flex items-center justify-between text-sm text-muted-foreground">
-              <span>Início {fmt(jornada.startKg)} kg</span>
+              <span>{t("Início {{v0}} kg", { v0: fmt(jornada.startKg) })}</span>
               <span className="flex items-center gap-1">
                 <Flag className="size-4 text-primary" aria-hidden />
-                Meta {fmt(jornada.goalKg)} kg
+                {t("Meta {{v0}} kg", { v0: fmt(jornada.goalKg) })}
               </span>
             </div>
             <div
               className="mt-3 h-3 overflow-hidden rounded-full bg-elevated"
               role="img"
-              aria-label={`${jornada.percent}% do caminho até a meta`}
+              aria-label={t("{{percent}}% do caminho até a meta", { percent: jornada.percent })}
             >
               <div
                 className="h-full rounded-full bg-primary"
@@ -324,8 +333,11 @@ function ProfilePage() {
             </div>
             <p className="mt-3 text-lg font-semibold">
               {jornada.reached
-                ? "Você chegou à meta 🎉"
-                : `${jornada.percent}% do caminho · faltam ${fmt(jornada.remainingKg)} kg`}
+                ? t("Você chegou à meta 🎉")
+                : t("{{percent}}% do caminho · faltam {{v1}} kg", {
+                    percent: jornada.percent,
+                    v1: fmt(jornada.remainingKg),
+                  })}
             </p>
           </section>
         )}
@@ -333,7 +345,7 @@ function ProfilePage() {
         {/* Destaques: os recordes de verdade, nunca conquistas inventadas. */}
         {destaques.length > 0 && (
           <>
-            <Titulo>Destaques</Titulo>
+            <Titulo>{t("Destaques")}</Titulo>
             <ul className="divide-y divide-border/60 overflow-hidden rounded-[1.25rem] bg-card">
               {destaques.map((r) => (
                 <li key={r.exerciseId} className="flex items-center gap-3 p-4">
@@ -343,13 +355,13 @@ function ProfilePage() {
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-semibold">{r.exerciseName}</span>
                     <span className="block text-xs text-muted-foreground">
-                      Recorde em {formatDate(r.date, "d 'de' MMM")}
+                      {t("Recorde em {{v0}}", { v0: formatDate(r.date, "d 'de' MMM") })}
                     </span>
                   </span>
                   <span className="shrink-0 text-right font-extrabold tabular-nums">
                     {fmt(r.weightKg)} kg
                     <span className="block text-xs font-medium text-muted-foreground">
-                      × {r.reps} {r.reps === 1 ? "repetição" : "repetições"}
+                      × {r.reps} {r.reps === 1 ? t("repetição") : t("repetições")}
                     </span>
                   </span>
                 </li>
@@ -360,10 +372,10 @@ function ProfilePage() {
 
         {/* Os dados — privados; cada bloco abre a edição. */}
         <div id="dados" className="mb-3 mt-8 flex scroll-mt-6 items-center justify-between px-1">
-          <h3 className="text-lg text-muted-foreground">Dados pessoais</h3>
+          <h3 className="text-lg text-muted-foreground">{t("Dados pessoais")}</h3>
           <span className="flex items-center gap-1 text-xs text-muted-foreground">
             <Lock className="size-3.5" aria-hidden />
-            Só você vê
+            {t("Só você vê")}
           </span>
         </div>
         {profile.isPending ? (
@@ -376,28 +388,28 @@ function ProfilePage() {
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             <Dado
               icon={<Flame />}
-              rotulo="Objetivo"
+              rotulo={t("Objetivo")}
               valor={objetivo}
               onEdit={() => setEditando("goal")}
               pequeno
             />
             <Dado
               icon={<Activity />}
-              rotulo="Atividade"
+              rotulo={t("Atividade")}
               valor={p?.activity_level ? label(ACTIVITY_LABELS, p.activity_level) : null}
               onEdit={() => setEditando("activity_level")}
               pequeno
             />
             <Dado
               icon={<Cake />}
-              rotulo="Idade"
+              rotulo={t("Idade")}
               valor={idade}
               unidade="anos"
               onEdit={() => setEditando("birth_date")}
             />
             <Dado
               icon={<Ruler />}
-              rotulo="Altura"
+              rotulo={t("Altura")}
               valor={altura}
               unidade="cm"
               onEdit={() => setEditando("height_cm")}
@@ -408,23 +420,23 @@ function ProfilePage() {
             >
               <ConteudoDado
                 icon={<Scale />}
-                rotulo="Peso atual"
+                rotulo={t("Peso atual")}
                 valor={peso && fmt(peso)}
                 unidade="kg"
-                nota="Registrar em Progresso"
+                nota={t("Registrar em Progresso")}
                 acao={<ChevronRight className="size-4" />}
               />
             </Link>
             <Dado
               icon={<Target />}
-              rotulo="Meta de peso"
+              rotulo={t("Meta de peso")}
               valor={meta && fmt(meta)}
               unidade="kg"
               onEdit={() => setEditando("goal_weight_kg")}
             />
             <Dado
               icon={<User />}
-              rotulo="Sexo"
+              rotulo={t("Sexo")}
               valor={p?.sex ? label(SEX_LABELS, p.sex) : null}
               onEdit={() => setEditando("sex")}
               pequeno
@@ -434,7 +446,7 @@ function ProfilePage() {
                 icon={<Activity />}
                 rotulo="IMC"
                 valor={imc && fmt(imc)}
-                nota={imc ? bmiBand(imc) : "Precisa de peso e altura"}
+                nota={imc ? bmiBand(imc) : t("Precisa de peso e altura")}
               />
             </Bloco>
           </div>
@@ -452,11 +464,16 @@ function ProfilePage() {
             </span>
             <span className="min-w-0 flex-1">
               <span className="block font-semibold tabular-nums">
-                {Math.round(num(p.daily_kcal_target)).toLocaleString("pt-BR")} kcal por dia
+                {t("{{v0}} kcal por dia", {
+                  v0: Math.round(num(p.daily_kcal_target)).toLocaleString(LOCALE),
+                })}
               </span>
               <span className="block text-sm text-muted-foreground tabular-nums">
-                P {Math.round(num(p.protein_g_target))} g · C {Math.round(num(p.carbs_g_target))} g
-                · G {Math.round(num(p.fat_g_target))} g
+                {t("P {{v0}} g · C {{v1}} g · G {{v2}} g", {
+                  v0: Math.round(num(p.protein_g_target)),
+                  v1: Math.round(num(p.carbs_g_target)),
+                  v2: Math.round(num(p.fat_g_target)),
+                })}
               </span>
             </span>
             <ChevronRight className="size-5 text-muted-foreground" aria-hidden />
@@ -464,14 +481,14 @@ function ProfilePage() {
         )}
 
         <p className="mt-6 truncate px-1 text-center text-xs text-muted-foreground">
-          Conectado como {user.email}
+          {t("Conectado como")} {user.email}
         </p>
         <p className="mt-2 flex justify-center gap-4 text-xs text-muted-foreground">
           <Link to="/termos" className="hover:text-foreground">
-            Termos de Uso
+            {t("Termos de Uso")}
           </Link>
           <Link to="/privacidade" className="hover:text-foreground">
-            Política de Privacidade
+            {t("Política de Privacidade")}
           </Link>
         </p>
       </div>
@@ -500,9 +517,11 @@ function ProfilePage() {
       <ConfirmDialog
         open={confirmandoSaida}
         onOpenChange={setConfirmandoSaida}
-        title="Sair da conta?"
-        description="Você vai precisar entrar de novo com seu e-mail e senha. Seus dados continuam salvos."
-        confirmLabel="Sair"
+        title={t("Sair da conta?")}
+        description={t(
+          "Você vai precisar entrar de novo com seu e-mail e senha. Seus dados continuam salvos.",
+        )}
+        confirmLabel={t("Sair")}
         onConfirm={() => void sair()}
         destructive
       />
@@ -592,7 +611,7 @@ function EditarCampo({
       await updateProfile(perfil.id, { [campo]: convertProfileField(campo, valor) });
     },
     onSuccess: () => {
-      toast.success("Salvo");
+      toast.success(t("Salvo"));
       void qc.invalidateQueries({ queryKey: queryKeys.profile() });
       onClose();
     },
@@ -621,7 +640,7 @@ function EditarCampo({
               value={valor}
               maxLength={80}
               onChange={(e) => setValor(e.target.value)}
-              placeholder="Como podemos te chamar?"
+              placeholder={t("Como podemos te chamar?")}
               className="h-12 text-lg"
               aria-label={titulo}
             />
@@ -667,7 +686,7 @@ function EditarCampo({
 
           <div className="flex gap-2">
             <Button type="button" variant="outline" className="h-12 flex-1" onClick={onClose}>
-              Cancelar
+              {t("Cancelar")}
             </Button>
             <Button
               type="submit"
@@ -738,7 +757,7 @@ function Dado({
     <button
       type="button"
       onClick={onEdit}
-      aria-label={`Editar ${props.rotulo.toLowerCase()}`}
+      aria-label={t("Editar {{v0}}", { v0: props.rotulo.toLowerCase() })}
       className="group rounded-[1.25rem] bg-card p-4 text-left transition-colors hover:bg-elevated"
     >
       <ConteudoDado
@@ -781,7 +800,7 @@ function ConteudoDado({
         )}
       >
         {vazio ? (
-          <span className="text-base font-normal text-muted-foreground">Adicionar</span>
+          <span className="text-base font-normal text-muted-foreground">{t("Adicionar")}</span>
         ) : (
           <>
             {valor}

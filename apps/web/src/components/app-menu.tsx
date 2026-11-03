@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/drawer";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { SETTINGS_SECTIONS } from "@/components/profile/settings-sections";
+import { t } from "@forja/app-core/i18n";
 
 type Icone = ComponentType<SVGProps<SVGSVGElement>>;
 
@@ -28,8 +29,8 @@ type Icone = ComponentType<SVGProps<SVGSVGElement>>;
  * nada.
  */
 const DESTAQUES: { to: string; label: string; hint: string; icon: Icone }[] = [
-  { to: "/stats", label: "Estatísticas", hint: "Sua evolução", icon: BarChart3 },
-  { to: "/body", label: "Progresso", hint: "Peso e medidas", icon: HeartPulse },
+  { to: "/stats", label: t("Estatísticas"), hint: t("Sua evolução"), icon: BarChart3 },
+  { to: "/body", label: t("Progresso"), hint: t("Peso e medidas"), icon: HeartPulse },
 ];
 
 type Item = { label: string; icon: Icone } & (
@@ -38,8 +39,8 @@ type Item = { label: string; icon: Icone } & (
 );
 
 const ITENS: Item[] = [
-  { to: "/exercises", label: "Exercícios", icon: List },
-  { to: "/recipes", label: "Receitas", icon: BookOpen },
+  { to: "/exercises", label: t("Exercícios"), icon: List },
+  { to: "/recipes", label: t("Receitas"), icon: BookOpen },
   ...SETTINGS_SECTIONS.map((s) => ({
     to: "/settings" as const,
     secao: s.key,
@@ -63,8 +64,8 @@ export function AppMenu({
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="pb-[env(safe-area-inset-bottom)]">
         <DrawerHeader className="sr-only">
-          <DrawerTitle>Menu</DrawerTitle>
-          <DrawerDescription>Outras telas e ajustes</DrawerDescription>
+          <DrawerTitle>{t("Menu")}</DrawerTitle>
+          <DrawerDescription>{t("Outras telas e ajustes")}</DrawerDescription>
         </DrawerHeader>
         <div className="max-h-[80vh] overflow-y-auto px-4 pb-5 pt-2">
           <CartaoPerfil onNavigate={fechar} />
@@ -123,7 +124,7 @@ function CartaoPerfil({ onNavigate }: { onNavigate: () => void }) {
     queryFn: async () =>
       unwrapMaybe("carregar perfil", await supabase.from("profiles").select("*").maybeSingle()),
   });
-  const nome = perfil.data?.display_name?.trim() || "Seu perfil";
+  const nome = perfil.data?.display_name?.trim() || t("Seu perfil");
   const [foto, setFoto] = useState<string | null>(null);
 
   useEffect(() => {
@@ -151,7 +152,7 @@ function CartaoPerfil({ onNavigate }: { onNavigate: () => void }) {
       </span>
       <span className="relative min-w-0 flex-1">
         <span className="block truncate text-xl font-extrabold">{nome}</span>
-        <span className="block text-sm font-medium text-[#020306]/70">Ver perfil</span>
+        <span className="block text-sm font-medium text-[#020306]/70">{t("Ver perfil")}</span>
       </span>
       <ChevronRight className="relative size-6 shrink-0" aria-hidden />
     </Link>

@@ -1,6 +1,9 @@
 import type { Enums } from "@gabrielzubioli/db/types";
+import type { Weekday } from "@forja/domain";
+import { formatDate } from "./date";
+import { t } from "../i18n";
 /**
- * Rótulos em pt-BR para os enums do banco.
+ * Rótulos (no idioma do app) para os enums do banco.
  *
  * As colunas guardam identificadores em inglês (`chest`, `barbell`, `very_active`),
  * que estavam vazando direto para a interface — a biblioteca de exercícios exibia
@@ -10,69 +13,69 @@ import type { Enums } from "@gabrielzubioli/db/types";
  */
 
 export const MUSCLE_LABELS = {
-  chest: "Peito",
-  back: "Costas",
-  lats: "Dorsal",
-  traps: "Trapézio",
-  shoulders: "Ombros",
-  front_delts: "Deltoide anterior",
-  side_delts: "Deltoide lateral",
-  rear_delts: "Deltoide posterior",
-  biceps: "Bíceps",
-  triceps: "Tríceps",
-  forearms: "Antebraço",
-  core: "Core",
-  abs: "Abdômen",
-  obliques: "Oblíquos",
-  quads: "Quadríceps",
-  hamstrings: "Posterior de coxa",
-  glutes: "Glúteos",
-  calves: "Panturrilhas",
-  adductors: "Adutores",
-  abductors: "Abdutores",
-  lower_back: "Lombar",
-  neck: "Pescoço",
-  cardio: "Cardio",
-  full_body: "Corpo inteiro",
+  chest: t("Peito"),
+  back: t("Costas"),
+  lats: t("Dorsal"),
+  traps: t("Trapézio"),
+  shoulders: t("Ombros"),
+  front_delts: t("Deltoide anterior"),
+  side_delts: t("Deltoide lateral"),
+  rear_delts: t("Deltoide posterior"),
+  biceps: t("Bíceps"),
+  triceps: t("Tríceps"),
+  forearms: t("Antebraço"),
+  core: t("Core"),
+  abs: t("Abdômen"),
+  obliques: t("Oblíquos"),
+  quads: t("Quadríceps"),
+  hamstrings: t("Posterior de coxa"),
+  glutes: t("Glúteos"),
+  calves: t("Panturrilhas"),
+  adductors: t("Adutores"),
+  abductors: t("Abdutores"),
+  lower_back: t("Lombar"),
+  neck: t("Pescoço"),
+  cardio: t("Cardio"),
+  full_body: t("Corpo inteiro"),
 } as const satisfies Record<Enums<"muscle_t">, string>;
 
 export type MuscleValue = keyof typeof MUSCLE_LABELS;
 
 export const EQUIPMENT_LABELS = {
-  barbell: "Barra",
-  dumbbell: "Halter",
-  machine: "Máquina",
-  cable: "Polia",
-  bodyweight: "Peso corporal",
-  kettlebell: "Kettlebell",
-  band: "Elástico",
-  cardio: "Cardio",
-  other: "Outro",
+  barbell: t("Barra"),
+  dumbbell: t("Halter"),
+  machine: t("Máquina"),
+  cable: t("Polia"),
+  bodyweight: t("Peso corporal"),
+  kettlebell: t("Kettlebell"),
+  band: t("Elástico"),
+  cardio: t("Cardio"),
+  other: t("Outro"),
 } as const satisfies Record<Enums<"equipment_t">, string>;
 
 export const CATEGORY_LABELS = {
-  strength: "Força",
-  cardio: "Cardio",
-  stretching: "Alongamento",
-  plyometrics: "Pliometria",
-  olympic: "Olímpico",
+  strength: t("Força"),
+  cardio: t("Cardio"),
+  stretching: t("Alongamento"),
+  plyometrics: t("Pliometria"),
+  olympic: t("Olímpico"),
 } as const;
 
 export const SET_TYPE_LABELS = {
-  warmup: "Aquecimento",
-  working: "Série de trabalho",
-  drop: "Drop set",
-  failure: "Até a falha",
+  warmup: t("Aquecimento"),
+  working: t("Série de trabalho"),
+  drop: t("Drop set"),
+  failure: t("Até a falha"),
 } as const;
 
 export type SetTypeValue = keyof typeof SET_TYPE_LABELS;
 
 /** Abreviação exibida no botão de tipo de série. */
 export const SET_TYPE_SHORT = {
-  warmup: "A",
+  warmup: t("Aquecimento").charAt(0),
   working: "",
   drop: "D",
-  failure: "F",
+  failure: t("Falha").charAt(0),
 } as const;
 
 /**
@@ -85,14 +88,14 @@ export const SET_TYPE_SHORT = {
  * A ordem do array é a ordem cronológica do dia — é ela que a tela usa.
  */
 export const MEAL_LABELS = {
-  breakfast: "Café da manhã",
-  morning_snack: "Lanche da manhã",
-  lunch: "Almoço",
-  afternoon_snack: "Lanche da tarde",
-  pre_workout: "Pré-treino",
-  post_workout: "Pós-treino",
-  dinner: "Jantar",
-  supper: "Ceia",
+  breakfast: t("Café da manhã"),
+  morning_snack: t("Lanche da manhã"),
+  lunch: t("Almoço"),
+  afternoon_snack: t("Lanche da tarde"),
+  pre_workout: t("Pré-treino"),
+  post_workout: t("Pós-treino"),
+  dinner: t("Jantar"),
+  supper: t("Ceia"),
 } as const;
 
 export type MealValue = keyof typeof MEAL_LABELS;
@@ -121,98 +124,98 @@ export const MEALS = [
 ] as const satisfies readonly { key: MealValue; label: string }[];
 
 export const MOVEMENT_PATTERN_LABELS = {
-  horizontal_push: "Empurrar horizontal",
-  vertical_push: "Empurrar vertical",
-  horizontal_pull: "Puxar horizontal",
-  vertical_pull: "Puxar vertical",
-  squat: "Agachamento",
-  hinge: "Dobradiça de quadril",
-  lunge: "Passada",
-  isolation: "Isolado",
-  core: "Core",
-  carry: "Carregamento",
-  cardio: "Cardio",
-  mobility: "Mobilidade",
+  horizontal_push: t("Empurrar horizontal"),
+  vertical_push: t("Empurrar vertical"),
+  horizontal_pull: t("Puxar horizontal"),
+  vertical_pull: t("Puxar vertical"),
+  squat: t("Agachamento"),
+  hinge: t("Dobradiça de quadril"),
+  lunge: t("Passada"),
+  isolation: t("Isolado"),
+  core: t("Core"),
+  carry: t("Carregamento"),
+  cardio: t("Cardio"),
+  mobility: t("Mobilidade"),
 } as const;
 
 export const EXERCISE_LEVEL_LABELS = {
-  beginner: "Iniciante",
-  intermediate: "Intermediário",
-  advanced: "Avançado",
+  beginner: t("Iniciante"),
+  intermediate: t("Intermediário"),
+  advanced: t("Avançado"),
 } as const;
 
 export const MECHANIC_LABELS = {
-  compound: "Composto",
-  isolation: "Isolado",
+  compound: t("Composto"),
+  isolation: t("Isolado"),
 } as const;
 
 export const FORCE_TYPE_LABELS = {
-  push: "Empurrar",
-  pull: "Puxar",
-  static: "Isometria",
+  push: t("Empurrar"),
+  pull: t("Puxar"),
+  static: t("Isometria"),
 } as const;
 
 export const FOOD_CATEGORY_LABELS = {
-  protein_meat: "Carnes e peixes",
-  protein_egg: "Ovos",
-  dairy: "Laticínios",
-  legume: "Leguminosas",
-  grain: "Cereais e pães",
-  tuber: "Tubérculos",
-  vegetable: "Vegetais",
-  fruit: "Frutas",
-  fat: "Gorduras e oleaginosas",
-  beverage: "Bebidas",
-  supplement: "Suplementos",
-  sweet: "Doces",
-  condiment: "Temperos e molhos",
-  prepared: "Preparações",
-  other: "Outros",
+  protein_meat: t("Carnes e peixes"),
+  protein_egg: t("Ovos"),
+  dairy: t("Laticínios"),
+  legume: t("Leguminosas"),
+  grain: t("Cereais e pães"),
+  tuber: t("Tubérculos"),
+  vegetable: t("Vegetais"),
+  fruit: t("Frutas"),
+  fat: t("Gorduras e oleaginosas"),
+  beverage: t("Bebidas"),
+  supplement: t("Suplementos"),
+  sweet: t("Doces"),
+  condiment: t("Temperos e molhos"),
+  prepared: t("Preparações"),
+  other: t("Outros"),
 } as const;
 
 export type FoodCategoryValue = keyof typeof FOOD_CATEGORY_LABELS;
 
 /** Lesões que o questionário coleta e que filtram exercícios do plano. */
 export const INJURY_LABELS = {
-  shoulder: "Ombro",
-  elbow: "Cotovelo",
-  wrist: "Punho",
-  lower_back: "Lombar",
-  neck: "Pescoço",
-  hip: "Quadril",
-  knee: "Joelho",
-  ankle: "Tornozelo",
+  shoulder: t("Ombro"),
+  elbow: t("Cotovelo"),
+  wrist: t("Punho"),
+  lower_back: t("Lombar"),
+  neck: t("Pescoço"),
+  hip: t("Quadril"),
+  knee: t("Joelho"),
+  ankle: t("Tornozelo"),
 } as const;
 
 export type InjuryValue = keyof typeof INJURY_LABELS;
 
 export const SEX_LABELS = {
-  male: "Masculino",
-  female: "Feminino",
-  other: "Outro",
+  male: t("Masculino"),
+  female: t("Feminino"),
+  other: t("Outro"),
 } as const;
 
 export const ACTIVITY_LABELS = {
-  sedentary: "Sedentário",
-  light: "Leve",
-  moderate: "Moderado",
-  active: "Ativo",
-  very_active: "Muito ativo",
+  sedentary: t("Sedentário"),
+  light: t("Leve"),
+  moderate: t("Moderado"),
+  active: t("Ativo"),
+  very_active: t("Muito ativo"),
 } as const;
 
 /** Descrições que ajudam o usuário a escolher o nível certo. */
 export const ACTIVITY_HINTS = {
-  sedentary: "Pouco ou nenhum exercício",
-  light: "Exercício leve 1–3× por semana",
-  moderate: "Exercício moderado 3–5× por semana",
-  active: "Exercício intenso 6–7× por semana",
-  very_active: "Trabalho físico ou 2 treinos por dia",
+  sedentary: t("Pouco ou nenhum exercício"),
+  light: t("Exercício leve 1–3× por semana"),
+  moderate: t("Exercício moderado 3–5× por semana"),
+  active: t("Exercício intenso 6–7× por semana"),
+  very_active: t("Trabalho físico ou 2 treinos por dia"),
 } as const;
 
 export const GOAL_LABELS = {
-  lose: "Perder gordura",
-  maintain: "Manter",
-  gain: "Ganhar massa",
+  lose: t("Perder gordura"),
+  maintain: t("Manter"),
+  gain: t("Ganhar massa"),
 } as const;
 
 /**
@@ -227,11 +230,11 @@ export const GOAL_LABELS = {
  * `PHOTO_ANGLE_OPTIONS`, que é o que a interface oferece para novas fotos.
  */
 export const PHOTO_ANGLE_LABELS = {
-  front: "Frente",
-  back: "Costas",
-  side_left: "Lado esquerdo",
-  side_right: "Lado direito",
-  side: "Lateral",
+  front: t("Frente"),
+  back: t("Costas"),
+  side_left: t("Lado esquerdo"),
+  side_right: t("Lado direito"),
+  side: t("Lateral"),
 } as const;
 
 export type PhotoAngleValue = keyof typeof PHOTO_ANGLE_LABELS;
@@ -253,3 +256,31 @@ export function label<T extends Record<string, string>>(
   if (!value) return fallback;
   return map[value] ?? value;
 }
+
+export const WEEKDAY_LABELS: Record<Weekday, string> = {
+  0: t("Domingo"),
+  1: t("Segunda"),
+  2: t("Terça"),
+  3: t("Quarta"),
+  4: t("Quinta"),
+  5: t("Sexta"),
+  6: t("Sábado"),
+};
+
+/** Iniciais para a faixa compacta da tela inicial, no idioma do app (7/1/2024 foi domingo). */
+export const WEEKDAY_INITIALS = Object.fromEntries(
+  [0, 1, 2, 3, 4, 5, 6].map((d) => [
+    d,
+    formatDate(new Date(2024, 0, 7 + d), "EEEEE").toUpperCase(),
+  ]),
+) as Record<Weekday, string>;
+
+/** Sigla em maiúsculas (DOM, SEG… / SUN, MON…), no idioma do app. */
+export const WEEKDAY_SHORT = Object.fromEntries(
+  [0, 1, 2, 3, 4, 5, 6].map((d) => [
+    d,
+    formatDate(new Date(2024, 0, 7 + d), "EEE")
+      .replace(".", "")
+      .toUpperCase(),
+  ]),
+) as Record<Weekday, string>;

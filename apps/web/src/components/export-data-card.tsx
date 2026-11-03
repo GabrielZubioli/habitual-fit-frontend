@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { errorMessage } from "@forja/app-core/data/supabase-helpers";
 import { downloadFile } from "@/lib/download";
 import { buildExportFile, type ExportFormat } from "@forja/app-core/data/export";
+import { t } from "@forja/app-core/i18n";
 
 export function ExportDataCard() {
   const [exporting, setExporting] = useState<ExportFormat | null>(null);
@@ -23,8 +24,8 @@ export function ExportDataCard() {
       const { conteudo, nome, mime } = await buildExportFile(format);
       downloadFile(conteudo, nome, mime);
 
-      toast.success("Exportação concluída", {
-        description: "O arquivo foi baixado para o seu dispositivo.",
+      toast.success(t("Exportação concluída"), {
+        description: t("O arquivo foi baixado para o seu dispositivo."),
       });
     } catch (error) {
       toast.error(errorMessage(error));
@@ -38,13 +39,14 @@ export function ExportDataCard() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <Download className="size-4" aria-hidden />
-          Seus dados
+          {t("Seus dados")}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         <p className="text-sm text-muted-foreground">
-          Baixe tudo o que você registrou: treinos, séries, diário alimentar, receitas, pesos e
-          medidas. Seus dados são seus — leve-os quando quiser.
+          {t(
+            "Baixe tudo o que você registrou: treinos, séries, diário alimentar, receitas, pesos e medidas. Seus dados são seus — leve-os quando quiser.",
+          )}
         </p>
         <div className="flex flex-wrap gap-2">
           <Button
@@ -53,7 +55,7 @@ export function ExportDataCard() {
             disabled={exporting !== null}
           >
             <FileJson className="mr-1.5 size-4" />
-            {exporting === "json" ? "Exportando…" : "Exportar JSON"}
+            {exporting === "json" ? t("Exportando…") : t("Exportar JSON")}
           </Button>
           <Button
             variant="outline"
@@ -61,12 +63,13 @@ export function ExportDataCard() {
             disabled={exporting !== null}
           >
             <FileSpreadsheet className="mr-1.5 size-4" />
-            {exporting === "csv" ? "Exportando…" : "Exportar CSV"}
+            {exporting === "csv" ? t("Exportando…") : t("Exportar CSV")}
           </Button>
         </div>
         <p className="text-xs text-muted-foreground">
-          JSON preserva a estrutura completa (ideal para backup ou migração). CSV abre direto no
-          Excel e no Google Planilhas.
+          {t(
+            "JSON preserva a estrutura completa (ideal para backup ou migração). CSV abre direto no Excel e no Google Planilhas.",
+          )}
         </p>
       </CardContent>
     </Card>

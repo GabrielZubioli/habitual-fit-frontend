@@ -10,6 +10,7 @@ import type { PaletaTreino } from "@/lib/paleta-treino";
 import { restSoundEnabled, setRestSound, type RestTimer } from "@/lib/rest-timer";
 import { Icon } from "./icon";
 import { Text } from "./text";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * A barra do descanso — o `RestTimerBar` do web: o tempo encolhendo, − e + 15
@@ -50,7 +51,7 @@ export function RestTimerBar({ timer, p }: { timer: RestTimer; p: PaletaTreino }
     >
       <View
         accessibilityRole="timer"
-        accessibilityLabel="Descanso"
+        accessibilityLabel={t("Descanso")}
         className="mx-auto w-full max-w-md overflow-hidden rounded-3xl"
         style={{
           backgroundColor: p.surface,
@@ -73,7 +74,7 @@ export function RestTimerBar({ timer, p }: { timer: RestTimer; p: PaletaTreino }
               className={pequeno}
               style={{ backgroundColor: p.raised }}
               onPress={() => timer.adjust(-15)}
-              accessibilityLabel="Menos 15 segundos"
+              accessibilityLabel={t("Menos 15 segundos")}
             >
               <Icon node={minus} color={p.on} size={16} />
             </Pressable>
@@ -82,7 +83,7 @@ export function RestTimerBar({ timer, p }: { timer: RestTimer; p: PaletaTreino }
                 className="text-[9px] font-bold uppercase tracking-[1.5px]"
                 style={{ color: p.onSoft }}
               >
-                Descanso
+                {t("Descanso")}
               </Text>
               <Text
                 numberOfLines={1}
@@ -96,7 +97,7 @@ export function RestTimerBar({ timer, p }: { timer: RestTimer; p: PaletaTreino }
               className={pequeno}
               style={{ backgroundColor: p.raised }}
               onPress={() => timer.adjust(15)}
-              accessibilityLabel="Mais 15 segundos"
+              accessibilityLabel={t("Mais 15 segundos")}
             >
               <Icon node={plus} color={p.on} size={16} />
             </Pressable>
@@ -108,14 +109,14 @@ export function RestTimerBar({ timer, p }: { timer: RestTimer; p: PaletaTreino }
                 setSom(!som);
                 setRestSound(!som);
               }}
-              accessibilityLabel={som ? "Desligar som do descanso" : "Ligar som do descanso"}
+              accessibilityLabel={som ? t("Desligar som do descanso") : t("Ligar som do descanso")}
               accessibilityState={{ checked: som }}
             >
               <Icon node={som ? bell : bellOff} color={p.onSoft} size={20} />
             </Pressable>
             <Pressable
               onPress={timer.stop}
-              accessibilityLabel="Pular descanso"
+              accessibilityLabel={t("Pular descanso")}
               className={grande}
               style={{ backgroundColor: p.accent }}
             >

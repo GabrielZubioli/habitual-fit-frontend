@@ -22,27 +22,6 @@ import { z } from "zod";
 export const WEEKDAYS = [0, 1, 2, 3, 4, 5, 6] as const;
 export type Weekday = (typeof WEEKDAYS)[number];
 
-export const WEEKDAY_LABELS: Record<Weekday, string> = {
-  0: "Domingo",
-  1: "Segunda",
-  2: "Terça",
-  3: "Quarta",
-  4: "Quinta",
-  5: "Sexta",
-  6: "Sábado",
-};
-
-/** Iniciais para a faixa compacta da tela inicial. */
-export const WEEKDAY_INITIALS: Record<Weekday, string> = {
-  0: "D",
-  1: "S",
-  2: "T",
-  3: "Q",
-  4: "Q",
-  5: "S",
-  6: "S",
-};
-
 export const scheduleInputSchema = z
   .object({
     /** Dias planejados para treinar (modo rotação). */

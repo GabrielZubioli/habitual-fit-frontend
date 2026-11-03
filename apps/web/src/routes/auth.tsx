@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { BrandSymbol } from "@/components/brand-logo";
 import { Punho } from "@/components/train-launch";
 import { cn } from "@/lib/utils";
+import { t, tRich } from "@forja/app-core/i18n";
 
 /**
  * Entrar e criar conta, na mesma tela.
@@ -37,8 +38,8 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Entrar — Habitual Fit" },
-      { name: "description", content: "Acesse ou crie sua conta Habitual Fit." },
+      { title: t("Entrar — Habitual Fit") },
+      { name: "description", content: t("Acesse ou crie sua conta Habitual Fit.") },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -52,15 +53,15 @@ type Modo = "login" | "signup";
 /** Quando os campos do formulário novo começam a entrar (`--auth-swap` e a cascata do CSS). */
 const TROCA_MS = 650;
 
-const emailSchema = z.string().trim().email("Informe um e-mail válido").max(255);
-const loginPassSchema = z.string().min(1, "Informe sua senha").max(72);
-const nameSchema = z.string().trim().min(2, "Informe seu nome").max(60);
+const emailSchema = z.string().trim().email(t("Informe um e-mail válido")).max(255);
+const loginPassSchema = z.string().min(1, t("Informe sua senha")).max(72);
+const nameSchema = z.string().trim().min(2, t("Informe seu nome")).max(60);
 const newPassSchema = z
   .string()
-  .min(8, "Use pelo menos 8 caracteres")
+  .min(8, t("Use pelo menos 8 caracteres"))
   .max(72)
-  .regex(/[A-Za-z]/, "Use pelo menos uma letra")
-  .regex(/[0-9]/, "Use pelo menos um número");
+  .regex(/[A-Za-z]/, t("Use pelo menos uma letra"))
+  .regex(/[0-9]/, t("Use pelo menos um número"));
 
 function AuthPage() {
   const navigate = useNavigate();
@@ -92,11 +93,11 @@ function AuthPage() {
     if (!trocou.current) return;
     const reduzido = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const titulo = modo === "signup" ? tituloCadastro : tituloLogin;
-    const t = window.setTimeout(
+    const timer = window.setTimeout(
       () => titulo.current?.focus({ preventScroll: true }),
       reduzido ? 0 : TROCA_MS,
     );
-    return () => window.clearTimeout(t);
+    return () => window.clearTimeout(timer);
   }, [modo]);
 
   const trocar = (novo: Modo) => {
@@ -135,17 +136,17 @@ function AuthPage() {
           <Painel
             lado="left"
             inativo={modo !== "login"}
-            titulo="Novo por aqui?"
-            texto="Crie sua conta e receba seu plano de treino."
-            botao="Criar conta"
+            titulo={t("Novo por aqui?")}
+            texto={t("Crie sua conta e receba seu plano de treino.")}
+            botao={t("Criar conta")}
             onClick={() => trocar("signup")}
           />
           <Painel
             lado="right"
             inativo={modo !== "signup"}
-            titulo="Já tem conta?"
-            texto="Entre para continuar de onde parou."
-            botao="Entrar"
+            titulo={t("Já tem conta?")}
+            texto={t("Entre para continuar de onde parou.")}
+            botao={t("Entrar")}
             onClick={() => trocar("login")}
           />
         </div>
@@ -172,16 +173,16 @@ function useAlturaSemTeclado(cartao: React.RefObject<HTMLDivElement | null>) {
         cartao.current?.style.setProperty("--auth-altura", `${window.innerHeight}px`);
     };
     // Ao sair do campo o teclado ainda está fechando: mede depois que ele some.
-    let t: number | undefined;
+    let item: number | undefined;
     const saiu = () => {
-      window.clearTimeout(t);
-      t = window.setTimeout(medir, 400);
+      window.clearTimeout(item);
+      item = window.setTimeout(medir, 400);
     };
     medir();
     window.addEventListener("resize", medir);
     document.addEventListener("focusout", saiu);
     return () => {
-      window.clearTimeout(t);
+      window.clearTimeout(item);
       window.removeEventListener("resize", medir);
       document.removeEventListener("focusout", saiu);
     };
@@ -206,7 +207,7 @@ function Painel({
   return (
     <div className={`auth-flip__panel auth-flip__panel--${lado}`} inert={inativo}>
       <Punho className="auth-flip__marca" />
-      <Link to="/" aria-label="Habitual Fit — início" className="rounded-lg">
+      <Link to="/" aria-label={t("Habitual Fit — início")} className="rounded-lg">
         <BrandSymbol
           escuro
           className="w-24 drop-shadow-[0_6px_14px_rgb(4_38_26/0.18)] max-[649px]:w-14"
@@ -274,18 +275,18 @@ function SignInForm({
 
   return (
     <form onSubmit={submit} className="space-y-3 text-center" noValidate aria-busy={loading}>
-      <Cabecalho titulo={titulo}>Entrar na sua conta</Cabecalho>
+      <Cabecalho titulo={titulo}>{t("Entrar na sua conta")}</Cabecalho>
 
       {/* Altura fixa: o botão do Google muda de tamanho enquanto monta, e o
           formulário centralizado pularia inteiro junto. */}
       <div className="h-12 overflow-hidden pt-1">
         <GoogleButton ativo={ativo} texto="signin_with" onError={setErro} />
       </div>
-      <Divisor>ou com e-mail</Divisor>
+      <Divisor>{t("ou com e-mail")}</Divisor>
 
       <IconField
         id="login-email"
-        label="E-mail"
+        label={t("E-mail")}
         icon={Mail}
         error={errors.email}
         type="email"
@@ -296,7 +297,7 @@ function SignInForm({
       />
       <IconField
         id="login-password"
-        label="Senha"
+        label={t("Senha")}
         icon={Lock}
         revelavel
         error={errors.password}
@@ -312,13 +313,13 @@ function SignInForm({
           search={{ email: email.trim() || undefined }}
           className="text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
         >
-          Esqueceu sua senha?
+          {t("Esqueceu sua senha?")}
         </Link>
       </div>
 
       {erro && <Aviso>{erro}</Aviso>}
 
-      <SubmitButton loading={loading}>Entrar</SubmitButton>
+      <SubmitButton loading={loading}>{t("Entrar")}</SubmitButton>
     </form>
   );
 }
@@ -359,7 +360,7 @@ function SignUpForm({
       name: nm.success ? undefined : nm.error.issues[0]?.message,
       email: em.success ? undefined : em.error.issues[0]?.message,
       password: pw.success ? undefined : pw.error.issues[0]?.message,
-      confirm: confere ? undefined : "As senhas não conferem",
+      confirm: confere ? undefined : t("As senhas não conferem"),
     });
     setErro(undefined);
     if (!nm.success || !em.success || !pw.success || !confere) return;
@@ -396,18 +397,18 @@ function SignUpForm({
 
   return (
     <form onSubmit={submit} className="space-y-3 text-center" noValidate aria-busy={loading}>
-      <Cabecalho titulo={titulo}>Criar sua conta</Cabecalho>
+      <Cabecalho titulo={titulo}>{t("Criar sua conta")}</Cabecalho>
 
       {/* Altura fixa: o botão do Google muda de tamanho enquanto monta, e o
           formulário centralizado pularia inteiro junto. */}
       <div className="h-12 overflow-hidden pt-1">
         <GoogleButton ativo={ativo} texto="signup_with" onError={setErro} />
       </div>
-      <Divisor>ou com e-mail</Divisor>
+      <Divisor>{t("ou com e-mail")}</Divisor>
 
       <IconField
         id="signup-name"
-        label="Nome"
+        label={t("Nome")}
         icon={User}
         error={errors.name}
         autoComplete="given-name"
@@ -416,7 +417,7 @@ function SignUpForm({
       />
       <IconField
         id="signup-email"
-        label="E-mail"
+        label={t("E-mail")}
         icon={Mail}
         error={errors.email}
         type="email"
@@ -430,7 +431,7 @@ function SignUpForm({
       />
       <IconField
         id="signup-password"
-        label="Senha (mín. 8 caracteres)"
+        label={t("Senha (mín. 8 caracteres)")}
         icon={Lock}
         revelavel
         error={errors.password}
@@ -443,7 +444,7 @@ function SignUpForm({
       </IconField>
       <IconField
         id="signup-confirm"
-        label="Confirme a senha"
+        label={t("Confirme a senha")}
         icon={Lock}
         revelavel
         error={errors.confirm}
@@ -459,10 +460,13 @@ function SignUpForm({
             role="alert"
             className="rounded-2xl border border-primary/40 bg-primary/10 p-4 text-left animate-in fade-in slide-in-from-bottom-1 duration-300"
           >
-            <p className="font-semibold">Este e-mail já tem uma conta</p>
+            <p className="font-semibold">{t("Este e-mail já tem uma conta")}</p>
             <p className="mt-1 text-pretty text-sm text-muted-foreground">
-              <span className="break-all font-medium text-foreground">{contaExiste}</span> já está
-              cadastrado. Entre com ele ou recupere a senha.
+              {tRich(
+                "<0>{{email}}</0> já está cadastrado. Entre com ele ou recupere a senha.",
+                [(s) => <span className="break-all font-medium text-foreground">{s}</span>],
+                { email: contaExiste },
+              )}
             </p>
             <div className="mt-3 grid grid-cols-2 gap-2">
               <Button
@@ -470,11 +474,11 @@ function SignUpForm({
                 className="h-11 rounded-xl"
                 onClick={() => irParaLogin(contaExiste)}
               >
-                Entrar
+                {t("Entrar")}
               </Button>
               <Button asChild variant="outline" className="h-11 rounded-xl">
                 <Link to="/esqueci-senha" search={{ email: contaExiste }}>
-                  Esqueci a senha
+                  {t("Esqueci a senha")}
                 </Link>
               </Button>
             </div>
@@ -484,24 +488,32 @@ function SignUpForm({
 
       {erro && <Aviso>{erro}</Aviso>}
 
-      <SubmitButton loading={loading}>Criar conta</SubmitButton>
+      <SubmitButton loading={loading}>{t("Criar conta")}</SubmitButton>
 
       <p className="text-xs leading-relaxed text-muted-foreground">
-        Ao criar a conta, você aceita os{" "}
-        <Link
-          to="/termos"
-          className="font-medium text-foreground underline-offset-4 hover:underline"
-        >
-          Termos de Uso
-        </Link>{" "}
-        e a{" "}
-        <Link
-          to="/privacidade"
-          className="font-medium text-foreground underline-offset-4 hover:underline"
-        >
-          Política de Privacidade
-        </Link>
-        .
+        {tRich(
+          t(
+            "Ao criar a conta, você aceita os <0>Termos de Uso</0> e a <1>Política de Privacidade</1>.",
+          ),
+          [
+            (s) => (
+              <Link
+                to="/termos"
+                className="font-medium text-foreground underline-offset-4 hover:underline"
+              >
+                {s}
+              </Link>
+            ),
+            (s) => (
+              <Link
+                to="/privacidade"
+                className="font-medium text-foreground underline-offset-4 hover:underline"
+              >
+                {s}
+              </Link>
+            ),
+          ],
+        )}
       </p>
     </form>
   );
@@ -574,7 +586,7 @@ function IconField({
           <button
             type="button"
             onClick={() => setVisivel((v) => !v)}
-            aria-label={visivel ? "Ocultar senha" : "Mostrar senha"}
+            aria-label={visivel ? t("Ocultar senha") : t("Mostrar senha")}
             aria-pressed={visivel}
             className="absolute right-2 top-1/2 grid size-10 -translate-y-1/2 place-items-center rounded-lg text-muted-foreground transition-colors hover:text-foreground"
           >
@@ -678,7 +690,7 @@ function GoogleButton({
       options: { redirectTo: `${window.location.origin}/` },
     });
     if (res.error) {
-      onError("Não foi possível entrar com o Google.");
+      onError(t("Não foi possível entrar com o Google."));
       setLoading(false);
     }
   };
@@ -702,7 +714,7 @@ function GoogleButton({
           disabled={loading}
         >
           {loading ? <Loader2 className="mr-2 size-4 animate-spin" /> : <GoogleIcon />}
-          Continuar com Google
+          {t("Continuar com Google")}
         </Button>
       }
     />
@@ -727,7 +739,7 @@ function PasswordStrength({ value }: { value: string }) {
     /\d/.test(value) || /[^A-Za-z0-9]/.test(value),
   ];
   const nivel = criterios.filter(Boolean).length;
-  const rotulos = ["Muito fraca", "Fraca", "Razoável", "Boa", "Forte"];
+  const rotulos = [t("Muito fraca"), t("Fraca"), t("Razoável"), t("Boa"), t("Forte")];
 
   return (
     <div className="flex items-center gap-2 pt-1.5">

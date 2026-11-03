@@ -61,6 +61,8 @@ import { ExerciseDemo } from "@/ui/exercise-demo";
 import { Icon, type IconNode } from "@/ui/icon";
 import { RestTimerBar } from "@/ui/rest-timer-bar";
 import { Text } from "@/ui/text";
+import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * A execução do treino, um exercício por vez — o `workouts_.session.$id.tsx`
@@ -75,11 +77,11 @@ import { Text } from "@/ui/text";
 
 /** RIR: quantas repetições ainda sobravam. */
 const RIR_OPCOES = [
-  { valor: 0, texto: "Falha — não sairia mais nenhuma" },
-  { valor: 1, texto: "Sobrava 1" },
-  { valor: 2, texto: "Sobravam 2" },
-  { valor: 3, texto: "Sobravam 3" },
-  { valor: 4, texto: "Sobravam 4 ou mais" },
+  { valor: 0, texto: t("Falha — não sairia mais nenhuma") },
+  { valor: 1, texto: t("Sobrava 1") },
+  { valor: 2, texto: t("Sobravam 2") },
+  { valor: 3, texto: t("Sobravam 3") },
+  { valor: 4, texto: t("Sobravam 4 ou mais") },
 ] as const;
 
 type Patch = Parameters<typeof updateSet>[1];
@@ -258,7 +260,7 @@ function SessionPage({ id }: { id: string }) {
           <Circulo
             cor={p.inkFaint}
             onPress={() => router.navigate("/dashboard")}
-            label="Sair do treino (continua salvo)"
+            label={t("Sair do treino (continua salvo)")}
           >
             <Icon node={xIcon} color={p.ink} size={20} strokeWidth={2.5} />
           </Circulo>
@@ -281,7 +283,7 @@ function SessionPage({ id }: { id: string }) {
             <Circulo
               cor={p.inkFaint}
               onPress={() => setEditando((v) => !v)}
-              label={editando ? "Parar de editar" : "Corrigir cargas e séries"}
+              label={editando ? t("Parar de editar") : t("Corrigir cargas e séries")}
             >
               <Icon node={pencil} color={p.ink} size={20} strokeWidth={2.5} />
             </Circulo>
@@ -289,7 +291,7 @@ function SessionPage({ id }: { id: string }) {
             <Circulo
               cor={p.ink}
               onPress={() => setConfirmarDescarte(true)}
-              label="Descartar treino"
+              label={t("Descartar treino")}
             >
               <Icon node={trash2} color={p.page} size={20} strokeWidth={2.5} />
             </Circulo>
@@ -301,7 +303,7 @@ function SessionPage({ id }: { id: string }) {
             className="h-2 flex-1 overflow-hidden rounded-full"
             style={{ backgroundColor: p.inkFaint }}
             accessibilityRole="progressbar"
-            accessibilityLabel="Séries concluídas"
+            accessibilityLabel={t("Séries concluídas")}
             accessibilityValue={{ min: 0, max: totais.total, now: totais.feitas }}
           >
             <View
@@ -312,8 +314,7 @@ function SessionPage({ id }: { id: string }) {
           <Text className="text-sm font-bold" style={{ color: p.ink }}>
             {totais.feitas}/{totais.total}
             <Text className="text-sm font-medium" style={{ color: p.inkSoft }}>
-              {" "}
-              séries
+              {t("séries")}
             </Text>
           </Text>
         </View>
@@ -344,12 +345,12 @@ function SessionPage({ id }: { id: string }) {
             className="mt-2 flex-row flex-wrap items-center gap-2 rounded-2xl p-3"
             style={{ backgroundColor: p.surface }}
           >
-            <Text style={{ color: p.onSoft }}>Data</Text>
+            <Text style={{ color: p.onSoft }}>{t("Data")}</Text>
             <DatePicker
               max={todayISO()}
               value={toISODate(new Date(dados.startedAt))}
               onChange={(v) => mudarData.mutate(v)}
-              accessibilityLabel="Data do treino"
+              accessibilityLabel={t("Data do treino")}
               className="h-9"
             />
             <View className="ml-auto">
@@ -361,7 +362,7 @@ function SessionPage({ id }: { id: string }) {
                 >
                   <Icon node={check} color={p.accentFg} size={16} />
                   <Text className="text-xs font-medium text-primary-foreground">
-                    {salvarEdicao.isPending ? "Salvando…" : "Concluir edição"}
+                    {salvarEdicao.isPending ? t("Salvando…") : t("Concluir edição")}
                   </Text>
                 </Pressable>
               ) : (
@@ -370,7 +371,7 @@ function SessionPage({ id }: { id: string }) {
                   className="h-8 justify-center rounded-full bg-secondary px-3"
                 >
                   <Text className="text-xs font-medium text-secondary-foreground">
-                    Corrigir cargas e séries
+                    {t("Corrigir cargas e séries")}
                   </Text>
                 </Pressable>
               )}
@@ -384,10 +385,10 @@ function SessionPage({ id }: { id: string }) {
             style={{ backgroundColor: p.surface }}
           >
             <Text className="text-lg font-semibold" style={{ color: p.on }}>
-              Este treino está sem exercícios
+              {t("Este treino está sem exercícios")}
             </Text>
             <Text className="mt-1" style={{ color: p.onSoft }}>
-              Adicione exercícios à rotina no Plano.
+              {t("Adicione exercícios à rotina no Plano.")}
             </Text>
             <Pressable
               onPress={() => router.push("/plan")}
@@ -395,7 +396,7 @@ function SessionPage({ id }: { id: string }) {
               style={{ backgroundColor: p.accent }}
             >
               <Text className="font-bold" style={{ color: p.accentFg }}>
-                Abrir o Plano
+                {t("Abrir o Plano")}
               </Text>
             </Pressable>
           </View>
@@ -476,7 +477,7 @@ function SessionPage({ id }: { id: string }) {
               >
                 <Icon node={chevronLeft} color={p.ink} size={20} />
                 <Text className="font-bold" style={{ color: p.ink }}>
-                  Anterior
+                  {t("Anterior")}
                 </Text>
               </Pressable>
               {ultimo && !terminado ? (
@@ -493,7 +494,7 @@ function SessionPage({ id }: { id: string }) {
                 >
                   <Icon node={check} color={p.page} size={20} strokeWidth={3} />
                   <Text className="font-extrabold" style={{ color: p.page }}>
-                    Terminar treino
+                    {t("Terminar treino")}
                   </Text>
                 </Pressable>
               ) : (
@@ -504,7 +505,7 @@ function SessionPage({ id }: { id: string }) {
                   style={{ backgroundColor: p.ink, opacity: ultimo ? 0.35 : 1 }}
                 >
                   <Text className="font-extrabold" style={{ color: p.page }}>
-                    Próximo
+                    {t("Próximo")}
                   </Text>
                   <Icon node={chevronRight} color={p.page} size={20} />
                 </Pressable>
@@ -519,31 +520,34 @@ function SessionPage({ id }: { id: string }) {
       <ConfirmDialog
         open={confirmarDescarte}
         onClose={() => setConfirmarDescarte(false)}
-        title="Descartar este treino?"
-        description="As séries registradas até agora serão apagadas. Não dá para desfazer."
-        confirmLabel="Descartar treino"
+        title={t("Descartar este treino?")}
+        description={t("As séries registradas até agora serão apagadas. Não dá para desfazer.")}
+        confirmLabel={t("Descartar treino")}
         destructive
         onConfirm={() => descartar.mutate()}
       />
       <AlertDialog
         open={confirmarFim}
         onClose={() => setConfirmarFim(false)}
-        title="Terminar o treino agora?"
-        description={`${pendentes} ${
-          pendentes === 1 ? "série ainda não foi marcada" : "séries ainda não foram marcadas"
-        } e ficarão de fora do registro.`}
-        acoes={[{ label: "Terminar", onPress: () => finalizar.mutate() }]}
+        title={t("Terminar o treino agora?")}
+        description={t("{{pendentes}} {{v1}} e ficarão de fora do registro.", {
+          pendentes,
+          v1: pendentes === 1 ? "série ainda não foi marcada" : "séries ainda não foram marcadas",
+        })}
+        acoes={[{ label: t("Terminar"), onPress: () => finalizar.mutate() }]}
         cancelar="Continuar treinando"
       />
       <AlertDialog
         open={semSeries}
         onClose={() => setSemSeries(false)}
-        title="Marque ao menos uma série"
-        description="Para terminar o treino, toque no círculo ao lado de cada série que você fez. Se não treinou, descarte o treino na lixeira do topo."
+        title={t("Marque ao menos uma série")}
+        description={t(
+          "Para terminar o treino, toque no círculo ao lado de cada série que você fez. Se não treinou, descarte o treino na lixeira do topo.",
+        )}
         acoes={[
-          { label: "Entendi", onPress: () => undefined },
+          { label: t("Entendi"), onPress: () => undefined },
           {
-            label: "Descartar treino",
+            label: t("Descartar treino"),
             onPress: () => setConfirmarDescarte(true),
             variant: "outline",
           },
@@ -662,7 +666,7 @@ function ExercicioAtual({
   const cargaAtual =
     exercicio.sets.find((s) => !s.completed)?.weightKg ?? exercicio.suggestedWeightKg;
   const ultima = exercicio.lastTime;
-  const pt = (n: number) => n.toLocaleString("pt-BR");
+  const pt = (n: number) => n.toLocaleString(LOCALE);
   const feitas = exercicio.sets.filter((s) => s.completed).length;
 
   // Dica de progressão (dupla progressão sobre a última vez).
@@ -689,12 +693,12 @@ function ExercicioAtual({
       texto: (
         <>
           <Text className="font-semibold" style={{ color: p.on }}>
-            Última vez · {formatDate(ultima.date, "d MMM")}
+            {t("Última vez · {{v0}}", { v0: formatDate(ultima.date, "d MMM") })}
           </Text>{" "}
           {ultima.sets
             .map(
               (s) =>
-                `${s.weightKg !== null ? `${pt(s.weightKg)}×` : ""}${s.reps ?? "–"}${s.rir !== null ? ` (RIR ${s.rir})` : ""}`,
+                `${s.weightKg !== null ? `${pt(s.weightKg)}×` : ""}${s.reps ?? "–"}${s.rir !== null ? t(" (RIR {{rir}})", { rir: s.rir }) : ""}`,
             )
             .join(", ")}
         </>
@@ -705,9 +709,10 @@ function ExercicioAtual({
     const placas = platesFor(cargaAtual).perSide;
     dicas.push({
       icon: disc3,
-      texto: `Barra 20 kg · ${pt((cargaAtual - 20) / 2)} kg por lado${
-        placas.length > 0 ? ` (${placas.map(pt).join(" + ")})` : ""
-      }`,
+      texto: t("Barra 20 kg · {{v0}} kg por lado{{v1}}", {
+        v0: pt((cargaAtual - 20) / 2),
+        v1: placas.length > 0 ? ` (${placas.map(pt).join(" + ")})` : "",
+      }),
     });
   }
   if (sugestao && sugestao.weightKg > 0) {
@@ -715,8 +720,11 @@ function ExercicioAtual({
       icon: sugestao.advanced ? trendingUp : arrowRight,
       destaque: sugestao.advanced,
       texto: sugestao.advanced
-        ? `Bateu o topo da faixa — suba para ${pt(sugestao.weightKg)} kg.`
-        : `Mantenha ${pt(sugestao.weightKg)} kg e busque ${sugestao.targetReps} repetições.`,
+        ? t("Bateu o topo da faixa — suba para {{v0}} kg.", { v0: pt(sugestao.weightKg) })
+        : t("Mantenha {{v0}} kg e busque {{targetReps}} repetições.", {
+            v0: pt(sugestao.weightKg),
+            targetReps: sugestao.targetReps,
+          }),
     });
   }
   if (exercicio.notes) dicas.push({ icon: lightbulb, texto: exercicio.notes });
@@ -747,7 +755,7 @@ function ExercicioAtual({
             style={{ backgroundColor: comAlfaSeguro(p.surface, 0.85) }}
           >
             <Text className="text-xs font-bold uppercase tracking-wider" style={{ color: p.on }}>
-              {indice + 1} de {total}
+              {t("{{v0}} de {{total}}", { v0: indice + 1, total })}
             </Text>
           </View>
         </View>
@@ -763,7 +771,7 @@ function ExercicioAtual({
             </Text>
             <Pressable
               onPress={() => setOpcoes(true)}
-              accessibilityLabel={`Opções de ${exercicio.name}`}
+              accessibilityLabel={t("Opções de {{name}}", { name: exercicio.name })}
               className="h-11 w-11 items-center justify-center rounded-full active:scale-90"
               style={{ backgroundColor: p.raised }}
             >
@@ -776,7 +784,7 @@ function ExercicioAtual({
             <Chip p={p}>{label(EQUIPMENT_LABELS, exercicio.equipment)}</Chip>
             {exercicio.bestKg ? (
               <Chip p={p} destaque icon={trophy}>
-                {`${pt(exercicio.bestKg)} kg`}
+                {t("{{v0}} kg", { v0: pt(exercicio.bestKg) })}
               </Chip>
             ) : null}
           </View>
@@ -813,28 +821,28 @@ function ExercicioAtual({
       <View className="mt-3 rounded-[28px] p-4" style={{ backgroundColor: p.surface, ...sombra }}>
         <View className="mb-3 flex-row items-baseline justify-between px-1">
           <Text className="text-lg font-extrabold" style={{ color: p.on }}>
-            Séries
+            {t("Séries")}
           </Text>
           <Text className="text-sm font-semibold" style={{ color: p.onSoft }}>
-            {feitas} de {exercicio.sets.length} feitas
+            {t("{{feitas}} de {{length}} feitas", { feitas, length: exercicio.sets.length })}
           </Text>
         </View>
         <View className="mb-2 flex-row items-center gap-1.5 px-1.5">
           <View style={{ width: colunas.serie }} />
-          {(["Carga (kg)", "Reps"] as const).map((t, i) => (
+          {([t("Carga (kg)"), t("Reps")] as const).map((item, i) => (
             <Text
-              key={t}
+              key={item}
               className="text-center text-[11px] font-bold uppercase tracking-wider"
               style={{ flex: i === 0 ? colunas.carga : colunas.reps, color: p.onSoft }}
             >
-              {t}
+              {item}
             </Text>
           ))}
           <Text
             className="text-center text-[11px] font-bold uppercase tracking-wider"
             style={{ width: colunas.rir, color: p.onSoft }}
           >
-            RIR
+            {t("RIR")}
           </Text>
           <View style={{ width: colunas.ok }} />
         </View>
@@ -863,7 +871,7 @@ function ExercicioAtual({
                 <Passo
                   valor={set.weightKg ?? exercicio.suggestedWeightKg}
                   passo={passo}
-                  rotulo={`Carga da série ${set.setIndex}`}
+                  rotulo={t("Carga da série {{setIndex}}", { setIndex: set.setIndex })}
                   desabilitado={somenteLeitura}
                   p={p}
                   onChange={(v) => onSerie(set.id, { weight_kg: v })}
@@ -874,7 +882,7 @@ function ExercicioAtual({
                   valor={set.reps ?? exercicio.targetReps}
                   passo={1}
                   inteiro
-                  rotulo={`Repetições da série ${set.setIndex}`}
+                  rotulo={t("Repetições da série {{setIndex}}", { setIndex: set.setIndex })}
                   desabilitado={somenteLeitura}
                   p={p}
                   onChange={(v) => onSerie(set.id, { reps: v })}
@@ -883,7 +891,10 @@ function ExercicioAtual({
               <Pressable
                 onPress={() => setRirDe(set)}
                 disabled={somenteLeitura}
-                accessibilityLabel={`RIR da série ${set.setIndex}${set.rir !== null ? `: ${set.rir}` : ""}`}
+                accessibilityLabel={t("RIR da série {{setIndex}}{{v1}}", {
+                  setIndex: set.setIndex,
+                  v1: set.rir !== null ? `: ${set.rir}` : "",
+                })}
                 className="h-12 items-center justify-center rounded-xl"
                 style={{ width: colunas.rir, backgroundColor: p.raised }}
               >
@@ -899,7 +910,10 @@ function ExercicioAtual({
                 disabled={somenteLeitura}
                 accessibilityRole="checkbox"
                 accessibilityState={{ checked: set.completed }}
-                accessibilityLabel={`${set.completed ? "Desmarcar" : "Concluir"} a série ${set.setIndex}`}
+                accessibilityLabel={t("{{v0}} a série {{setIndex}}", {
+                  v0: set.completed ? "Desmarcar" : "Concluir",
+                  setIndex: set.setIndex,
+                })}
                 className="h-11 w-11 items-center justify-center rounded-full border-2 active:scale-90"
                 style={{
                   borderColor: set.completed ? "transparent" : comAlfaSeguro(p.accent, 0.55),
@@ -923,7 +937,7 @@ function ExercicioAtual({
             >
               <Icon node={plus} color={p.accent} size={16} strokeWidth={2.75} />
               <Text className="font-bold" style={{ color: p.accent }}>
-                Série
+                {t("Série")}
               </Text>
             </Pressable>
             {exercicio.sets.length > 1 ? (
@@ -933,7 +947,7 @@ function ExercicioAtual({
               >
                 <Icon node={minus} color={p.onSoft} size={16} strokeWidth={2.75} />
                 <Text className="font-semibold" style={{ color: p.onSoft }}>
-                  Série
+                  {t("Série")}
                 </Text>
               </Pressable>
             ) : null}
@@ -948,20 +962,20 @@ function ExercicioAtual({
         corIcone={p.accent}
         opcoes={[
           {
-            label: "Como executar",
+            label: t("Como executar"),
             icon: info,
             onPress: () =>
               router.push({ pathname: "/exercises/[id]", params: { id: exercicio.exerciseId } }),
           },
           {
-            label: "Vídeo",
+            label: t("Vídeo"),
             icon: playCircle,
             onPress: () =>
               void Linking.openURL(exercicio.videoUrl ?? videoSearchUrl(exercicio.name)),
           },
           ...(somenteLeitura
             ? []
-            : [{ label: "Trocar exercício", icon: repeat, onPress: () => setTrocando(true) }]),
+            : [{ label: t("Trocar exercício"), icon: repeat, onPress: () => setTrocando(true) }]),
         ]}
       />
       <SubstituteExerciseDialog
@@ -976,7 +990,7 @@ function ExercicioAtual({
       <MenuSheet
         open={rirDe !== null}
         onClose={() => setRirDe(null)}
-        title="Repetições sobrando"
+        title={t("Repetições sobrando")}
         corIcone={p.accent}
         opcoes={[
           ...RIR_OPCOES.map((o) => ({
@@ -985,7 +999,7 @@ function ExercicioAtual({
             onPress: () => rirDe && onSerie(rirDe.id, { rir: o.valor }),
           })),
           ...(rirDe?.rir !== null && rirDe?.rir !== undefined
-            ? [{ label: "Limpar", onPress: () => rirDe && onSerie(rirDe.id, { rir: null }) }]
+            ? [{ label: t("Limpar"), onPress: () => rirDe && onSerie(rirDe.id, { rir: null }) }]
             : []),
         ]}
       />
@@ -1049,7 +1063,7 @@ function Passo({
       <Pressable
         onPress={() => ajustar(-passo)}
         disabled={desabilitado || !valor}
-        accessibilityLabel={`Diminuir ${rotulo.toLowerCase()}`}
+        accessibilityLabel={t("Diminuir {{v0}}", { v0: rotulo.toLowerCase() })}
         className="h-full w-6 items-center justify-center"
         style={{ opacity: desabilitado || !valor ? 0.3 : 1 }}
       >
@@ -1063,8 +1077,8 @@ function Passo({
         accessibilityLabel={rotulo}
         selectTextOnFocus
         onBlur={() => {
-          const t = rascunho.trim().replace(",", ".");
-          const n = t === "" ? null : Number(t);
+          const item = rascunho.trim().replace(",", ".");
+          const n = item === "" ? null : Number(item);
           if (n !== null && (!Number.isFinite(n) || n < 0)) {
             setRascunho(valor === null ? "" : String(valor));
             return;
@@ -1077,7 +1091,7 @@ function Passo({
       <Pressable
         onPress={() => ajustar(passo)}
         disabled={desabilitado}
-        accessibilityLabel={`Aumentar ${rotulo.toLowerCase()}`}
+        accessibilityLabel={t("Aumentar {{v0}}", { v0: rotulo.toLowerCase() })}
         className="h-full w-6 items-center justify-center"
         style={{ opacity: desabilitado ? 0.3 : 1 }}
       >
@@ -1143,9 +1157,12 @@ function CompletionOverlay({
   const insets = useSafeAreaInsets();
   const entra = (i: number) => FadeInDown.delay(150 + i * 110).duration(500);
   const numeros = [
-    { rotulo: "Tempo", valor: formatDuration(durationSeconds) },
-    { rotulo: "Volume", valor: `${Math.round(volumeKg).toLocaleString("pt-BR")} kg` },
-    ...(kcal !== null ? [{ rotulo: "Gasto", valor: `~${kcal} kcal` }] : []),
+    { rotulo: t("Tempo"), valor: formatDuration(durationSeconds) },
+    {
+      rotulo: t("Volume"),
+      valor: t("{{v0}} kg", { v0: Math.round(volumeKg).toLocaleString(LOCALE) }),
+    },
+    ...(kcal !== null ? [{ rotulo: t("Gasto"), valor: `~${kcal} kcal` }] : []),
   ];
   return (
     <Animated.View
@@ -1177,10 +1194,10 @@ function CompletionOverlay({
             className="mt-7 text-center text-[36px] font-extrabold leading-[38px]"
             style={{ color: p.ink }}
           >
-            Treino concluído!
+            {t("Treino concluído!")}
           </Text>
           <Text className="mt-2 text-center font-medium" style={{ color: p.inkSoft }}>
-            Salvo no seu histórico.
+            {t("Salvo no seu histórico.")}
           </Text>
         </Animated.View>
 
@@ -1217,7 +1234,7 @@ function CompletionOverlay({
             <View className="flex-row items-center gap-2">
               <Icon node={trophy} color={p.accent} size={20} />
               <Text className="font-bold" style={{ color: p.on }}>
-                {records.length === 1 ? "Novo recorde pessoal" : "Novos recordes pessoais"}
+                {records.length === 1 ? t("Novo recorde pessoal") : t("Novos recordes pessoais")}
               </Text>
             </View>
             <Text className="mt-1 text-sm" style={{ color: p.onSoft }}>
@@ -1233,7 +1250,7 @@ function CompletionOverlay({
             style={{ backgroundColor: p.ink }}
           >
             <Text className="text-lg font-extrabold" style={{ color: p.page }}>
-              Ver meu progresso
+              {t("Ver meu progresso")}
             </Text>
           </Pressable>
         </Animated.View>
@@ -1256,29 +1273,29 @@ function ComparisonList({
     up: { icon: arrowUp, text: "subiu", cor: p.accent },
     same: { icon: equal, text: "igual", cor: p.onSoft },
     down: { icon: arrowDown, text: "caiu", cor: p.onSoft },
-    new: { icon: sparkles, text: "primeira vez", cor: p.accent },
+    new: { icon: sparkles, text: t("primeira vez"), cor: p.accent },
   } as const;
   const serie = (s: ExerciseComparison["best"]) =>
     s
       ? s.weightKg
-        ? `${s.weightKg.toLocaleString("pt-BR")} kg × ${s.reps}`
-        : `${s.reps} reps`
+        ? t("{{v0}} kg × {{reps}}", { v0: s.weightKg.toLocaleString(LOCALE), reps: s.reps })
+        : t("{{reps}} reps", { reps: s.reps })
       : "—";
   return (
     <View className="mt-3 rounded-2xl p-4" style={{ backgroundColor: p.surface }}>
       <Text className="text-[11px] font-bold uppercase tracking-wider" style={{ color: p.onSoft }}>
-        Comparado à última vez
+        {t("Comparado à última vez")}
       </Text>
       <View className="mt-2.5 gap-2">
         {comMelhor.map((c) => {
-          const t = TREND[c.trend];
+          const item = TREND[c.trend];
           return (
             <View
               key={c.exerciseId}
               className="flex-row items-center gap-2.5"
-              accessibilityLabel={`${c.name} — ${t.text}`}
+              accessibilityLabel={`${c.name} — ${item.text}`}
             >
-              <Icon node={t.icon} color={t.cor} size={16} strokeWidth={2.5} />
+              <Icon node={item.icon} color={item.cor} size={16} strokeWidth={2.5} />
               <Text
                 numberOfLines={1}
                 className="min-w-0 flex-1 text-sm font-medium"

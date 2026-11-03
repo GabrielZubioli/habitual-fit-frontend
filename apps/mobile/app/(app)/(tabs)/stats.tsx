@@ -37,6 +37,8 @@ import { useCorRecuperacao } from "@/ui/home-cards";
 import { Icon, type IconNode } from "@/ui/icon";
 import { HeaderIconButton, PageHeader, PageScroll } from "@/ui/page-header";
 import { Text } from "@/ui/text";
+import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Estatísticas — o `stats.tsx` do web: a semana contra a meta, os números, a
@@ -74,7 +76,7 @@ export default function StatsPage() {
   const diasDoPlano = new Set(
     r
       ? r.scheduleMode === "fixed"
-        ? r.templates.flatMap((t) => t.weekdays)
+        ? r.templates.flatMap((item) => item.weekdays)
         : r.trainingWeekdays
       : [],
   );
@@ -109,8 +111,8 @@ export default function StatsPage() {
       contentContainerClassName="pb-28"
       header={
         <PageHeader
-          title="Estatísticas"
-          description="Progresso e histórico"
+          title={t("Estatísticas")}
+          description={t("Progresso e histórico")}
           action={
             <HeaderIconButton
               icon={history}
@@ -126,7 +128,7 @@ export default function StatsPage() {
         <View className="flex-row items-start justify-between gap-3">
           <View>
             <Text className="text-xs font-bold uppercase tracking-[1.7px] text-primary">
-              Esta semana
+              {t("Esta semana")}
             </Text>
             {recentes.isPending ? (
               <View className="mt-2 h-12 w-24 rounded-md bg-muted" />
@@ -136,7 +138,7 @@ export default function StatsPage() {
                 {meta ? (
                   <Text className="text-xl font-bold text-muted-foreground">/ {meta}</Text>
                 ) : null}
-                <Text className="ml-1 text-sm text-muted-foreground">treinos</Text>
+                <Text className="ml-1 text-sm text-muted-foreground">{t("treinos")}</Text>
               </View>
             )}
           </View>
@@ -176,27 +178,29 @@ export default function StatsPage() {
             <WeeklyChart data={semanas} goal={meta} height={160} />
           )}
         </View>
-        <Text className="mt-1 text-center text-xs text-muted-foreground">Treinos por semana</Text>
+        <Text className="mt-1 text-center text-xs text-muted-foreground">
+          {t("Treinos por semana")}
+        </Text>
 
         <View className="mt-6 flex-row border-y border-border py-4">
-          <Numero icon={dumbbell} rotulo="Treinos" valor={contagem.data?.total} solido />
-          <Numero icon={calendarDays} rotulo="Este mês" valor={contagem.data?.month} borda />
+          <Numero icon={dumbbell} rotulo={t("Treinos")} valor={contagem.data?.total} solido />
+          <Numero icon={calendarDays} rotulo={t("Este mês")} valor={contagem.data?.month} borda />
           <Numero
             icon={scale}
-            rotulo="Peso 30d"
+            rotulo={t("Peso 30d")}
             borda
             valor={
               pesos.isPending
                 ? undefined
                 : variacao === null
                   ? "—"
-                  : `${variacao > 0 ? "+" : ""}${variacao.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}`
+                  : `${variacao > 0 ? "+" : ""}${variacao.toLocaleString(LOCALE, { maximumFractionDigits: 1 })}`
             }
             unidade={variacao === null ? undefined : "kg"}
           />
         </View>
 
-        <Titulo>Atividade — últimos 12 meses</Titulo>
+        <Titulo>{t("Atividade — últimos 12 meses")}</Titulo>
         <ActivityHeatmap />
 
         <MusculosCard />
@@ -253,7 +257,7 @@ function Numero({
 }
 
 const PERIODOS = [
-  { value: 1, label: "Semana" },
+  { value: 1, label: t("Semana") },
   { value: 30, label: "30d" },
   { value: 90, label: "90d" },
 ] as const;
@@ -287,21 +291,21 @@ function MusculosCard() {
 
   return (
     <View>
-      <Titulo>Músculos</Titulo>
+      <Titulo>{t("Músculos")}</Titulo>
       <Abas
         value={aba}
         onChange={setAba}
         options={[
-          { value: "equilibrio", label: "Equilíbrio" },
-          { value: "fadiga", label: "Fadiga" },
-          { value: "forca", label: "Força" },
+          { value: "equilibrio", label: t("Equilíbrio") },
+          { value: "fadiga", label: t("Fadiga") },
+          { value: "forca", label: t("Força") },
         ]}
       />
 
       {aba === "equilibrio" ? (
         <View className="mt-4">
           <Text className="mb-3 text-muted-foreground">
-            Equilíbrio muscular · por séries feitas
+            {t("Equilíbrio muscular · por séries feitas")}
           </Text>
           <Abas
             value={periodo}
@@ -318,7 +322,7 @@ function MusculosCard() {
             />
           ) : porMusculo.length === 0 ? (
             <Text className="mt-6 text-center text-muted-foreground">
-              Nenhuma série neste período.
+              {t("Nenhuma série neste período.")}
             </Text>
           ) : (
             <View className="mt-4 items-center">
@@ -340,7 +344,7 @@ function MusculosCard() {
             <View className="h-40 w-full rounded-md bg-muted" />
           ) : (recordes.data ?? []).length === 0 ? (
             <Text className="py-6 text-center text-muted-foreground">
-              Seus recordes aparecem aqui depois do primeiro treino com carga.
+              {t("Seus recordes aparecem aqui depois do primeiro treino com carga.")}
             </Text>
           ) : (
             (recordes.data ?? []).map((r, i) => (
@@ -365,8 +369,11 @@ function MusculosCard() {
                       {r.exerciseName}
                     </Text>
                     <Text className="text-xs text-muted-foreground">
-                      {formatDate(r.date, "d 'de' MMM")} · {r.weightKg.toLocaleString("pt-BR")} kg ×{" "}
-                      {r.reps}
+                      {t("{{v0}} · {{v1}} kg × {{reps}}", {
+                        v0: formatDate(r.date, "d 'de' MMM"),
+                        v1: r.weightKg.toLocaleString(LOCALE),
+                        reps: r.reps,
+                      })}
                     </Text>
                   </View>
                   <View className="items-end">
@@ -374,7 +381,7 @@ function MusculosCard() {
                       {Math.round(r.e1rm)}
                     </Text>
                     <Text className="text-[10px] font-medium uppercase text-muted-foreground">
-                      1RM kg
+                      {t("1RM kg")}
                     </Text>
                   </View>
                 </View>
@@ -417,7 +424,7 @@ function RecoveryCard() {
   if (musculos.length === 0) {
     return (
       <Text className="px-1 text-sm text-muted-foreground">
-        Nenhum músculo treinado nos últimos dias — tudo descansado.
+        {t("Nenhum músculo treinado nos últimos dias — tudo descansado.")}
       </Text>
     );
   }
@@ -437,7 +444,7 @@ function RecoveryCard() {
           showLegend={false}
         />
         <Text className="mt-1 text-center text-xs text-muted-foreground">
-          Laranja: fadigado · verde: pronto
+          {t("Laranja: fadigado · verde: pronto")}
         </Text>
       </View>
       <View className="gap-2.5">
@@ -450,7 +457,10 @@ function RecoveryCard() {
               </Text>
             </View>
             <View
-              accessibilityLabel={`${label(MUSCLE_LABELS, m.muscle)}: ${m.percent}% recuperado`}
+              accessibilityLabel={t("{{v0}}: {{percent}}% recuperado", {
+                v0: label(MUSCLE_LABELS, m.muscle),
+                percent: m.percent,
+              })}
               className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted"
             >
               <View
@@ -476,11 +486,11 @@ function Historico() {
 
   return (
     <View>
-      <Titulo>Últimos treinos</Titulo>
+      <Titulo>{t("Últimos treinos")}</Titulo>
       {historico.isPending ? (
         <View className="h-32 w-full rounded-[20px] bg-muted" />
       ) : lista.length === 0 ? (
-        <Text className="px-1 text-muted-foreground">Nenhum treino concluído ainda.</Text>
+        <Text className="px-1 text-muted-foreground">{t("Nenhum treino concluído ainda.")}</Text>
       ) : (
         lista.map((s, i) => {
           const volume = Number(s.total_volume_kg ?? 0);
@@ -509,7 +519,7 @@ function Historico() {
                     {s.name}
                   </Text>
                   <Text className="text-sm font-bold">
-                    {Math.round(volume).toLocaleString("pt-BR")} kg
+                    {t("{{v0}} kg", { v0: Math.round(volume).toLocaleString(LOCALE) })}
                   </Text>
                 </View>
                 <Text className="mt-0.5 text-xs capitalize text-muted-foreground">

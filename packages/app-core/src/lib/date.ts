@@ -8,11 +8,13 @@
  *    `new Date().toISOString().slice(0, 10)` quebra isso: no Brasil (UTC−3),
  *    das 21h à meia-noite o valor já é o dia seguinte, e um jantar registrado
  *    às 22h cairia no diário de amanhã.
- * 2. **Todo texto de data é pt-BR.** `date-fns` sem `locale` produz
- *    "Tuesday, 29 de July".
+ * 2. **Todo texto de data sai no idioma do app** (`dateFnsLocale`). `date-fns`
+ *    sem `locale` produz "Tuesday, 29 de July". Os padrões com texto fixo
+ *    (`"d 'de' MMMM"`) passam por `t()` para virar `"MMMM d"` em inglês.
  */
 import { format, parseISO } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { dateFnsLocale } from "../i18n";
+import { t } from "../i18n";
 
 /** Formato das colunas `DATE` do Postgres. */
 export const ISO_DATE = "yyyy-MM-dd";
@@ -50,10 +52,10 @@ export function localDayRange(
   return { start: fromISODate(fromDate).toISOString(), endExclusive: fim.toISOString() };
 }
 
-/** Formata uma data (ou chave ISO) em pt-BR. */
+/** Formata uma data (ou chave ISO) no idioma do app. */
 export function formatDate(value: string | Date, pattern: string): string {
   const date = typeof value === "string" ? asDate(value) : value;
-  return format(date, pattern, { locale: ptBR });
+  return format(date, pattern, { locale: dateFnsLocale });
 }
 
 /**
@@ -71,12 +73,12 @@ export const formatShortDate = (v: string | Date) => formatDate(v, "dd/MM/yyyy")
 /** `29/07` — eixos de gráfico e listas densas */
 export const formatDayMonth = (v: string | Date) => formatDate(v, "dd/MM");
 /** `29 de julho, 14:30` */
-export const formatDateTime = (v: string | Date) => formatDate(v, "dd 'de' MMMM',' HH:mm");
+export const formatDateTime = (v: string | Date) => formatDate(v, t("dd 'de' MMMM',' HH:mm"));
 /** `quarta-feira, 29 de julho` */
-export const formatWeekday = (v: string | Date) => formatDate(v, "EEEE',' dd 'de' MMMM");
+export const formatWeekday = (v: string | Date) => formatDate(v, t("EEEE',' dd 'de' MMMM"));
 /** `quarta, 29 de julho` — cabeçalho da tela inicial, sem o "-feira" que ocupa linha */
 export const formatLongDate = (v: string | Date) =>
-  formatDate(v, "EEEE',' d 'de' MMMM").replace("-feira", "");
+  formatDate(v, t("EEEE',' d 'de' MMMM")).replace("-feira", "");
 /** `qua` — faixa compacta da semana */
 export const formatWeekdayShort = (v: string | Date) => formatDate(v, "EEEEEE");
 
@@ -88,7 +90,7 @@ export function formatDuration(seconds: number | null | undefined): string {
   if (minutes < 60) return `${minutes}min`;
   const hours = Math.floor(minutes / 60);
   const rest = minutes % 60;
-  return rest ? `${hours}h ${rest}min` : `${hours}h`;
+  return rest ? t("{{hours}}h {{rest}}min", { hours, rest }) : `${hours}h`;
 }
 
 /** Segundos → `mm:ss`, para cronômetros. */

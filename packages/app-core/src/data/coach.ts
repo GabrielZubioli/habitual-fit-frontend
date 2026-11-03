@@ -11,6 +11,7 @@ import {
   type ExerciseSessionSummary,
   type VolumeVerdict,
 } from "@forja/domain";
+import { t } from "../i18n";
 
 /**
  * O treinador — parte determinística.
@@ -96,27 +97,40 @@ export async function fetchCoachInsights(): Promise<CoachInsight[]> {
         id: `deload:${exerciseId}`,
         kind: "deload",
         severity: 2,
-        title: `${dados.name}: sinal de fadiga acumulada`,
-        body: `Nas últimas ${veredito.sessions} sessões a carga não subiu, mas o esforço percebido aumentou ${veredito.rpeIncrease.toFixed(1)} ponto${veredito.rpeIncrease >= 2 ? "s" : ""}. Isso costuma ser fadiga, não falta de estímulo — reduza a carga em 10% por uma semana e volte mais forte.`,
-        action: { label: "Ver exercício", to: `/exercises/${exerciseId}` },
+        title: t("{{name}}: sinal de fadiga acumulada", { name: dados.name }),
+        body: t(
+          "Nas últimas {{sessions}} sessões a carga não subiu, mas o esforço percebido aumentou {{v1}} ponto{{v2}}. Isso costuma ser fadiga, não falta de estímulo — reduza a carga em 10% por uma semana e volte mais forte.",
+          {
+            sessions: veredito.sessions,
+            v1: veredito.rpeIncrease.toFixed(1),
+            v2: veredito.rpeIncrease >= 2 ? "s" : "",
+          },
+        ),
+        action: { label: t("Ver exercício"), to: `/exercises/${exerciseId}` },
       });
     } else if (veredito.kind === "plateau") {
       insights.push({
         id: `plateau:${exerciseId}`,
         kind: "exercise_swap",
         severity: 1,
-        title: `${dados.name} parou de progredir`,
-        body: `${veredito.sessions} sessões sem avanço na carga estimada. Vale trocar por uma variação do mesmo padrão de movimento, ou revisar séries e descanso.`,
-        action: { label: "Ver exercício", to: `/exercises/${exerciseId}` },
+        title: t("{{name}} parou de progredir", { name: dados.name }),
+        body: t(
+          "{{sessions}} sessões sem avanço na carga estimada. Vale trocar por uma variação do mesmo padrão de movimento, ou revisar séries e descanso.",
+          { sessions: veredito.sessions },
+        ),
+        action: { label: t("Ver exercício"), to: `/exercises/${exerciseId}` },
       });
     } else if (veredito.kind === "regressing") {
       insights.push({
         id: `regress:${exerciseId}`,
         kind: "deload",
         severity: 2,
-        title: `${dados.name} está caindo`,
-        body: `Queda de ${Math.abs(veredito.changePct).toFixed(0)}% na carga estimada. Vale checar sono, calorias e se o volume total da semana não está alto demais.`,
-        action: { label: "Ver exercício", to: `/exercises/${exerciseId}` },
+        title: t("{{name}} está caindo", { name: dados.name }),
+        body: t(
+          "Queda de {{v0}}% na carga estimada. Vale checar sono, calorias e se o volume total da semana não está alto demais.",
+          { v0: Math.abs(veredito.changePct).toFixed(0) },
+        ),
+        action: { label: t("Ver exercício"), to: `/exercises/${exerciseId}` },
       });
     }
   }
@@ -143,9 +157,11 @@ function adherenceToInsight(flag: AdherenceFlag): CoachInsight[] {
           id: "adherence:workouts",
           kind: "consistency",
           severity: 1,
-          title: `${flag.missing} treinos a menos esta semana`,
-          body: "A sequência A → B → C não se perde: ela espera por você. Um treino curto vale mais que nenhum — comece por ele.",
-          action: { label: "Treinar agora", to: "/workouts" },
+          title: t("{{missing}} treinos a menos esta semana", { missing: flag.missing }),
+          body: t(
+            "A sequência A → B → C não se perde: ela espera por você. Um treino curto vale mais que nenhum — comece por ele.",
+          ),
+          action: { label: t("Treinar agora"), to: "/workouts" },
         },
       ];
     case "diet_untracked":
@@ -154,9 +170,11 @@ function adherenceToInsight(flag: AdherenceFlag): CoachInsight[] {
           id: "adherence:diet",
           kind: "consistency",
           severity: 1,
-          title: "Seu diário está parado",
-          body: "Sem registro não dá para ajustar as metas ao que está acontecendo de verdade. Marcar as refeições do plano leva poucos segundos.",
-          action: { label: "Abrir dieta", to: "/diet" },
+          title: t("Seu diário está parado"),
+          body: t(
+            "Sem registro não dá para ajustar as metas ao que está acontecendo de verdade. Marcar as refeições do plano leva poucos segundos.",
+          ),
+          action: { label: t("Abrir dieta"), to: "/diet" },
         },
       ];
     case "weigh_in_overdue":
@@ -165,9 +183,11 @@ function adherenceToInsight(flag: AdherenceFlag): CoachInsight[] {
           id: "adherence:weight",
           kind: "check_in",
           severity: 0,
-          title: `Sem pesagem há ${flag.days} dias`,
-          body: "A tendência de peso é o que diz se as calorias estão certas. Uma pesagem por semana já basta.",
-          action: { label: "Registrar peso", to: "/body" },
+          title: t("Sem pesagem há {{days}} dias", { days: flag.days }),
+          body: t(
+            "A tendência de peso é o que diz se as calorias estão certas. Uma pesagem por semana já basta.",
+          ),
+          action: { label: t("Registrar peso"), to: "/body" },
         },
       ];
     case "on_track":
@@ -184,24 +204,30 @@ function volumeToInsight(v: VolumeVerdict): CoachInsight | null {
     kind: baixo ? "volume_increase" : "volume_decrease",
     severity: baixo ? 1 : 0,
     title: baixo
-      ? `Volume baixo em ${muscleLabel(v.muscle)}`
-      : `Volume alto em ${muscleLabel(v.muscle)}`,
+      ? t("Volume baixo em {{v0}}", { v0: muscleLabel(v.muscle) })
+      : t("Volume alto em {{v0}}", { v0: muscleLabel(v.muscle) }),
     body: baixo
-      ? `${v.sets} séries efetivas nesta semana, abaixo da faixa produtiva de ${v.range.min} a ${v.range.max}. Adicionar um exercício ou uma série ajudaria.`
-      : `${v.sets} séries efetivas nesta semana, acima de ${v.range.max}. Mais volume aqui exige mais recuperação do que costuma render.`,
-    action: { label: "Ajustar treino", to: "/workouts" },
+      ? t(
+          "{{sets}} séries efetivas nesta semana, abaixo da faixa produtiva de {{min}} a {{max}}. Adicionar um exercício ou uma série ajudaria.",
+          { sets: v.sets, min: v.range.min, max: v.range.max },
+        )
+      : t(
+          "{{sets}} séries efetivas nesta semana, acima de {{max}}. Mais volume aqui exige mais recuperação do que costuma render.",
+          { sets: v.sets, max: v.range.max },
+        ),
+    action: { label: t("Ajustar treino"), to: "/workouts" },
   };
 }
 
 const MUSCLE_PT: Record<string, string> = {
-  chest: "peito",
-  back: "costas",
-  lats: "dorsais",
-  shoulders: "ombros",
-  side_delts: "deltoides laterais",
-  quads: "quadríceps",
-  hamstrings: "posteriores",
-  glutes: "glúteos",
+  chest: t("peito"),
+  back: t("costas"),
+  lats: t("dorsais"),
+  shoulders: t("ombros"),
+  side_delts: t("deltoides laterais"),
+  quads: t("quadríceps"),
+  hamstrings: t("posteriores"),
+  glutes: t("glúteos"),
 };
 
 const muscleLabel = (m: string) => MUSCLE_PT[m] ?? m;
@@ -245,7 +271,7 @@ async function fetchRecentSessions(desde: string): Promise<SessionRow[]> {
     .map((r) => ({
       date: toISODate(new Date(r.workout_sessions!.started_at)),
       exerciseId: r.exercise_id,
-      name: r.exercises?.name ?? "Exercício",
+      name: r.exercises?.name ?? t("Exercício"),
       weightKg: num(r.weight_kg),
       reps: num(r.reps),
       rpe: r.rpe !== null ? num(r.rpe) : null,

@@ -1,6 +1,6 @@
 # Plano: tradução para inglês e espanhol + lançamento em todas as regiões
 
-> Status: **planejado, não iniciado**. Executar fase por fase, uma PR por fase.
+> Status: **em andamento**. Fases 0 a 3 prontas (branch `feat/i18n-en-es`). Fase 4 preparada, nada aplicado: backend na branch `feat/i18n-en-es` do forja-backend (migration, `@gabrielzubioli/db` 0.3.0, coach com `locale`, script `translate-es`); frontend dos exercícios na branch `feat/i18n-exercicios-es`, que depende da migration e do pacote publicados. Fase 5 (loja) pendente.
 > Repos: `forja-frontend` (web + mobile + app-core) e `forja-backend` (banco, edge functions).
 
 ## Objetivo
@@ -25,16 +25,16 @@
 
 ## Fase 0 — Preparação (≈30 min)
 
-- [ ] Criar branch `feat/i18n-en-es` a partir da `main` no `forja-frontend`.
-- [ ] Ler `docs/padroes.md` e `docs/decisoes-de-arquitetura.md` para seguir as convenções.
-- [ ] Rodar `npm run verify` e anotar o estado inicial (tudo verde antes de começar).
+- [x] Criar branch `feat/i18n-en-es` a partir da `main` no `forja-frontend`.
+- [x] Ler `docs/padroes.md` e `docs/decisoes-de-arquitetura.md` para seguir as convenções.
+- [x] Rodar `npm run verify` e anotar o estado inicial (tudo verde antes de começar).
 
 ## Fase 1 — Infraestrutura (PR 1)
 
 **Arquivos novos**
 - `packages/app-core/src/i18n/index.ts`
   - Detecta o idioma: `globalThis.navigator?.language` (web) → `Intl.DateTimeFormat().resolvedOptions().locale` (mobile/Hermes) → normaliza para `"pt-BR" | "en" | "es"`.
-  - Mobile: preferir `expo-localization` (`getLocales()[0].languageTag`), injetado pelo app como o `configureSupabase()` já faz — o app-core não importa Expo.
+  - Mobile: ~~preferir `expo-localization`~~ — feito com o `Intl` do Hermes, que já reflete o idioma do sistema; sem módulo nativo extra.
   - Inicializa o i18next **de forma síncrona** (`initImmediate: false`, recursos embutidos) para que `t()` funcione em constantes de módulo.
   - Exporta: `t`, `LOCALE` (`"pt-BR" | "en-US" | "es"` para `Intl`), `language`, `dateFnsLocale`.
 - `packages/app-core/src/i18n/en.json`, `es.json` — começam vazios `{}`.
@@ -44,7 +44,7 @@
 
 **Ajustes**
 - `packages/app-core/package.json`: dependências `i18next`, `react-i18next`; export `./i18n`.
-- `apps/mobile`: `npx expo install expo-localization`; configurar o idioma em `app/_layout.tsx` antes de tudo.
+- `apps/mobile`: nada a configurar — o app-core detecta o idioma pelo `Intl` ao ser importado.
 - `apps/web/src/routes/__root.tsx:103`: `<html lang={LOCALE}>`.
 - `packages/app-core/src/lib/date.ts`: trocar `ptBR` fixo por `dateFnsLocale` (pt-BR → `ptBR`, en → `enUS`, es → `es`). Atualizar o comentário da regra 2.
 - `apps/web/src/components/date-picker.tsx`: `locale={dateFnsLocale}`.

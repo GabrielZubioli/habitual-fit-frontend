@@ -5,6 +5,7 @@ import { found, num, unwrap, unwrapList } from "./supabase-helpers";
 import type { Enums } from "@gabrielzubioli/db/types";
 import { bool, jsonList, jsonValue, localDb } from "../local";
 import { toISODate } from "../lib/date";
+import { t } from "../i18n";
 
 /**
  * A ficha de um exercício: o cadastro e o histórico de quem está logado — as
@@ -12,10 +13,10 @@ import { toISODate } from "../lib/date";
  */
 
 export const PERIODS = [
-  { value: "90", label: "3 meses" },
-  { value: "180", label: "6 meses" },
-  { value: "365", label: "1 ano" },
-  { value: "all", label: "Tudo" },
+  { value: "90", label: t("3 meses") },
+  { value: "180", label: t("6 meses") },
+  { value: "365", label: t("1 ano") },
+  { value: "all", label: t("Tudo") },
 ] as const;
 
 export type Period = (typeof PERIODS)[number]["value"];
@@ -39,8 +40,8 @@ export async function fetchExerciseDetail(id: string): Promise<ExerciseDetail> {
   const ex = found(
     "carregar exercício",
     await db.getOptional<Record<string, unknown> & { id: string }>(
-      `SELECT id, name, primary_muscle, secondary_muscles, equipment, category, level, mechanic,
-              execution, instructions, execution_en, cues, common_mistakes, contraindications,
+      `SELECT id, name, name_en, name_es, primary_muscle, secondary_muscles, equipment, category, level, mechanic,
+              execution, instructions, execution_en, execution_es, cues, common_mistakes, contraindications,
               image_urls, external_id, media_id, media_ref, media_source, video_url
          FROM exercises WHERE id = ?`,
       [id],
@@ -59,6 +60,7 @@ export async function fetchExerciseDetail(id: string): Promise<ExerciseDetail> {
     contraindications: jsonList(ex.contraindications),
     execution: jsonValue(ex.execution, null),
     execution_en: jsonValue(ex.execution_en, null),
+    execution_es: jsonValue(ex.execution_es, null),
     exercise_muscles: musculos,
   } as unknown as ExerciseDetail;
 }
@@ -69,7 +71,7 @@ async function detalheRemoto(id: string) {
     await supabase
       .from("exercises")
       .select(
-        "id, name, primary_muscle, secondary_muscles, equipment, category, level, mechanic, execution, instructions, execution_en, cues, common_mistakes, contraindications, image_urls, external_id, media_id, media_ref, media_source, video_url, exercise_muscles(muscle, contribution)",
+        "id, name, name_en, name_es, primary_muscle, secondary_muscles, equipment, category, level, mechanic, execution, instructions, execution_en, execution_es, cues, common_mistakes, contraindications, image_urls, external_id, media_id, media_ref, media_source, video_url, exercise_muscles(muscle, contribution)",
       )
       .eq("id", id)
       .single(),

@@ -22,24 +22,25 @@ import { Icon, type IconNode } from "./icon";
 import { Sheet } from "./sheet";
 import { Switch } from "./switch";
 import { Text } from "./text";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * O Menu do web (`components/app-menu.tsx`): cartão do perfil, os dois
  * destaques ("estou evoluindo?") e o resto numa lista única.
  */
 const DESTAQUES: { to: Href; label: string; hint: string; icon: IconNode }[] = [
-  { to: "/stats", label: "Estatísticas", hint: "Sua evolução", icon: chartColumn },
-  { to: "/body", label: "Progresso", hint: "Peso e medidas", icon: heartPulse },
+  { to: "/stats", label: t("Estatísticas"), hint: t("Sua evolução"), icon: chartColumn },
+  { to: "/body", label: t("Progresso"), hint: t("Peso e medidas"), icon: heartPulse },
 ];
 
 const ITENS: { to: Href; label: string; icon: IconNode }[] = [
-  { to: "/exercises", label: "Exercícios", icon: list },
-  { to: "/recipes", label: "Receitas", icon: bookOpen },
-  { to: "/settings?secao=metas", label: "Metas nutricionais", icon: target },
-  { to: "/settings?secao=treino", label: "Treino", icon: dumbbell },
-  { to: "/settings?secao=alimentacao", label: "Alimentação", icon: utensils },
-  { to: "/settings?secao=saude", label: "Saúde", icon: heartPulse },
-  { to: "/settings?secao=conta", label: "Dados e conta", icon: shieldCheck },
+  { to: "/exercises", label: t("Exercícios"), icon: list },
+  { to: "/recipes", label: t("Receitas"), icon: bookOpen },
+  { to: "/settings?secao=metas", label: t("Metas nutricionais"), icon: target },
+  { to: "/settings?secao=treino", label: t("Treino"), icon: dumbbell },
+  { to: "/settings?secao=alimentacao", label: t("Alimentação"), icon: utensils },
+  { to: "/settings?secao=saude", label: t("Saúde"), icon: heartPulse },
+  { to: "/settings?secao=conta", label: t("Dados e conta"), icon: shieldCheck },
 ];
 
 export function AppMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -88,11 +89,11 @@ export function AppMenu({ open, onClose }: { open: boolean; onClose: () => void 
           ))}
           <View className="flex-row items-center gap-3 px-4 py-2.5">
             <Icon node={scheme === "dark" ? moon : sun} color={apagada} size={20} />
-            <Text className="flex-1 font-medium">Modo escuro</Text>
+            <Text className="flex-1 font-medium">{t("Modo escuro")}</Text>
             <Switch
               checked={scheme === "dark"}
               onCheckedChange={(v) => setMode(v ? "dark" : "light")}
-              accessibilityLabel="Modo escuro"
+              accessibilityLabel={t("Modo escuro")}
             />
           </View>
         </View>
@@ -108,7 +109,7 @@ function CartaoPerfil({ onPress }: { onPress: () => void }) {
     queryKey: queryKeys.profile(),
     queryFn: fetchProfile,
   });
-  const nome = perfil.data?.display_name?.trim() || "Seu perfil";
+  const nome = perfil.data?.display_name?.trim() || t("Seu perfil");
   const [foto, setFoto] = useState<string | null>(null);
   useEffect(() => {
     let ativo = true;
@@ -141,7 +142,7 @@ function CartaoPerfil({ onPress }: { onPress: () => void }) {
         <Text numberOfLines={1} className="text-xl font-extrabold text-[#020306]">
           {nome}
         </Text>
-        <Text className="text-sm font-medium text-[#020306]/70">Ver perfil</Text>
+        <Text className="text-sm font-medium text-[#020306]/70">{t("Ver perfil")}</Text>
       </View>
       <Icon node={chevronRight} color="#020306" />
     </Pressable>

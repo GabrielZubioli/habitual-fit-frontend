@@ -4,6 +4,7 @@ import { Camera, ImageIcon, RefreshCw, SwitchCamera, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Captura da foto de evolução, com guia de enquadramento.
@@ -58,7 +59,7 @@ export function PhotoCapture({
   const [ghostOpacity, setGhostOpacity] = useState(35);
 
   const pararCamera = useCallback(() => {
-    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current?.getTracks().forEach((item) => item.stop());
     streamRef.current = null;
   }, []);
 
@@ -83,7 +84,7 @@ export function PhotoCapture({
         // Sem esta guarda a câmera ficaria ligada, com a luz acesa e sem
         // ninguém para desligá-la.
         if (cancelado) {
-          stream.getTracks().forEach((t) => t.stop());
+          stream.getTracks().forEach((item) => item.stop());
           return;
         }
 
@@ -154,14 +155,14 @@ export function PhotoCapture({
           ) : (
             <div className="grid size-full place-items-center p-6 text-center">
               {status === "iniciando" ? (
-                <p className="text-sm text-background/80">Abrindo a câmera…</p>
+                <p className="text-sm text-background/80">{t("Abrindo a câmera…")}</p>
               ) : (
                 <div className="space-y-3">
                   <ImageIcon className="mx-auto size-8 text-background/60" aria-hidden />
                   <p className="text-sm text-background/80">
-                    Câmera indisponível neste aparelho ou sem permissão.
+                    {t("Câmera indisponível neste aparelho ou sem permissão.")}
                     <br />
-                    Escolha uma foto da galeria.
+                    {t("Escolha uma foto da galeria.")}
                   </p>
                 </div>
               )}
@@ -193,7 +194,7 @@ export function PhotoCapture({
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <label htmlFor="ghost-opacity" className="text-sm font-medium">
-              Foto anterior sobreposta
+              {t("Foto anterior sobreposta")}
             </label>
             <span className="text-sm tabular-nums text-muted-foreground">{ghostOpacity}%</span>
           </div>
@@ -204,10 +205,10 @@ export function PhotoCapture({
             min={0}
             max={80}
             step={5}
-            aria-label="Opacidade da foto anterior"
+            aria-label={t("Opacidade da foto anterior")}
           />
           <p className="text-xs text-muted-foreground">
-            Alinhe ombros e cintura com a imagem de fundo para as fotos ficarem comparáveis.
+            {t("Alinhe ombros e cintura com a imagem de fundo para as fotos ficarem comparáveis.")}
           </p>
         </div>
       )}
@@ -217,13 +218,13 @@ export function PhotoCapture({
           <>
             <Button className="flex-1" onClick={capturar}>
               <Camera aria-hidden />
-              Tirar foto
+              {t("Tirar foto")}
             </Button>
             <Button
               variant="outline"
               size="icon"
               onClick={() => setFacingMode((m) => (m === "user" ? "environment" : "user"))}
-              aria-label="Alternar entre câmera frontal e traseira"
+              aria-label={t("Alternar entre câmera frontal e traseira")}
             >
               <SwitchCamera aria-hidden />
             </Button>
@@ -231,7 +232,7 @@ export function PhotoCapture({
         ) : (
           <Button className="flex-1" onClick={() => fileInputRef.current?.click()}>
             <ImageIcon aria-hidden />
-            Escolher da galeria
+            {t("Escolher da galeria")}
           </Button>
         )}
 
@@ -239,10 +240,10 @@ export function PhotoCapture({
           <Button
             variant="outline"
             onClick={() => fileInputRef.current?.click()}
-            aria-label="Escolher foto da galeria"
+            aria-label={t("Escolher foto da galeria")}
           >
             <ImageIcon aria-hidden />
-            Galeria
+            {t("Galeria")}
           </Button>
         )}
 
@@ -251,13 +252,13 @@ export function PhotoCapture({
             variant="outline"
             size="icon"
             onClick={() => setStatus("iniciando")}
-            aria-label="Tentar abrir a câmera de novo"
+            aria-label={t("Tentar abrir a câmera de novo")}
           >
             <RefreshCw aria-hidden />
           </Button>
         )}
 
-        <Button variant="ghost" size="icon" onClick={onCancel} aria-label="Cancelar">
+        <Button variant="ghost" size="icon" onClick={onCancel} aria-label={t("Cancelar")}>
           <X aria-hidden />
         </Button>
       </div>

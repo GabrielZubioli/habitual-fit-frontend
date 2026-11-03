@@ -2,6 +2,7 @@ import { supabase } from "../supabase";
 import { DataError } from "./supabase-helpers";
 import { exerciseMedia } from "./exercise-media";
 import { jsonList, localDb, marcadores } from "../local";
+import { language, t } from "../i18n";
 
 /**
  * A biblioteca de exercícios (a tela Exercícios): os grupos, os equipamentos e
@@ -12,116 +13,117 @@ import { jsonList, localDb, marcadores } from "../local";
 export const GRUPOS = [
   {
     key: "peito",
-    nome: "Peito",
+    nome: t("Peito"),
     musculos: ["chest"],
     recorte: { view: "front" as const, box: [150, 215, 424, 318] as const },
   },
   {
     key: "costas",
-    nome: "Costas",
+    nome: t("Costas"),
     musculos: ["back", "lats", "lower_back"],
     recorte: { view: "back" as const, box: [110, 190, 504, 378] as const },
   },
   {
     key: "ombros",
-    nome: "Ombros",
+    nome: t("Ombros"),
     musculos: ["shoulders", "front_delts", "side_delts", "rear_delts"],
     recorte: { view: "front" as const, box: [90, 170, 544, 408] as const },
   },
   {
     key: "biceps",
-    nome: "Bíceps",
+    nome: t("Bíceps"),
     musculos: ["biceps"],
     recorte: { view: "front" as const, box: [30, 230, 664, 498] as const },
   },
   {
     key: "triceps",
-    nome: "Tríceps",
+    nome: t("Tríceps"),
     musculos: ["triceps"],
     recorte: { view: "back" as const, box: [30, 230, 664, 498] as const },
   },
   {
     key: "antebraco",
-    nome: "Antebraço",
+    nome: t("Antebraço"),
     musculos: ["forearms"],
     recorte: { view: "front" as const, box: [10, 430, 704, 528] as const },
   },
   {
     key: "abdomen",
-    nome: "Abdômen",
+    nome: t("Abdômen"),
     musculos: ["abs", "core", "obliques"],
     recorte: { view: "front" as const, box: [140, 370, 444, 333] as const },
   },
   {
     key: "quadriceps",
-    nome: "Quadríceps",
+    nome: t("Quadríceps"),
     musculos: ["quads"],
     recorte: { view: "front" as const, box: [110, 690, 504, 378] as const },
   },
   {
     key: "posterior",
-    nome: "Posterior de coxa",
+    nome: t("Posterior de coxa"),
     musculos: ["hamstrings"],
     recorte: { view: "back" as const, box: [110, 740, 504, 378] as const },
   },
   {
     key: "gluteos",
-    nome: "Glúteos",
+    nome: t("Glúteos"),
     musculos: ["glutes", "abductors", "adductors"],
     recorte: { view: "back" as const, box: [140, 600, 444, 333] as const },
   },
   {
     key: "panturrilhas",
-    nome: "Panturrilhas",
+    nome: t("Panturrilhas"),
     musculos: ["calves"],
     recorte: { view: "back" as const, box: [140, 1000, 444, 333] as const },
   },
   {
     key: "trapezio",
-    nome: "Trapézio e pescoço",
+    nome: t("Trapézio e pescoço"),
     musculos: ["traps", "neck"],
     recorte: { view: "back" as const, box: [130, 110, 464, 348] as const },
   },
-  { key: "cardio", nome: "Cardio e corpo todo", musculos: ["cardio", "full_body"] },
+  { key: "cardio", nome: t("Cardio e corpo todo"), musculos: ["cardio", "full_body"] },
 ] as const;
 
 export const EQUIPAMENTOS = [
-  { key: "barbell", nome: "Barra" },
-  { key: "dumbbell", nome: "Halteres" },
-  { key: "machine", nome: "Máquinas" },
-  { key: "cable", nome: "Polia" },
-  { key: "bodyweight", nome: "Peso corporal" },
-  { key: "kettlebell", nome: "Kettlebell" },
-  { key: "band", nome: "Elásticos" },
-  { key: "cardio", nome: "Cardio" },
-  { key: "other", nome: "Outros acessórios" },
+  { key: "barbell", nome: t("Barra") },
+  { key: "dumbbell", nome: t("Halteres") },
+  { key: "machine", nome: t("Máquinas") },
+  { key: "cable", nome: t("Polia") },
+  { key: "bodyweight", nome: t("Peso corporal") },
+  { key: "kettlebell", nome: t("Kettlebell") },
+  { key: "band", nome: t("Elásticos") },
+  { key: "cardio", nome: t("Cardio") },
+  { key: "other", nome: t("Outros acessórios") },
 ] as const;
 
 /** Estrutura de treino → equipamentos que ela tem. */
 export const ESTRUTURAS = [
-  { key: "completa", nome: "Academia completa", equipamentos: EQUIPAMENTOS.map((e) => e.key) },
+  { key: "completa", nome: t("Academia completa"), equipamentos: EQUIPAMENTOS.map((e) => e.key) },
   {
     key: "pequena",
-    nome: "Academia pequena",
+    nome: t("Academia pequena"),
     equipamentos: ["barbell", "dumbbell", "bodyweight", "kettlebell", "band", "other"],
   },
-  { key: "sem", nome: "Sem equipamento", equipamentos: ["bodyweight"] },
+  { key: "sem", nome: t("Sem equipamento"), equipamentos: ["bodyweight"] },
 ] as const;
 
 export const NIVEIS = [
-  { value: "beginner", label: "Iniciante" },
-  { value: "intermediate", label: "Intermediário" },
-  { value: "advanced", label: "Avançado" },
+  { value: "beginner", label: t("Iniciante") },
+  { value: "intermediate", label: t("Intermediário") },
+  { value: "advanced", label: t("Avançado") },
 ];
 
 export const PAGE_SIZE = 24;
 const CAMPOS =
-  "id, name, name_en, primary_muscle, secondary_muscles, equipment, category, owner_id, image_urls, external_id, media_id, media_ref, media_source, video_url";
+  "id, name, name_en, name_es, primary_muscle, secondary_muscles, equipment, category, owner_id, image_urls, external_id, media_id, media_ref, media_source, video_url";
 
 export type ExerciseRow = {
   id: string;
   name: string;
   name_en: string | null;
+  name_es: string | null;
   primary_muscle: string | null;
   secondary_muscles: string[] | null;
   equipment: string | null;
@@ -134,6 +136,60 @@ export type ExerciseRow = {
   media_source: string | null;
   video_url: string | null;
 };
+
+type Idioma = "pt" | "en" | "es";
+
+/**
+ * Nome do exercício no idioma do app: es → `name_es`, en → `name_en`; sem
+ * tradução, o nome em português. Só para exibir — a mídia e o vídeo são
+ * achados pelo `name` original.
+ */
+export function exerciseName(ex: {
+  name: string;
+  name_en?: string | null;
+  name_es?: string | null;
+}): string {
+  if (language === "es") return ex.name_es || ex.name;
+  if (language === "en") return ex.name_en || ex.name;
+  return ex.name;
+}
+
+/**
+ * Passo a passo no idioma do app, caindo no idioma mais próximo que houver:
+ * es → espanhol, português, inglês; en → inglês (passos, ou o texto corrido
+ * original), português; pt → português, inglês. `idioma` diz de onde veio,
+ * para a tela avisar quando não é o do app.
+ */
+export function exerciseSteps(ex: {
+  execution?: string[] | null;
+  execution_en?: string[] | null;
+  execution_es?: string[] | null;
+  instructions?: string | null;
+}): { passos: string[]; texto: string | null; idioma: Idioma | null } {
+  const fontes: Record<Idioma, string[]> = {
+    pt: ex.execution ?? [],
+    en: ex.execution_en ?? [],
+    es: ex.execution_es ?? [],
+  };
+  const ordem: Idioma[] =
+    language === "es" ? ["es", "pt", "en"] : language === "en" ? ["en", "pt"] : ["pt", "en"];
+  for (const idioma of ordem) {
+    if (fontes[idioma].length) return { passos: fontes[idioma], texto: null, idioma };
+    // O inglês da base de origem às vezes só existe como texto corrido.
+    if (idioma === "en" && ex.instructions?.trim()) {
+      return { passos: [], texto: ex.instructions.trim(), idioma: "en" };
+    }
+  }
+  if (ex.instructions?.trim()) return { passos: [], texto: ex.instructions.trim(), idioma: "en" };
+  return { passos: [], texto: null, idioma: null };
+}
+
+/** Selo de "texto em outro idioma", quando o passo a passo não é o do app. */
+export function idiomaDiferente(idioma: Idioma | null): string | null {
+  const doApp: Idioma = language === "pt-BR" ? "pt" : language;
+  if (!idioma || idioma === doApp) return null;
+  return { pt: t("em português"), en: t("em inglês"), es: t("em espanhol") }[idioma];
+}
 
 /** Linha do SQLite (arrays em texto JSON) → `ExerciseRow`. */
 export function exerciseRowLocal(
@@ -265,9 +321,14 @@ export async function fetchExercisePage({
     const cond = ["deleted_at IS NULL"];
     const params: unknown[] = [];
     if (termo) {
-      cond.push("(name LIKE ? OR name LIKE ? OR name_en LIKE ?)");
-      const t = termo.trim();
-      params.push(`%${t}%`, `%${t.charAt(0).toUpperCase()}${t.slice(1)}%`, `%${t}%`);
+      cond.push("(name LIKE ? OR name LIKE ? OR name_en LIKE ? OR name_es LIKE ?)");
+      const item = termo.trim();
+      params.push(
+        `%${item}%`,
+        `%${item.charAt(0).toUpperCase()}${item.slice(1)}%`,
+        `%${item}%`,
+        `%${item}%`,
+      );
     }
     if (musculos?.length) {
       cond.push(`primary_muscle IN (${marcadores(musculos.length)})`);
@@ -295,9 +356,11 @@ export async function fetchExercisePage({
     .order("name")
     .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
   if (termo) {
-    // Busca no nome em português e no original em inglês.
+    // Busca no nome em português, no original em inglês e em espanhol.
     const escapado = termo.replace(/[%,()]/g, " ");
-    query = query.or(`name.ilike.%${escapado}%,name_en.ilike.%${escapado}%`);
+    query = query.or(
+      `name.ilike.%${escapado}%,name_en.ilike.%${escapado}%,name_es.ilike.%${escapado}%`,
+    );
   }
   if (musculos?.length) query = query.in("primary_muscle", musculos as never[]);
   if (equipamentos?.length) query = query.in("equipment", equipamentos as never[]);

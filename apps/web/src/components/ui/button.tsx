@@ -4,6 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { Loader2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Botão.
@@ -95,7 +96,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       size,
       asChild = false,
       loading = false,
-      loadingLabel = "Carregando",
+      loadingLabel = t("Carregando"),
       disabled,
       children,
       ...props

@@ -5,6 +5,7 @@
  * músculo, o do template não; as listas de músculos, os limites e o tratamento
  * de "nada encontrado" divergiam. Este componente unifica os dois.
  */
+import { exerciseName } from "@forja/app-core/data/exercise-library";
 import { useEffect, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
@@ -35,12 +36,13 @@ import {
 } from "@/components/ui/select";
 import { ErrorState } from "@/components/query-boundary";
 import { exerciseMedia } from "@forja/app-core/data/exercise-media";
+import { t } from "@forja/app-core/i18n";
 
 export type { PickedExercise };
 
 export function ExercisePicker({
   trigger,
-  title = "Adicionar exercício",
+  title = t("Adicionar exercício"),
   showMuscleFilter = true,
   muscle: initialMuscle,
   onPick,
@@ -103,7 +105,7 @@ export function ExercisePicker({
             <SearchField
               value={term}
               onChange={setTerm}
-              placeholder="Buscar exercício…"
+              placeholder={t("Buscar exercício…")}
               loading={exercises.isFetching}
             />
             {showMuscleFilter && (
@@ -113,12 +115,12 @@ export function ExercisePicker({
                     "h-11 w-full rounded-2xl border-transparent bg-card text-sm font-semibold",
                     muscle !== "all" && "border-primary/50 text-primary",
                   )}
-                  aria-label="Filtrar por músculo"
+                  aria-label={t("Filtrar por músculo")}
                 >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos os músculos</SelectItem>
+                  <SelectItem value="all">{t("Todos os músculos")}</SelectItem>
                   {FILTERABLE_MUSCLES.map((m) => (
                     <SelectItem key={m} value={m}>
                       {MUSCLE_LABELS[m]}
@@ -133,10 +135,15 @@ export function ExercisePicker({
         {exercises.isPending ? (
           <ResultsLoading />
         ) : exercises.isError ? (
-          <ErrorState message="Falha ao buscar exercícios." onRetry={exercises.refetch} compact />
+          <ErrorState
+            message={t("Falha ao buscar exercícios.")}
+            onRetry={exercises.refetch}
+            compact
+          />
         ) : exercises.data.length === 0 ? (
           <ResultsEmpty>
-            Nenhum exercício encontrado{debouncedTerm ? ` para “${debouncedTerm}”` : ""}.
+            {t("Nenhum exercício encontrado")}
+            {debouncedTerm ? t(" para “{{debouncedTerm}}”", { debouncedTerm }) : ""}.
           </ResultsEmpty>
         ) : (
           <ResultList>
@@ -148,7 +155,7 @@ export function ExercisePicker({
                     catálogo tem a imagem numa fonte externa. */}
                 <ResultRow
                   thumb={<PickerThumb exercise={ex} />}
-                  title={ex.name}
+                  title={exerciseName(ex)}
                   detail={`${MUSCLE_LABELS[ex.primary_muscle as MuscleValue] ?? ex.primary_muscle} · ${
                     EQUIPMENT_LABELS[ex.equipment as keyof typeof EQUIPMENT_LABELS] ?? ex.equipment
                   }`}

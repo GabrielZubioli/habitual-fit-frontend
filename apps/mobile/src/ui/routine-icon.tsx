@@ -20,6 +20,7 @@ import { useColor } from "@/theme/theme";
 import { Icon, type IconNode } from "./icon";
 import { Sheet } from "./sheet";
 import { Text } from "./text";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * O ícone de cada rotina — o `routine-icon.tsx` do web. Perna e tronco são
@@ -41,21 +42,21 @@ const TORSO: IconNode = [
 ];
 
 export const ROUTINE_ICONS: { key: string; label: string; icon: IconNode }[] = [
-  { key: "braco", label: "Braço", icon: bicepsFlexed },
-  { key: "perna", label: "Perna", icon: LEG },
-  { key: "tronco", label: "Peito", icon: TORSO },
-  { key: "halter", label: "Halter", icon: dumbbell },
-  { key: "peso", label: "Peso", icon: weight },
-  { key: "punho", label: "Força", icon: handFist },
-  { key: "corpo", label: "Corpo todo", icon: personStanding },
-  { key: "mobilidade", label: "Mobilidade", icon: accessibility },
-  { key: "corrida", label: "Corrida", icon: footprints },
-  { key: "cardio", label: "Cardio", icon: heartPulse },
-  { key: "queima", label: "Queima", icon: flame },
-  { key: "explosao", label: "Explosão", icon: zap },
-  { key: "foco", label: "Foco", icon: target },
-  { key: "desafio", label: "Desafio", icon: mountain },
-  { key: "meta", label: "Meta", icon: trophy },
+  { key: "braco", label: t("Braço"), icon: bicepsFlexed },
+  { key: "perna", label: t("Perna"), icon: LEG },
+  { key: "tronco", label: t("Peito"), icon: TORSO },
+  { key: "halter", label: t("Halter"), icon: dumbbell },
+  { key: "peso", label: t("Peso"), icon: weight },
+  { key: "punho", label: t("Força"), icon: handFist },
+  { key: "corpo", label: t("Corpo todo"), icon: personStanding },
+  { key: "mobilidade", label: t("Mobilidade"), icon: accessibility },
+  { key: "corrida", label: t("Corrida"), icon: footprints },
+  { key: "cardio", label: t("Cardio"), icon: heartPulse },
+  { key: "queima", label: t("Queima"), icon: flame },
+  { key: "explosao", label: t("Explosão"), icon: zap },
+  { key: "foco", label: t("Foco"), icon: target },
+  { key: "desafio", label: t("Desafio"), icon: mountain },
+  { key: "meta", label: t("Meta"), icon: trophy },
 ];
 
 export function routineIconOf(icon: string | null | undefined, name: string): IconNode {
@@ -110,14 +111,14 @@ export function RoutineIconPicker({
     <>
       <Pressable
         onPress={() => setAberto(true)}
-        accessibilityLabel={`Trocar o ícone de ${name}`}
+        accessibilityLabel={t("Trocar o ícone de {{name}}", { name })}
         className="rounded-xl active:scale-95"
       >
         <RoutineIcon icon={icon} name={name} />
       </Pressable>
       <Sheet open={aberto} onClose={() => setAberto(false)}>
         <View className="p-4 pb-6">
-          <Text className="mb-2 px-1 text-sm font-semibold">Ícone da rotina</Text>
+          <Text className="mb-2 px-1 text-sm font-semibold">{t("Ícone da rotina")}</Text>
           <View accessibilityRole="radiogroup" className="flex-row flex-wrap gap-2">
             {ROUTINE_ICONS.map(({ key, label, icon: desenho }) => (
               <Pressable

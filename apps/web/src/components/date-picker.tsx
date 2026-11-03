@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { CalendarDays, ChevronDown } from "lucide-react";
-import { ptBR } from "date-fns/locale";
+import { dateFnsLocale } from "@forja/app-core/i18n";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { formatDate, fromISODate, toISODate, todayISO } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * O seletor de data do app — um só, no estilo do resto da interface.
@@ -71,7 +72,7 @@ export function DatePicker({
               !value && "text-muted-foreground",
             )}
           >
-            {simples && value === hoje ? "Hoje" : value ? rotulo(value) : "Escolher data"}
+            {simples && value === hoje ? t("Hoje") : value ? rotulo(value) : t("Escolher data")}
           </span>
           {simples && <ChevronDown className="size-4 shrink-0" aria-hidden />}
         </button>
@@ -82,7 +83,7 @@ export function DatePicker({
       >
         <Calendar
           mode="single"
-          locale={ptBR}
+          locale={dateFnsLocale}
           selected={selecionada}
           defaultMonth={selecionada}
           onSelect={(d) => d && escolher(toISODate(d))}
@@ -91,12 +92,12 @@ export function DatePicker({
             ...(max ? [{ after: fromISODate(max) }] : []),
           ]}
           labels={{
-            labelPrevious: () => "Mês anterior",
-            labelNext: () => "Próximo mês",
-            labelMonthDropdown: () => "Mês",
-            labelYearDropdown: () => "Ano",
+            labelPrevious: () => t("Mês anterior"),
+            labelNext: () => t("Próximo mês"),
+            labelMonthDropdown: () => t("Mês"),
+            labelYearDropdown: () => t("Ano"),
             labelDayButton: (d, m) =>
-              `${m.today ? "Hoje, " : ""}${formatDate(toISODate(d), "EEEE, d 'de' MMMM 'de' yyyy")}${m.selected ? ", escolhido" : ""}`,
+              `${m.today ? t("Hoje, ") : ""}${formatDate(toISODate(d), t("EEEE, d 'de' MMMM 'de' yyyy"))}${m.selected ? ", escolhido" : ""}`,
           }}
           captionLayout={years ? "dropdown" : "label"}
           startMonth={years ? new Date(1930, 0) : undefined}
@@ -134,7 +135,7 @@ export function DatePicker({
             onClick={() => escolher(hoje)}
             className="mt-1 w-full rounded-xl py-2.5 text-sm font-semibold text-primary hover:bg-elevated"
           >
-            Hoje
+            {t("Hoje")}
           </button>
         )}
       </PopoverContent>
@@ -145,5 +146,5 @@ export function DatePicker({
 /** "sáb., 10 de out." — com o ano só quando não é o corrente. */
 function rotulo(iso: string): string {
   const mesmoAno = iso.slice(0, 4) === todayISO().slice(0, 4);
-  return formatDate(iso, mesmoAno ? "EEE, d 'de' MMM" : "d 'de' MMM 'de' yyyy");
+  return formatDate(iso, mesmoAno ? t("EEE, d 'de' MMM") : t("d 'de' MMM 'de' yyyy"));
 }

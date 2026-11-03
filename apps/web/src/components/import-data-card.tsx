@@ -15,6 +15,7 @@ import { errorMessage } from "@forja/app-core/data/supabase-helpers";
 import { useCurrentUserId } from "@/hooks/use-current-user";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { t } from "@forja/app-core/i18n";
 
 /** Limite de tamanho: um histórico de anos do Strong tem poucos MB. */
 const MAX_BYTES = 20 * 1024 * 1024;
@@ -30,7 +31,7 @@ export function ImportDataCard() {
   const importar = async () => {
     if (!arquivo) return;
     if (arquivo.size > MAX_BYTES) {
-      toast.error("Arquivo grande demais", { description: "O limite é 20 MB." });
+      toast.error("Arquivo grande demais", { description: t("O limite é 20 MB.") });
       return;
     }
     setImportando(true);
@@ -39,7 +40,9 @@ export function ImportDataCard() {
       const parsed = parseWorkoutCsv(await arquivo.text(), unidade);
       if (parsed.workouts.length === 0) {
         toast.error("Nenhum treino encontrado", {
-          description: "Confira se é o CSV exportado pelo app (com colunas de data e exercício).",
+          description: t(
+            "Confira se é o CSV exportado pelo app (com colunas de data e exercício).",
+          ),
         });
         return;
       }
@@ -47,7 +50,7 @@ export function ImportDataCard() {
       setResultado({ ...resumo, skipped: parsed.skipped.length });
       void qc.invalidateQueries({ queryKey: queryKeys.workouts.all });
       void qc.invalidateQueries({ queryKey: queryKeys.exercises.all });
-      toast.success(`${resumo.workouts} treinos importados`);
+      toast.success(t("{{workouts}} treinos importados", { workouts: resumo.workouts }));
     } catch (e) {
       toast.error("Não foi possível importar", { description: errorMessage(e) });
     } finally {
@@ -58,17 +61,17 @@ export function ImportDataCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Importar de outro app</CardTitle>
+        <CardTitle className="text-base">{t("Importar de outro app")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         <p className="text-sm text-muted-foreground">
-          Traga seu histórico do Strong, Hevy ou FitNotes: exporte o CSV no app e envie aqui. Os
-          exercícios são reconhecidos pelo nome; os que não estiverem na biblioteca viram exercícios
-          seus.
+          {t(
+            "Traga seu histórico do Strong, Hevy ou FitNotes: exporte o CSV no app e envie aqui. Os exercícios são reconhecidos pelo nome; os que não estiverem na biblioteca viram exercícios seus.",
+          )}
         </p>
         <div className="flex flex-wrap items-center gap-2">
           <label className="block">
-            <span className="sr-only">Arquivo CSV</span>
+            <span className="sr-only">{t("Arquivo CSV")}</span>
             <input
               type="file"
               accept=".csv,text/csv"
@@ -77,24 +80,27 @@ export function ImportDataCard() {
             />
           </label>
           <label className="flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground">Pesos em</span>
+            <span className="text-muted-foreground">{t("Pesos em")}</span>
             <select
               value={unidade}
               onChange={(e) => setUnidade(e.target.value as "kg" | "lb")}
               className="h-9 rounded-md border border-input bg-background px-2 text-sm"
             >
-              <option value="kg">kg</option>
-              <option value="lb">lb</option>
+              <option value="kg">{t("kg")}</option>
+              <option value="lb">{t("lb")}</option>
             </select>
           </label>
           <Button onClick={() => void importar()} disabled={!arquivo || importando}>
             <Upload className="mr-1.5 size-4" aria-hidden />
-            {importando ? "Importando…" : "Importar"}
+            {importando ? t("Importando…") : t("Importar")}
           </Button>
         </div>
         {resultado && (
           <p className="text-sm" role="status">
-            {resultado.workouts} treinos e {resultado.sets} séries importados
+            {t("{{workouts}} treinos e {{sets}} séries importados", {
+              workouts: resultado.workouts,
+              sets: resultado.sets,
+            })}
             {resultado.duplicates > 0 && ` · ${resultado.duplicates} já existiam`}
             {resultado.skipped > 0 && ` · ${resultado.skipped} linhas ignoradas`}
             {resultado.newExercises.length > 0 &&

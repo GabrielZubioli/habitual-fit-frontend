@@ -5,6 +5,7 @@ import { localDb, marcadores } from "../local";
 import { deleteById, insertRow, insertRows, updateById } from "./rows";
 import type { MealValue } from "../lib/labels";
 import { recipeNutrition, type Portion } from "@forja/domain";
+import { t } from "../i18n";
 
 /**
  * Receitas: as prontas (do sistema, `user_id` nulo — todos leem, ninguém
@@ -14,13 +15,13 @@ import { recipeNutrition, type Portion } from "@forja/domain";
  */
 
 export const RECIPE_CATEGORIES = [
-  { key: "vitaminas", label: "Vitaminas e shakes", emoji: "🥤" },
-  { key: "cafe-da-manha", label: "Café da manhã", emoji: "🍳" },
-  { key: "sanduiches", label: "Sanduíches", emoji: "🥪" },
-  { key: "pratos", label: "Pratos", emoji: "🍛" },
-  { key: "saladas", label: "Saladas", emoji: "🥗" },
-  { key: "lanches", label: "Lanches", emoji: "🥜" },
-  { key: "bolos-e-doces", label: "Bolos e doces", emoji: "🍰" },
+  { key: "vitaminas", label: t("Vitaminas e shakes"), emoji: "🥤" },
+  { key: "cafe-da-manha", label: t("Café da manhã"), emoji: "🍳" },
+  { key: "sanduiches", label: t("Sanduíches"), emoji: "🥪" },
+  { key: "pratos", label: t("Pratos"), emoji: "🍛" },
+  { key: "saladas", label: t("Saladas"), emoji: "🥗" },
+  { key: "lanches", label: t("Lanches"), emoji: "🥜" },
+  { key: "bolos-e-doces", label: t("Bolos e doces"), emoji: "🍰" },
 ] as const;
 
 export type RecipeCategory = (typeof RECIPE_CATEGORIES)[number]["key"];
@@ -79,7 +80,7 @@ export async function fetchRecipes(): Promise<RecipeSummary[]> {
     );
     const items = itens.map((i) => ({
       foodId: i.food_id,
-      name: i.foods?.name ?? "Alimento",
+      name: i.foods?.name ?? t("Alimento"),
       grams: num(i.grams),
     }));
     return {
@@ -214,7 +215,7 @@ export async function copyRecipe(userId: string, r: RecipeSummary): Promise<stri
 
 /** Exclusão branda: `restore` desfaz. */
 export async function deleteRecipe(id: string, restore = false): Promise<void> {
-  await updateById(restore ? "restaurar receita" : "excluir receita", "recipes", id, {
+  await updateById(restore ? t("restaurar receita") : t("excluir receita"), "recipes", id, {
     deleted_at: restore ? null : new Date().toISOString(),
   });
 }
@@ -366,7 +367,7 @@ export async function logRecipeToDiary(params: {
         meal_slot: meal,
         grams: (num(it.grams) / Math.max(1, servings)) * portions,
         servings: 1,
-        notes: `Da receita: ${name}`,
+        notes: t("Da receita: {{name}}", { name }),
       })),
   );
   return date;

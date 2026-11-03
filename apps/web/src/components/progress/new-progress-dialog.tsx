@@ -30,6 +30,7 @@ import { PHOTO_ANGLE_OPTIONS, type PhotoAngleValue } from "@forja/app-core/lib/l
 import { todayISO } from "@forja/app-core/lib/date";
 import { toWebp } from "@/lib/to-webp";
 import { cn } from "@/lib/utils";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Registrar uma evolução.
@@ -178,8 +179,8 @@ export function NewProgressDialog({
       }
     },
     onSuccess: () => {
-      toast.success("Evolução registrada", {
-        description: `${capturas.length} ${capturas.length === 1 ? "foto salva" : "fotos salvas"}.`,
+      toast.success(t("Evolução registrada"), {
+        description: `${capturas.length} ${capturas.length === 1 ? t("foto salva") : t("fotos salvas")}.`,
       });
       void qc.invalidateQueries({ queryKey: queryKeys.body.all });
       onOpenChange(false);
@@ -197,7 +198,7 @@ export function NewProgressDialog({
                 type="button"
                 onClick={() => setEtapa(etapa === "revisao" ? "captura" : "angulos")}
                 className="press-feedback -ml-1 rounded-md p-1 text-muted-foreground hover:text-foreground"
-                aria-label="Voltar"
+                aria-label={t("Voltar")}
               >
                 <ArrowLeft className="size-4" />
               </button>
@@ -205,9 +206,10 @@ export function NewProgressDialog({
             Nova evolução
           </DialogTitle>
           <DialogDescription>
-            {etapa === "angulos" && "Escolha os ângulos que quer registrar hoje."}
-            {etapa === "captura" && `Foto ${capturas.length + 1} de ${angulos.length}.`}
-            {etapa === "revisao" && "Confira as fotos e salve."}
+            {etapa === "angulos" && t("Escolha os ângulos que quer registrar hoje.")}
+            {etapa === "captura" &&
+              t("Foto {{v0}} de {{length}}.", { v0: capturas.length + 1, length: angulos.length })}
+            {etapa === "revisao" && t("Confira as fotos e salve.")}
           </DialogDescription>
         </DialogHeader>
 
@@ -264,7 +266,8 @@ export function NewProgressDialog({
             tirar duas das quatro fotos e salvar é um caso legítimo. */}
         {etapa === "captura" && proximoAngulo && capturas.length > 0 && (
           <Button variant="ghost" className="mt-3 w-full" onClick={() => setEtapa("revisao")}>
-            Revisar {capturas.length} {capturas.length === 1 ? "foto" : "fotos"} e salvar
+            {t("Revisar {{length}}", { length: capturas.length })}{" "}
+            {capturas.length === 1 ? "foto" : "fotos"} {t("e salvar")}
           </Button>
         )}
       </DialogContent>
@@ -288,7 +291,7 @@ function EscolhaDeAngulos({
   return (
     <div className="space-y-4">
       <div className="space-y-1.5">
-        <Label htmlFor="evolucao-data">Data</Label>
+        <Label htmlFor="evolucao-data">{t("Data")}</Label>
         <DatePicker
           id="evolucao-data"
           value={logDate}
@@ -298,8 +301,8 @@ function EscolhaDeAngulos({
       </div>
 
       <div className="space-y-2">
-        <p className="text-sm font-medium">Ângulos</p>
-        <div role="group" aria-label="Ângulos a registrar" className="grid grid-cols-2 gap-2">
+        <p className="text-sm font-medium">{t("Ângulos")}</p>
+        <div role="group" aria-label={t("Ângulos a registrar")} className="grid grid-cols-2 gap-2">
           {PHOTO_ANGLE_OPTIONS.map((opcao) => {
             const ativo = angulos.includes(opcao.value);
             return (
@@ -343,13 +346,15 @@ function EscolhaDeAngulos({
           })}
         </div>
         <p className="text-xs text-muted-foreground">
-          Quatro ângulos mostram assimetrias que a foto de frente esconde. Dá para escolher menos.
+          {t(
+            "Quatro ângulos mostram assimetrias que a foto de frente esconde. Dá para escolher menos.",
+          )}
         </p>
       </div>
 
       <Button className="w-full" onClick={onAvancar} disabled={angulos.length === 0}>
         <Camera aria-hidden />
-        Começar
+        {t("Começar")}
       </Button>
     </div>
   );
@@ -362,10 +367,10 @@ function TodosCapturados({ onRevisar, total }: { onRevisar: () => void; total: n
         <Check className="size-6" aria-hidden />
       </span>
       <p className="text-sm">
-        {total} {total === 1 ? "foto capturada" : "fotos capturadas"}.
+        {total} {total === 1 ? t("foto capturada") : t("fotos capturadas")}.
       </p>
       <Button className="w-full" onClick={onRevisar}>
-        Revisar e salvar
+        {t("Revisar e salvar")}
       </Button>
     </div>
   );
@@ -390,7 +395,7 @@ function Revisao({
     <div className="space-y-4">
       {capturas.length === 0 ? (
         <p className="py-6 text-center text-sm text-muted-foreground">
-          Nenhuma foto. Volte e capture ao menos uma.
+          {t("Nenhuma foto. Volte e capture ao menos uma.")}
         </p>
       ) : (
         <div className="grid grid-cols-2 gap-2">
@@ -401,7 +406,9 @@ function Revisao({
             >
               <img
                 src={captura.previewUrl}
-                alt={`Prévia — ${PHOTO_ANGLE_OPTIONS.find((o) => o.value === captura.angle)?.label}`}
+                alt={t("Prévia — {{label}}", {
+                  label: PHOTO_ANGLE_OPTIONS.find((o) => o.value === captura.angle)?.label,
+                })}
                 className="aspect-[3/4] w-full object-cover"
               />
               <figcaption className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-foreground/70 px-2 py-1 text-xs text-background">
@@ -412,7 +419,9 @@ function Revisao({
                   type="button"
                   onClick={() => onRemover(captura.angle)}
                   className="press-feedback shrink-0 rounded p-0.5"
-                  aria-label={`Descartar foto de ${PHOTO_ANGLE_OPTIONS.find((o) => o.value === captura.angle)?.label}`}
+                  aria-label={t("Descartar foto de {{label}}", {
+                    label: PHOTO_ANGLE_OPTIONS.find((o) => o.value === captura.angle)?.label,
+                  })}
                 >
                   <Trash2 className="size-3.5" />
                 </button>
@@ -424,7 +433,7 @@ function Revisao({
 
       <div className="space-y-1.5">
         <Label htmlFor="evolucao-peso">
-          Peso de hoje <span className="font-normal text-muted-foreground">(opcional)</span>
+          Peso de hoje <span className="font-normal text-muted-foreground">{t("(opcional)")}</span>
         </Label>
         <Input
           id="evolucao-peso"
@@ -433,19 +442,19 @@ function Revisao({
           min={20}
           max={400}
           inputMode="decimal"
-          placeholder="Ex: 75,4"
+          placeholder={t("Ex: 75,4")}
           value={peso}
           onChange={(e) => onPesoChange(e.target.value)}
         />
         <p className="text-xs text-muted-foreground">
-          Fica junto das fotos na linha do tempo e também entra no histórico de peso.
+          {t("Fica junto das fotos na linha do tempo e também entra no histórico de peso.")}
         </p>
       </div>
 
       <div className="rounded-lg border border-border bg-surface p-3">
         <p className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Badge variant="soft">Privado</Badge>
-          Suas fotos ficam num espaço acessível só pela sua conta.
+          <Badge variant="soft">{t("Privado")}</Badge>
+          {t("Suas fotos ficam num espaço acessível só pela sua conta.")}
         </p>
       </div>
 
@@ -457,7 +466,7 @@ function Revisao({
         loadingLabel="Salvando evolução"
       >
         <Plus aria-hidden />
-        Salvar evolução
+        {t("Salvar evolução")}
       </Button>
     </div>
   );

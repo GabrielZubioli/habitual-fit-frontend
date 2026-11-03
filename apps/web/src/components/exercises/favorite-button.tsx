@@ -1,6 +1,7 @@
 import { Heart } from "lucide-react";
 import { useFavoritos } from "@forja/app-core/data/exercise-favorites";
 import { cn } from "@/lib/utils";
+import { t } from "@forja/app-core/i18n";
 
 /** Coração de favoritar: cheio em vermelho quando favorito. */
 export function FavoriteButton({
@@ -23,7 +24,9 @@ export function FavoriteButton({
         alternar(exerciseId);
       }}
       aria-pressed={ativo}
-      aria-label={ativo ? `Tirar ${nome} dos favoritos` : `Favoritar ${nome}`}
+      aria-label={
+        ativo ? t("Tirar {{nome}} dos favoritos", { nome }) : t("Favoritar {{nome}}", { nome })
+      }
       className={cn(
         "grid size-10 shrink-0 place-items-center rounded-full transition-transform active:scale-90",
         className,

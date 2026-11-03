@@ -36,6 +36,7 @@ import { BrandSymbol } from "@/ui/brand-symbol";
 import { Icon, type IconNode } from "@/ui/icon";
 import { Punho } from "@/ui/punho";
 import { Text } from "@/ui/text";
+import { t, tRich } from "@forja/app-core/i18n";
 
 /**
  * Entrar e criar conta, na mesma tela — o `routes/auth.tsx` do web, no layout
@@ -62,15 +63,15 @@ const EASE_IN = Easing.bezier(0.55, 0, 0.75, 0.2);
 const EASE_OUT = Easing.bezier(0.16, 1, 0.3, 1);
 const EASE_MOVE = Easing.bezier(0.76, 0, 0.24, 1);
 
-const emailSchema = z.string().trim().email("Informe um e-mail válido").max(255);
-const loginPassSchema = z.string().min(1, "Informe sua senha").max(72);
-const nameSchema = z.string().trim().min(2, "Informe seu nome").max(60);
+const emailSchema = z.string().trim().email(t("Informe um e-mail válido")).max(255);
+const loginPassSchema = z.string().min(1, t("Informe sua senha")).max(72);
+const nameSchema = z.string().trim().min(2, t("Informe seu nome")).max(60);
 const newPassSchema = z
   .string()
-  .min(8, "Use pelo menos 8 caracteres")
+  .min(8, t("Use pelo menos 8 caracteres"))
   .max(72)
-  .regex(/[A-Za-z]/, "Use pelo menos uma letra")
-  .regex(/[0-9]/, "Use pelo menos um número");
+  .regex(/[A-Za-z]/, t("Use pelo menos uma letra"))
+  .regex(/[0-9]/, t("Use pelo menos um número"));
 
 export default function AuthPage() {
   const params = useLocalSearchParams<{ modo?: string }>();
@@ -199,8 +200,8 @@ export default function AuthPage() {
             <Painel
               lado="topo"
               largura={W}
-              titulo="Novo por aqui?"
-              botao="Criar conta"
+              titulo={t("Novo por aqui?")}
+              botao={t("Criar conta")}
               onPress={() => trocar("signup")}
             />
           </Animated.View>
@@ -221,8 +222,8 @@ export default function AuthPage() {
             <Painel
               lado="base"
               largura={W}
-              titulo="Já tem conta?"
-              botao="Entrar"
+              titulo={t("Já tem conta?")}
+              botao={t("Entrar")}
               onPress={() => trocar("login")}
             />
           </Animated.View>
@@ -279,7 +280,10 @@ function Painel({
       >
         <Punho width={largura} height={alturaMao} cor={INK} />
       </View>
-      <Pressable onPress={() => router.replace("/")} accessibilityLabel="Habitual Fit — início">
+      <Pressable
+        onPress={() => router.replace("/")}
+        accessibilityLabel={t("Habitual Fit — início")}
+      >
         <BrandSymbol width={56} escuro />
       </Pressable>
       <Text className="mt-2 text-xl font-bold tracking-tight" style={{ color: INK }}>
@@ -331,12 +335,12 @@ function SignInForm({ email, setEmail }: { email: string; setEmail: (v: string) 
 
   return (
     <View className="gap-3">
-      <Cabecalho>Entrar na sua conta</Cabecalho>
-      <GoogleButton texto="Fazer login com o Google" onError={setErro} />
-      <Divisor>ou com e-mail</Divisor>
+      <Cabecalho>{t("Entrar na sua conta")}</Cabecalho>
+      <GoogleButton texto={t("Fazer login com o Google")} onError={setErro} />
+      <Divisor>{t("ou com e-mail")}</Divisor>
 
       <IconField
-        label="E-mail"
+        label={t("E-mail")}
         icon={mail}
         error={errors.email}
         keyboardType="email-address"
@@ -346,7 +350,7 @@ function SignInForm({ email, setEmail }: { email: string; setEmail: (v: string) 
         onChangeText={setEmail}
       />
       <IconField
-        label="Senha"
+        label={t("Senha")}
         icon={lock}
         revelavel
         error={errors.password}
@@ -363,14 +367,14 @@ function SignInForm({ email, setEmail }: { email: string; setEmail: (v: string) 
             router.push({ pathname: "/esqueci-senha", params: { email: email.trim() } })
           }
         >
-          Esqueceu sua senha?
+          {t("Esqueceu sua senha?")}
         </Text>
       </View>
 
       {erro ? <Aviso>{erro}</Aviso> : null}
 
       <SubmitButton loading={loading} onPress={submit}>
-        Entrar
+        {t("Entrar")}
       </SubmitButton>
     </View>
   );
@@ -401,7 +405,7 @@ function SignUpForm({ irParaLogin }: { irParaLogin: (email: string) => void }) {
       name: nm.success ? undefined : nm.error.issues[0]?.message,
       email: em.success ? undefined : em.error.issues[0]?.message,
       password: pw.success ? undefined : pw.error.issues[0]?.message,
-      confirm: confere ? undefined : "As senhas não conferem",
+      confirm: confere ? undefined : t("As senhas não conferem"),
     });
     setErro(undefined);
     if (!nm.success || !em.success || !pw.success || !confere) return;
@@ -433,12 +437,12 @@ function SignUpForm({ irParaLogin }: { irParaLogin: (email: string) => void }) {
 
   return (
     <View className="gap-3">
-      <Cabecalho>Criar sua conta</Cabecalho>
-      <GoogleButton texto="Inscrever-se no Google" onError={setErro} />
-      <Divisor>ou com e-mail</Divisor>
+      <Cabecalho>{t("Criar sua conta")}</Cabecalho>
+      <GoogleButton texto={t("Inscrever-se no Google")} onError={setErro} />
+      <Divisor>{t("ou com e-mail")}</Divisor>
 
       <IconField
-        label="Nome"
+        label={t("Nome")}
         icon={user}
         error={errors.name}
         autoComplete="given-name"
@@ -446,7 +450,7 @@ function SignUpForm({ irParaLogin }: { irParaLogin: (email: string) => void }) {
         onChangeText={setName}
       />
       <IconField
-        label="E-mail"
+        label={t("E-mail")}
         icon={mail}
         error={errors.email}
         keyboardType="email-address"
@@ -459,7 +463,7 @@ function SignUpForm({ irParaLogin }: { irParaLogin: (email: string) => void }) {
         }}
       />
       <IconField
-        label="Senha (mín. 8 caracteres)"
+        label={t("Senha (mín. 8 caracteres)")}
         icon={lock}
         revelavel
         error={errors.password}
@@ -470,7 +474,7 @@ function SignUpForm({ irParaLogin }: { irParaLogin: (email: string) => void }) {
         <PasswordStrength value={password} />
       </IconField>
       <IconField
-        label="Confirme a senha"
+        label={t("Confirme a senha")}
         icon={lock}
         revelavel
         error={errors.confirm}
@@ -482,17 +486,20 @@ function SignUpForm({ irParaLogin }: { irParaLogin: (email: string) => void }) {
 
       {contaExiste ? (
         <View className="rounded-2xl border border-primary/40 bg-primary/10 p-4" role="alert">
-          <Text className="font-semibold">Este e-mail já tem uma conta</Text>
+          <Text className="font-semibold">{t("Este e-mail já tem uma conta")}</Text>
           <Text className="mt-1 text-sm text-muted-foreground">
-            <Text className="text-sm font-medium">{contaExiste}</Text> já está cadastrado. Entre com
-            ele ou recupere a senha.
+            {tRich(
+              "<0>{{email}}</0> já está cadastrado. Entre com ele ou recupere a senha.",
+              [(s) => <Text className="text-sm font-medium">{s}</Text>],
+              { email: contaExiste },
+            )}
           </Text>
           <View className="mt-3 flex-row gap-2">
             <Pressable
               onPress={() => irParaLogin(contaExiste)}
               className="h-11 flex-1 items-center justify-center rounded-xl bg-primary"
             >
-              <Text className="text-sm font-medium text-primary-foreground">Entrar</Text>
+              <Text className="text-sm font-medium text-primary-foreground">{t("Entrar")}</Text>
             </Pressable>
             <Pressable
               onPress={() =>
@@ -500,7 +507,7 @@ function SignUpForm({ irParaLogin }: { irParaLogin: (email: string) => void }) {
               }
               className="h-11 flex-1 items-center justify-center rounded-xl border border-border bg-card"
             >
-              <Text className="text-sm font-medium">Esqueci a senha</Text>
+              <Text className="text-sm font-medium">{t("Esqueci a senha")}</Text>
             </Pressable>
           </View>
         </View>
@@ -509,25 +516,33 @@ function SignUpForm({ irParaLogin }: { irParaLogin: (email: string) => void }) {
       {erro ? <Aviso>{erro}</Aviso> : null}
 
       <SubmitButton loading={loading} onPress={submit}>
-        Criar conta
+        {t("Criar conta")}
       </SubmitButton>
 
       <Text className="text-center text-xs leading-relaxed text-muted-foreground">
-        Ao criar a conta, você aceita os{" "}
-        <Text
-          className="text-xs font-medium"
-          onPress={() => void Linking.openURL(`${SITE}/termos`)}
-        >
-          Termos de Uso
-        </Text>{" "}
-        e a{" "}
-        <Text
-          className="text-xs font-medium"
-          onPress={() => void Linking.openURL(`${SITE}/privacidade`)}
-        >
-          Política de Privacidade
-        </Text>
-        .
+        {tRich(
+          t(
+            "Ao criar a conta, você aceita os <0>Termos de Uso</0> e a <1>Política de Privacidade</1>.",
+          ),
+          [
+            (s) => (
+              <Text
+                className="text-xs font-medium"
+                onPress={() => void Linking.openURL(`${SITE}/termos`)}
+              >
+                {s}
+              </Text>
+            ),
+            (s) => (
+              <Text
+                className="text-xs font-medium"
+                onPress={() => void Linking.openURL(`${SITE}/privacidade`)}
+              >
+                {s}
+              </Text>
+            ),
+          ],
+        )}
       </Text>
     </View>
   );
@@ -602,7 +617,7 @@ function IconField({
         {revelavel ? (
           <Pressable
             onPress={() => setVisivel((v) => !v)}
-            accessibilityLabel={visivel ? "Ocultar senha" : "Mostrar senha"}
+            accessibilityLabel={visivel ? t("Ocultar senha") : t("Mostrar senha")}
             className="absolute right-2 h-10 w-10 items-center justify-center rounded-lg"
           >
             <Icon node={visivel ? eyeOff : eye} color={apagada} size={18} />
@@ -713,11 +728,11 @@ function GoogleButton({ texto, onError }: { texto: string; onError: (m: string) 
     } catch (e) {
       if (isErrorWithCode(e) && e.code === statusCodes.IN_PROGRESS) return;
       if (isErrorWithCode(e) && e.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-        onError("Este aparelho não tem o Google Play Services. Entre com seu e-mail.");
+        onError(t("Este aparelho não tem o Google Play Services. Entre com seu e-mail."));
         return;
       }
       console.error("[google] login falhou:", e);
-      onError("Não foi possível entrar com o Google. Tente de novo ou use seu e-mail.");
+      onError(t("Não foi possível entrar com o Google. Tente de novo ou use seu e-mail."));
     } finally {
       setEntrando(false);
     }
@@ -753,7 +768,7 @@ function PasswordStrength({ value }: { value: string }) {
     /\d/.test(value) || /[^A-Za-z0-9]/.test(value),
   ];
   const nivel = criterios.filter(Boolean).length;
-  const rotulos = ["Muito fraca", "Fraca", "Razoável", "Boa", "Forte"];
+  const rotulos = [t("Muito fraca"), t("Fraca"), t("Razoável"), t("Boa"), t("Forte")];
 
   return (
     <View className="flex-row items-center gap-2 pt-1.5">

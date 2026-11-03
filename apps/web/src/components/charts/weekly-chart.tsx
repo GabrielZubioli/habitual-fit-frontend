@@ -14,6 +14,7 @@ import {
   YAxis,
 } from "recharts";
 import { CHART_AXIS, CHART_TOOLTIP_LABEL_STYLE, CHART_TOOLTIP_STYLE } from "./chart-theme";
+import { t } from "@forja/app-core/i18n";
 
 export type WeekPoint = { semana: string; treinos: number };
 
@@ -61,7 +62,7 @@ export default function WeeklyChart({
           contentStyle={CHART_TOOLTIP_STYLE}
           labelStyle={CHART_TOOLTIP_LABEL_STYLE}
           cursor={{ fill: "var(--chart-1)", fillOpacity: 0.08, radius: 8 }}
-          labelFormatter={(l) => `Semana de ${l}`}
+          labelFormatter={(l) => t("Semana de {{l}}", { l })}
           formatter={(v: number) => [`${v} ${v === 1 ? "treino" : "treinos"}`, ""]}
           separator=""
         />

@@ -30,6 +30,8 @@ import {
   type OpcoesCartao,
   type PerfilPublicavel,
 } from "@forja/app-core/lib/share-profile";
+import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 const ARQUIVO = "perfil-habitual-fit.png";
 
@@ -102,7 +104,7 @@ export function ShareProfileDialog({
   const compartilhar = async () => {
     if (!arquivo) return;
     try {
-      await navigator.share({ files: [arquivo], title: "Meu perfil no Habitual Fit" });
+      await navigator.share({ files: [arquivo], title: t("Meu perfil no Habitual Fit") });
     } catch (e) {
       if ((e as DOMException).name !== "AbortError") {
         toast.error("Não foi possível compartilhar. Baixe a imagem e envie pelo app que preferir.");
@@ -119,21 +121,21 @@ export function ShareProfileDialog({
   };
 
   const itens: { k: keyof OpcoesCartao; rotulo: string; dica?: string; existe: boolean }[] = [
-    { k: "nome", rotulo: "Nome", existe: Boolean(perfil.nome?.trim()) },
-    { k: "foto", rotulo: "Foto de perfil", existe: Boolean(avatarPath) },
-    { k: "objetivo", rotulo: "Objetivo", existe: Boolean(perfil.objetivo) },
-    { k: "treinos", rotulo: "Treinos concluídos", existe: perfil.treinos !== null },
-    { k: "sequencia", rotulo: "Sequência de treinos", existe: perfil.sequencia !== null },
+    { k: "nome", rotulo: t("Nome"), existe: Boolean(perfil.nome?.trim()) },
+    { k: "foto", rotulo: t("Foto de perfil"), existe: Boolean(avatarPath) },
+    { k: "objetivo", rotulo: t("Objetivo"), existe: Boolean(perfil.objetivo) },
+    { k: "treinos", rotulo: t("Treinos concluídos"), existe: perfil.treinos !== null },
+    { k: "sequencia", rotulo: t("Sequência de treinos"), existe: perfil.sequencia !== null },
     {
       k: "recordes",
-      rotulo: "Melhores recordes",
-      dica: "Até 3 exercícios, com carga e repetições",
+      rotulo: t("Melhores recordes"),
+      dica: t("Até 3 exercícios, com carga e repetições"),
       existe: perfil.recordes.length > 0,
     },
     {
       k: "meta",
-      rotulo: "Progresso da meta de peso",
-      dica: "Só a porcentagem — o peso não aparece",
+      rotulo: t("Progresso da meta de peso"),
+      dica: t("Só a porcentagem — o peso não aparece"),
       existe: perfil.metaPercent !== null,
     },
   ];
@@ -142,9 +144,9 @@ export function ShareProfileDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[92dvh] max-w-md grid-cols-[minmax(0,1fr)] overflow-y-auto overflow-x-hidden rounded-[1.75rem]">
         <DialogHeader className="text-left">
-          <DialogTitle className="text-xl font-bold">Compartilhar perfil</DialogTitle>
+          <DialogTitle className="text-xl font-bold">{t("Compartilhar perfil")}</DialogTitle>
           <DialogDescription>
-            Escolha o que entra no cartão e confira a prévia antes de enviar.
+            {t("Escolha o que entra no cartão e confira a prévia antes de enviar.")}
           </DialogDescription>
         </DialogHeader>
 
@@ -157,7 +159,7 @@ export function ShareProfileDialog({
           ) : imagem ? (
             <img
               src={imagem.url}
-              alt="Prévia do cartão que será compartilhado"
+              alt={t("Prévia do cartão que será compartilhado")}
               className="aspect-[4/5] w-full rounded-2xl shadow-lg ring-1 ring-border"
             />
           ) : (
@@ -188,8 +190,9 @@ export function ShareProfileDialog({
 
         <p className="flex gap-2 text-xs leading-snug text-muted-foreground">
           <Lock className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-          Seu perfil não fica público: só esta imagem sai do app, quando você enviar. E-mail, dados
-          da conta, medidas e peso nunca entram no cartão.
+          {t(
+            "Seu perfil não fica público: só esta imagem sai do app, quando você enviar. E-mail, dados da conta, medidas e peso nunca entram no cartão.",
+          )}
         </p>
 
         <div className="flex flex-col-reverse gap-2 sm:flex-row">
@@ -200,7 +203,7 @@ export function ShareProfileDialog({
             disabled={!imagem}
           >
             <Download className="mr-1.5 size-4" aria-hidden />
-            Baixar imagem
+            {t("Baixar imagem")}
           </Button>
           {podeCompartilhar && (
             <Button
@@ -208,7 +211,7 @@ export function ShareProfileDialog({
               onClick={() => void compartilhar()}
             >
               <Share2 className="mr-1.5 size-4" aria-hidden />
-              Compartilhar
+              {t("Compartilhar")}
             </Button>
           )}
         </div>
@@ -272,9 +275,9 @@ function paraBlob(canvas: HTMLCanvasElement): Promise<Blob> {
 /** Corta o texto com reticências até caber em `max` px. */
 function caber(ctx: CanvasRenderingContext2D, texto: string, max: number): string {
   if (ctx.measureText(texto).width <= max) return texto;
-  let t = texto;
-  while (t.length > 1 && ctx.measureText(`${t}…`).width > max) t = t.slice(0, -1);
-  return `${t.trimEnd()}…`;
+  let item = texto;
+  while (item.length > 1 && ctx.measureText(`${item}…`).width > max) item = item.slice(0, -1);
+  return `${item.trimEnd()}…`;
 }
 
 function desenhar(
@@ -284,7 +287,7 @@ function desenhar(
   familia: string,
 ) {
   const fonte = (peso: number, px: number) => `${peso} ${px}px ${familia}`;
-  const n = (v: number) => v.toLocaleString("pt-BR", { maximumFractionDigits: 1 });
+  const n = (v: number) => v.toLocaleString(LOCALE, { maximumFractionDigits: 1 });
 
   ctx.clearRect(0, 0, W, H);
   ctx.fillStyle = FUNDO;
@@ -306,7 +309,7 @@ function desenhar(
   ctx.textAlign = "left";
   ctx.fillStyle = VERDE;
   ctx.font = fonte(800, 38);
-  ctx.fillText("HABITUAL FIT", 80, 120);
+  ctx.fillText(t("HABITUAL FIT"), 80, 120);
 
   // Foto (ou iniciais) com o anel verde.
   const cx = W / 2;
@@ -402,7 +405,7 @@ function desenhar(
     y += 24;
     for (const rec of c.recordes) {
       y += 72;
-      const carga = `${n(rec.weightKg)} kg × ${rec.reps}`;
+      const carga = t("{{v0}} kg × {{reps}}", { v0: n(rec.weightKg), reps: rec.reps });
       ctx.font = fonte(700, 36);
       ctx.textAlign = "right";
       ctx.fillStyle = APAGADO;
@@ -417,5 +420,5 @@ function desenhar(
   ctx.textAlign = "center";
   ctx.fillStyle = APAGADO;
   ctx.font = fonte(600, 30);
-  ctx.fillText("Treinando com o Habitual Fit", cx, H - 80);
+  ctx.fillText(t("Treinando com o Habitual Fit"), cx, H - 80);
 }

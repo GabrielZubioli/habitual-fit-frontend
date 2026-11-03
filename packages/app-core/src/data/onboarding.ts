@@ -10,6 +10,7 @@ import { todayISO } from "../lib/date";
 import type { Answers } from "../lib/onboarding/schema";
 import { derivedActivityLevel, derivedObjective } from "../lib/onboarding/options";
 import { DEFAULT_MEALS_PER_DAY, type SessionDuration } from "@forja/domain";
+import { t } from "../i18n";
 
 /**
  * Montagem da conta, logo depois do questionário.
@@ -34,10 +35,10 @@ export interface GenerationProgress {
 }
 
 const STAGE_LABELS: Record<GenerationStage, string> = {
-  profile: "Salvando seu perfil",
-  workout: "Preparando seu treino",
-  diet: "Criando suas refeições",
-  done: "Tudo pronto",
+  profile: t("Salvando seu perfil"),
+  workout: t("Preparando seu treino"),
+  diet: t("Criando suas refeições"),
+  done: t("Tudo pronto"),
 };
 
 export interface GenerationResult {
@@ -142,7 +143,9 @@ export async function generateEverything(
       user_id: userId,
       kind: "weight",
       label:
-        answers.goalWeightKg < weightKg ? "Chegar ao peso desejado" : "Ganhar massa até a meta",
+        answers.goalWeightKg < weightKg
+          ? t("Chegar ao peso desejado")
+          : t("Ganhar massa até a meta"),
       metric_key: "body_weight",
       start_value: weightKg,
       target_value: answers.goalWeightKg,
@@ -152,7 +155,7 @@ export async function generateEverything(
   metas.push({
     user_id: userId,
     kind: "habit",
-    label: "Treinar toda semana",
+    label: t("Treinar toda semana"),
     metric_key: "workouts_per_week",
     start_value: 0,
     target_value: daysPerWeek,

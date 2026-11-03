@@ -10,6 +10,7 @@ import { errorMessage } from "@forja/app-core/data/supabase-helpers";
 import { addWater, fetchWaterMl, undoLastWater } from "@forja/app-core/data/diet-day";
 import { useCurrentUserId } from "@/hooks/use-current-user";
 import { WATER_QUICK_ADD_ML } from "@forja/domain";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Registro de água.
@@ -72,12 +73,15 @@ export function WaterCard({ date, targetMl }: { date: string; targetMl: number }
               <Droplets className="size-4" aria-hidden />
             </span>
             <div>
-              <p className="text-sm font-semibold leading-tight">Água</p>
+              <p className="text-sm font-semibold leading-tight">{t("Água")}</p>
               {water.isPending ? (
                 <Skeleton className="mt-1 h-3 w-20" />
               ) : (
                 <p className="text-xs tabular-nums text-muted-foreground">
-                  {(consumido / 1000).toFixed(1)} L de {(meta / 1000).toFixed(1)} L
+                  {t("{{v0}} L de {{v1}} L", {
+                    v0: (consumido / 1000).toFixed(1),
+                    v1: (meta / 1000).toFixed(1),
+                  })}
                 </p>
               )}
             </div>
@@ -90,7 +94,7 @@ export function WaterCard({ date, targetMl }: { date: string; targetMl: number }
               className="size-8 shrink-0 rounded-full"
               onClick={() => undo.mutate()}
               disabled={undo.isPending}
-              aria-label="Desfazer último registro de água"
+              aria-label={t("Desfazer último registro de água")}
             >
               <Minus className="size-4" />
             </Button>
@@ -100,7 +104,7 @@ export function WaterCard({ date, targetMl }: { date: string; targetMl: number }
         <div
           className="mb-3 h-2 overflow-hidden rounded-full bg-muted"
           role="progressbar"
-          aria-label={`Água: ${consumido} de ${meta} mililitros`}
+          aria-label={t("Água: {{consumido}} de {{meta}} mililitros", { consumido, meta })}
           aria-valuenow={consumido}
           aria-valuemin={0}
           aria-valuemax={meta}

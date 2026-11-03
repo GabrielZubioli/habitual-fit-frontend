@@ -5,6 +5,8 @@ import { num, unwrapMaybe } from "./supabase-helpers";
 import type { Tables } from "@gabrielzubioli/db/types";
 import { bool, jsonList, localDb } from "../local";
 import { updateById } from "./rows";
+import { LOCALE } from "../i18n";
+import { t } from "../i18n";
 
 /** O perfil de quem está logado (`null` antes do questionário). */
 export async function fetchProfile() {
@@ -55,36 +57,42 @@ export type ProfileField =
   | "activity_level";
 
 export const PROFILE_FIELD_TITLES: Record<ProfileField, { titulo: string; dica?: string }> = {
-  display_name: { titulo: "Seu nome" },
-  sex: { titulo: "Sexo", dica: "Entra no cálculo do gasto calórico." },
-  birth_date: { titulo: "Data de nascimento", dica: "A idade entra no cálculo do gasto calórico." },
-  height_cm: { titulo: "Altura", dica: "Em centímetros." },
-  goal_weight_kg: { titulo: "Meta de peso", dica: "Deixe em branco se não tiver uma meta." },
-  goal: { titulo: "Objetivo", dica: "Ajusta as calorias: déficit, manutenção ou superávit." },
-  activity_level: { titulo: "Nível de atividade", dica: "Quanto você se movimenta na semana." },
+  display_name: { titulo: t("Seu nome") },
+  sex: { titulo: t("Sexo"), dica: t("Entra no cálculo do gasto calórico.") },
+  birth_date: {
+    titulo: t("Data de nascimento"),
+    dica: t("A idade entra no cálculo do gasto calórico."),
+  },
+  height_cm: { titulo: t("Altura"), dica: t("Em centímetros.") },
+  goal_weight_kg: { titulo: t("Meta de peso"), dica: t("Deixe em branco se não tiver uma meta.") },
+  goal: { titulo: t("Objetivo"), dica: t("Ajusta as calorias: déficit, manutenção ou superávit.") },
+  activity_level: {
+    titulo: t("Nível de atividade"),
+    dica: t("Quanto você se movimenta na semana."),
+  },
 };
 
 /** O erro do valor digitado, ou `null` se vale. */
 export function validateProfileField(campo: ProfileField, v: string): string | null {
   switch (campo) {
     case "display_name":
-      return v.trim().length > 80 ? "Nome muito longo." : null;
+      return v.trim().length > 80 ? t("Nome muito longo.") : null;
     case "height_cm": {
       const n = Number(v.replace(",", "."));
-      return !v || !(n >= 100 && n <= 250) ? "Altura esperada entre 100 e 250 cm." : null;
+      return !v || !(n >= 100 && n <= 250) ? t("Altura esperada entre 100 e 250 cm.") : null;
     }
     case "goal_weight_kg": {
       if (!v) return null;
       const n = Number(v.replace(",", "."));
-      return !(n >= 30 && n <= 300) ? "Peso-alvo esperado entre 30 e 300 kg." : null;
+      return !(n >= 30 && n <= 300) ? t("Peso-alvo esperado entre 30 e 300 kg.") : null;
     }
     case "birth_date": {
-      if (!v) return "Escolha a data.";
+      if (!v) return t("Escolha a data.");
       const idade = yearsBetween(v);
-      return idade < 10 || idade > 120 ? "Informe uma data entre 10 e 120 anos atrás." : null;
+      return idade < 10 || idade > 120 ? t("Informe uma data entre 10 e 120 anos atrás.") : null;
     }
     default:
-      return v ? null : "Escolha uma opção.";
+      return v ? null : t("Escolha uma opção.");
   }
 }
 
@@ -98,21 +106,21 @@ export function convertProfileField(campo: ProfileField, v: string): string | nu
 
 /** Faixa do IMC pela tabela da OMS. */
 export function bmiBand(imc: number): string {
-  if (imc < 18.5) return "Abaixo do peso";
-  if (imc < 25) return "Peso normal";
-  if (imc < 30) return "Sobrepeso";
-  return "Obesidade";
+  if (imc < 18.5) return t("Abaixo do peso");
+  if (imc < 25) return t("Peso normal");
+  if (imc < 30) return t("Sobrepeso");
+  return t("Obesidade");
 }
 
 // -------------------------------------------- metas nutricionais (manuais)
 
 /** Os limites são os mesmos do banco. Campo vazio = sem meta. */
 export const NUTRITION_TARGET_FIELDS = [
-  { key: "daily_kcal_target", rotulo: "Calorias", unidade: "kcal", min: 500, max: 15000 },
-  { key: "protein_g_target", rotulo: "Proteína", unidade: "g", min: 0, max: 2000 },
-  { key: "carbs_g_target", rotulo: "Carboidrato", unidade: "g", min: 0, max: 3000 },
-  { key: "fat_g_target", rotulo: "Gordura", unidade: "g", min: 0, max: 1000 },
-  { key: "fiber_g_target", rotulo: "Fibra", unidade: "g", min: 0, max: 500 },
+  { key: "daily_kcal_target", rotulo: t("Calorias"), unidade: "kcal", min: 500, max: 15000 },
+  { key: "protein_g_target", rotulo: t("Proteína"), unidade: "g", min: 0, max: 2000 },
+  { key: "carbs_g_target", rotulo: t("Carboidrato"), unidade: "g", min: 0, max: 3000 },
+  { key: "fat_g_target", rotulo: t("Gordura"), unidade: "g", min: 0, max: 1000 },
+  { key: "fiber_g_target", rotulo: t("Fibra"), unidade: "g", min: 0, max: 500 },
 ] as const;
 
 export type NutritionTargetKey = (typeof NUTRITION_TARGET_FIELDS)[number]["key"];
@@ -145,8 +153,11 @@ export function parseNutritionTargets(
     }
     const n = Number(bruto);
     if (!Number.isFinite(n) || n < c.min || n > c.max) {
-      erros[c.key] =
-        `Entre ${c.min.toLocaleString("pt-BR")} e ${c.max.toLocaleString("pt-BR")} ${c.unidade}`;
+      erros[c.key] = t("Entre {{v0}} e {{v1}} {{unidade}}", {
+        v0: c.min.toLocaleString(LOCALE),
+        v1: c.max.toLocaleString(LOCALE),
+        unidade: c.unidade,
+      });
     } else {
       patch[c.key] = Math.round(n);
     }

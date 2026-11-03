@@ -22,6 +22,8 @@ import { Button } from "./button";
 import { Icon } from "./icon";
 import { Switch } from "./switch";
 import { Text } from "./text";
+import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Compartilhar o perfil — o `profile/share-profile-dialog.tsx` do web: as
@@ -60,31 +62,31 @@ export function ShareProfileDialog({
       if (!(await Sharing.isAvailableAsync())) throw new Error("sem compartilhamento");
       await Sharing.shareAsync(uri, {
         mimeType: "image/png",
-        dialogTitle: "Meu perfil no Habitual Fit",
+        dialogTitle: t("Meu perfil no Habitual Fit"),
       });
     } catch {
-      await Share.share({ message: textoCartao(c), title: "Meu perfil no Habitual Fit" });
+      await Share.share({ message: textoCartao(c), title: t("Meu perfil no Habitual Fit") });
     } finally {
       setEnviando(false);
     }
   }
 
   const itens: { k: keyof OpcoesCartao; rotulo: string; dica?: string; existe: boolean }[] = [
-    { k: "nome", rotulo: "Nome", existe: Boolean(perfil.nome?.trim()) },
-    { k: "foto", rotulo: "Foto de perfil", existe: Boolean(avatarPath) },
-    { k: "objetivo", rotulo: "Objetivo", existe: Boolean(perfil.objetivo) },
-    { k: "treinos", rotulo: "Treinos concluídos", existe: perfil.treinos !== null },
-    { k: "sequencia", rotulo: "Sequência de treinos", existe: perfil.sequencia !== null },
+    { k: "nome", rotulo: t("Nome"), existe: Boolean(perfil.nome?.trim()) },
+    { k: "foto", rotulo: t("Foto de perfil"), existe: Boolean(avatarPath) },
+    { k: "objetivo", rotulo: t("Objetivo"), existe: Boolean(perfil.objetivo) },
+    { k: "treinos", rotulo: t("Treinos concluídos"), existe: perfil.treinos !== null },
+    { k: "sequencia", rotulo: t("Sequência de treinos"), existe: perfil.sequencia !== null },
     {
       k: "recordes",
-      rotulo: "Melhores recordes",
-      dica: "Até 3 exercícios, com carga e repetições",
+      rotulo: t("Melhores recordes"),
+      dica: t("Até 3 exercícios, com carga e repetições"),
       existe: perfil.recordes.length > 0,
     },
     {
       k: "meta",
-      rotulo: "Progresso da meta de peso",
-      dica: "Só a porcentagem — o peso não aparece",
+      rotulo: t("Progresso da meta de peso"),
+      dica: t("Só a porcentagem — o peso não aparece"),
       existe: perfil.metaPercent !== null,
     },
   ];
@@ -104,9 +106,9 @@ export function ShareProfileDialog({
         >
           <ScrollView contentContainerClassName="gap-4 p-6">
             <View className="pr-8">
-              <Text className="text-xl font-bold">Compartilhar perfil</Text>
+              <Text className="text-xl font-bold">{t("Compartilhar perfil")}</Text>
               <Text className="mt-1 text-sm text-muted-foreground">
-                Escolha o que entra no cartão e confira a prévia antes de enviar.
+                {t("Escolha o que entra no cartão e confira a prévia antes de enviar.")}
               </Text>
             </View>
 
@@ -143,8 +145,9 @@ export function ShareProfileDialog({
             <View className="flex-row gap-2">
               <Icon node={lock} color={apagada} size={14} />
               <Text className="flex-1 text-xs leading-snug text-muted-foreground">
-                Seu perfil não fica público: só este resumo sai do app, quando você enviar. E-mail,
-                dados da conta, medidas e peso nunca entram no cartão.
+                {t(
+                  "Seu perfil não fica público: só este resumo sai do app, quando você enviar. E-mail, dados da conta, medidas e peso nunca entram no cartão.",
+                )}
               </Text>
             </View>
 
@@ -154,12 +157,14 @@ export function ShareProfileDialog({
               onPress={() => void compartilhar()}
             >
               <Icon node={share2} color={branco} size={16} />
-              <Text className="text-base font-bold text-primary-foreground">Compartilhar</Text>
+              <Text className="text-base font-bold text-primary-foreground">
+                {t("Compartilhar")}
+              </Text>
             </Button>
           </ScrollView>
           <Pressable
             onPress={onClose}
-            accessibilityLabel="Fechar"
+            accessibilityLabel={t("Fechar")}
             className="absolute right-4 top-4 h-8 w-8 items-center justify-center rounded-full"
           >
             <Icon node={x} color={apagada} size={18} />
@@ -184,7 +189,7 @@ function Cartao({ c }: { c: ConteudoCartao }) {
           className="self-start text-[9px] font-extrabold tracking-[2px]"
           style={{ color: VERDE }}
         >
-          HABITUAL FIT
+          {t("HABITUAL FIT")}
         </Text>
         <View
           className="mt-3 h-16 w-16 items-center justify-center overflow-hidden rounded-full border-2"
@@ -231,7 +236,7 @@ function Cartao({ c }: { c: ConteudoCartao }) {
         {c.recordes.length ? (
           <View className="mt-3 w-full">
             <Text className="text-[9px] font-extrabold" style={{ color: VERDE }}>
-              RECORDES
+              {t("RECORDES")}
             </Text>
             {c.recordes.map((r) => (
               <View key={r.exerciseName} className="mt-1 flex-row justify-between gap-2">
@@ -239,14 +244,17 @@ function Cartao({ c }: { c: ConteudoCartao }) {
                   {r.exerciseName}
                 </Text>
                 <Text className="text-[10px] font-bold" style={{ color: APAGADO }}>
-                  {r.weightKg.toLocaleString("pt-BR")} kg × {r.reps}
+                  {t("{{v0}} kg × {{reps}}", {
+                    v0: r.weightKg.toLocaleString(LOCALE),
+                    reps: r.reps,
+                  })}
                 </Text>
               </View>
             ))}
           </View>
         ) : null}
         <Text className="absolute bottom-3 text-[8px] font-semibold" style={{ color: APAGADO }}>
-          Treinando com o Habitual Fit
+          {t("Treinando com o Habitual Fit")}
         </Text>
       </View>
     </View>

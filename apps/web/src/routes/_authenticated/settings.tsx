@@ -57,6 +57,8 @@ import {
   PLACE_OPTIONS,
 } from "@forja/app-core/lib/onboarding/options";
 import { todayISO } from "@forja/app-core/lib/date";
+import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Configurações: dados, metas e preferências.
@@ -67,8 +69,8 @@ import { todayISO } from "@forja/app-core/lib/date";
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
     meta: [
-      { title: "Configurações — Habitual Fit" },
-      { name: "description", content: "Ajuste dados corporais, objetivos e metas de calorias." },
+      { title: t("Configurações — Habitual Fit") },
+      { name: "description", content: t("Ajuste dados corporais, objetivos e metas de calorias.") },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -85,28 +87,28 @@ export const Route = createFileRoute("/_authenticated/settings")({
  * de nascimento no futuro produziam metas calóricas absurdas sem qualquer aviso.
  */
 const profileSchema = z.object({
-  display_name: z.string().trim().max(80, "Nome muito longo (máx. 80 caracteres).").optional(),
+  display_name: z.string().trim().max(80, t("Nome muito longo (máx. 80 caracteres).")).optional(),
   sex: z.enum(["male", "female", "other"]),
   birth_date: z
     .string()
-    .refine((v) => v === "" || !Number.isNaN(Date.parse(v)), "Data inválida.")
-    .refine((v) => v === "" || v <= todayISO(), "A data de nascimento não pode estar no futuro.")
+    .refine((v) => v === "" || !Number.isNaN(Date.parse(v)), t("Data inválida."))
+    .refine((v) => v === "" || v <= todayISO(), t("A data de nascimento não pode estar no futuro."))
     .refine((v) => {
       if (v === "") return true;
       const age = yearsBetween(v);
       return age >= 10 && age <= 120;
-    }, "Informe uma data compatível com idade entre 10 e 120 anos."),
+    }, t("Informe uma data compatível com idade entre 10 e 120 anos.")),
   height_cm: z
     .string()
     .refine(
       (v) => v === "" || (Number(v) >= 100 && Number(v) <= 250),
-      "Altura esperada entre 100 e 250 cm.",
+      t("Altura esperada entre 100 e 250 cm."),
     ),
   goal_weight_kg: z
     .string()
     .refine(
       (v) => v === "" || (Number(v) >= 30 && Number(v) <= 300),
-      "Peso-alvo esperado entre 30 e 300 kg.",
+      t("Peso-alvo esperado entre 30 e 300 kg."),
     ),
   activity_level: z.enum(["sedentary", "light", "moderate", "active", "very_active"]),
   goal: z.enum(["lose", "maintain", "gain"]),
@@ -187,8 +189,8 @@ function SettingsPage() {
       await gravarPreferencias(profileId, prefs);
     },
     onSuccess: () => {
-      toast.success("Preferências salvas", {
-        description: "Valem para os próximos planos gerados.",
+      toast.success(t("Preferências salvas"), {
+        description: t("Valem para os próximos planos gerados."),
       });
       setPrefsTouched(false);
       void qc.invalidateQueries({ queryKey: queryKeys.profile() });
@@ -232,8 +234,8 @@ function SettingsPage() {
               {mostra("metas") && (
                 <Secao
                   icon={<Target />}
-                  title="Metas nutricionais"
-                  description="Opcionais — o app não calcula nem sugere metas."
+                  title={t("Metas nutricionais")}
+                  description={t("Opcionais — o app não calcula nem sugere metas.")}
                   sozinha={Boolean(secao)}
                 >
                   {profile.data && (
@@ -246,13 +248,13 @@ function SettingsPage() {
               {mostra("treino") && (
                 <Secao
                   icon={<Dumbbell />}
-                  title="Treino"
-                  description="Define como os próximos planos são montados."
+                  title={t("Treino")}
+                  description={t("Define como os próximos planos são montados.")}
                   sozinha={Boolean(secao)}
                 >
-                  <Cartao titulo="Dias por semana" icone={<CalendarDays />}>
+                  <Cartao titulo={t("Dias por semana")} icone={<CalendarDays />}>
                     <NumeroPicker
-                      label="Dias por semana"
+                      label={t("Dias por semana")}
                       options={[...DAYS_PER_WEEK_OPTIONS]}
                       value={prefs.days_per_week}
                       onChange={(v) => updatePref("days_per_week", v)}
@@ -260,18 +262,18 @@ function SettingsPage() {
                     />
                   </Cartao>
 
-                  <Cartao titulo="Experiência" icone={<Award />}>
+                  <Cartao titulo={t("Experiência")} icone={<Award />}>
                     <ChipRadio
-                      label="Experiência"
+                      label={t("Experiência")}
                       options={EXPERIENCE_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
                       value={prefs.experience_level}
                       onChange={(v) => updatePref("experience_level", v)}
                     />
                   </Cartao>
 
-                  <Cartao titulo="Tempo por sessão" icone={<Clock />}>
+                  <Cartao titulo={t("Tempo por sessão")} icone={<Clock />}>
                     <ChipRadio
-                      label="Tempo por sessão"
+                      label={t("Tempo por sessão")}
                       options={DURATION_OPTIONS.map((o) => ({
                         value: o.value,
                         label: `${o.label} · ${o.minutes}`,
@@ -281,9 +283,9 @@ function SettingsPage() {
                     />
                   </Cartao>
 
-                  <Cartao titulo="Onde você treina" icone={<MapPin />}>
+                  <Cartao titulo={t("Onde você treina")} icone={<MapPin />}>
                     <ChipRadio
-                      label="Onde você treina"
+                      label={t("Onde você treina")}
                       options={PLACE_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
                       value={prefs.training_place}
                       onChange={(v) => updatePref("training_place", v)}
@@ -291,21 +293,21 @@ function SettingsPage() {
                   </Cartao>
 
                   <Cartao
-                    titulo="Equipamentos disponíveis"
+                    titulo={t("Equipamentos disponíveis")}
                     icone={<Dumbbell />}
                     contador={prefs.equipment_available.length}
                   >
                     <ChipGroup
-                      label="Equipamentos disponíveis"
+                      label={t("Equipamentos disponíveis")}
                       options={EQUIPMENT_OPTIONS}
                       selected={prefs.equipment_available}
                       onChange={(v) => updatePref("equipment_available", v)}
                     />
                   </Cartao>
 
-                  <Cartao titulo="Foco" icone={<Crosshair />}>
+                  <Cartao titulo={t("Foco")} icone={<Crosshair />}>
                     <ChipRadio
-                      label="Foco"
+                      label={t("Foco")}
                       options={FOCUS_OPTIONS}
                       value={prefs.focus_area}
                       onChange={(v) => updatePref("focus_area", v)}
@@ -317,20 +319,20 @@ function SettingsPage() {
               {mostra("alimentacao") && (
                 <Secao
                   icon={<Utensils />}
-                  title="Alimentação"
-                  description="Quantas refeições aparecem na sua dieta e quanto de água beber."
+                  title={t("Alimentação")}
+                  description={t("Quantas refeições aparecem na sua dieta e quanto de água beber.")}
                   sozinha={Boolean(secao)}
                 >
-                  <Cartao titulo="Refeições por dia" icone={<Utensils />}>
+                  <Cartao titulo={t("Refeições por dia")} icone={<Utensils />}>
                     <NumeroPicker
-                      label="Refeições por dia"
+                      label={t("Refeições por dia")}
                       options={[...MEALS_PER_DAY_OPTIONS]}
                       value={prefs.meals_per_day}
                       onChange={(v) => updatePref("meals_per_day", v)}
                     />
                   </Cartao>
 
-                  <Cartao titulo="Meta de água" icone={<Droplet />}>
+                  <Cartao titulo={t("Meta de água")} icone={<Droplet />}>
                     <AguaStepper
                       value={prefs.water_ml_target}
                       onChange={(v) => updatePref("water_ml_target", v)}
@@ -342,26 +344,29 @@ function SettingsPage() {
               {mostra("saude") && (
                 <Secao
                   icon={<HeartPulse />}
-                  title="Saúde"
-                  description="Exercícios que carregam as regiões marcadas saem dos planos gerados."
+                  title={t("Saúde")}
+                  description={t(
+                    "Exercícios que carregam as regiões marcadas saem dos planos gerados.",
+                  )}
                   sozinha={Boolean(secao)}
                 >
                   <Cartao
-                    titulo="Regiões a preservar"
+                    titulo={t("Regiões a preservar")}
                     icone={<ShieldCheck />}
                     contador={prefs.injuries.length}
                   >
                     <ChipGroup
-                      label="Regiões a preservar"
+                      label={t("Regiões a preservar")}
                       options={INJURY_OPTIONS}
                       selected={prefs.injuries}
                       onChange={(v) => updatePref("injuries", v)}
                     />
                   </Cartao>
                   <p className="flex gap-2.5 rounded-[1.25rem] border border-border p-4 text-sm text-muted-foreground">
-                    <Info className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />O app não
-                    substitui orientação médica. Em caso de dor durante um exercício, pare e procure
-                    um profissional.
+                    <Info className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+                    {t(
+                      "O app não substitui orientação médica. Em caso de dor durante um exercício, pare e procure um profissional.",
+                    )}
                   </p>
                 </Secao>
               )}
@@ -377,7 +382,7 @@ function SettingsPage() {
                     onClick={() => void supabase.auth.signOut()}
                   >
                     <LogOut className="mr-1.5 size-4" aria-hidden />
-                    Sair da conta
+                    {t("Sair da conta")}
                   </Button>
                 </div>
               )}
@@ -396,7 +401,7 @@ function SettingsPage() {
               onClick={() => savePreferences.mutate()}
               loading={savePreferences.isPending}
             >
-              Salvar alterações
+              {t("Salvar alterações")}
             </Button>
           </div>
         )}
@@ -522,25 +527,27 @@ function AguaStepper({
           type="button"
           onClick={() => mudar(-250)}
           className="grid size-12 place-items-center rounded-full border-2 border-border text-xl font-bold hover:border-primary/50"
-          aria-label="Menos 250 ml"
+          aria-label={t("Menos 250 ml")}
         >
           <Minus className="size-5" />
         </button>
         <p className="text-center">
           <span className="block text-4xl font-extrabold tabular-nums">
-            {value === null ? "Auto" : `${(value / 1000).toLocaleString("pt-BR")} L`}
+            {value === null
+              ? t("Auto")
+              : t("{{v0}} L", { v0: (value / 1000).toLocaleString(LOCALE) })}
           </span>
           <span className="text-xs text-muted-foreground">
             {value === null
-              ? "estimada pelo seu peso"
-              : `${Math.round(value / 250)} copos de 250 ml`}
+              ? t("estimada pelo seu peso")
+              : t("{{v0}} copos de 250 ml", { v0: Math.round(value / 250) })}
           </span>
         </p>
         <button
           type="button"
           onClick={() => mudar(250)}
           className="grid size-12 place-items-center rounded-full bg-primary text-primary-foreground"
-          aria-label="Mais 250 ml"
+          aria-label={t("Mais 250 ml")}
         >
           <Plus className="size-5" />
         </button>
@@ -551,7 +558,7 @@ function AguaStepper({
           onClick={() => onChange(null)}
           className="mt-3 w-full text-center text-sm font-semibold text-primary"
         >
-          Deixar o app estimar
+          {t("Deixar o app estimar")}
         </button>
       )}
     </div>

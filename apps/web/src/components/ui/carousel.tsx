@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { t } from "@forja/app-core/i18n";
 
 type CarouselApi = UseEmblaCarouselType[1];
 type UseCarouselParameters = Parameters<typeof useEmblaCarousel>;
@@ -195,7 +196,7 @@ const CarouselPrevious = React.forwardRef<HTMLButtonElement, React.ComponentProp
         {...props}
       >
         <ArrowLeft className="h-4 w-4" />
-        <span className="sr-only">Slide anterior</span>
+        <span className="sr-only">{t("Slide anterior")}</span>
       </Button>
     );
   },
@@ -223,7 +224,7 @@ const CarouselNext = React.forwardRef<HTMLButtonElement, React.ComponentProps<ty
         {...props}
       >
         <ArrowRight className="h-4 w-4" />
-        <span className="sr-only">Próximo slide</span>
+        <span className="sr-only">{t("Próximo slide")}</span>
       </Button>
     );
   },

@@ -12,6 +12,7 @@ import {
 import { useColor } from "@/theme/theme";
 import { ResultRow, ResultsEmpty, ResultsLoading, SearchDialog } from "./search-dialog";
 import { Text } from "./text";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Substituição de alimento — o `diet/substitute-food-dialog.tsx` do web: as
@@ -70,13 +71,18 @@ export function SubstituteFoodDialog({
     <SearchDialog
       open={open}
       onClose={onClose}
-      title="Substituir alimento"
-      description={`Trocando ${food.name} (${Math.round(grams)} g). As quantidades já vêm ajustadas para manter o valor nutricional da refeição.`}
+      title={t("Substituir alimento")}
+      description={t(
+        "Trocando {{name}} ({{v1}} g). As quantidades já vêm ajustadas para manter o valor nutricional da refeição.",
+        { name: food.name, v1: Math.round(grams) },
+      )}
     >
       {pool.isPending ? (
         <ResultsLoading />
       ) : opcoes.length === 0 ? (
-        <ResultsEmpty>Não encontramos alternativas equivalentes para este alimento.</ResultsEmpty>
+        <ResultsEmpty>
+          {t("Não encontramos alternativas equivalentes para este alimento.")}
+        </ResultsEmpty>
       ) : (
         <View className="gap-2">
           {opcoes.map((sub) => (
@@ -92,7 +98,9 @@ export function SubstituteFoodDialog({
                   {applying === sub.food.id ? (
                     <ActivityIndicator size="small" color={apagada} />
                   ) : null}
-                  <Text className="text-base font-bold">{sub.grams} g</Text>
+                  <Text className="text-base font-bold">
+                    {t("{{grams}} g", { grams: sub.grams })}
+                  </Text>
                 </View>
               }
             >

@@ -8,6 +8,7 @@ import { useColor, useTheme } from "@/theme/theme";
 import { Icon } from "./icon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text } from "./text";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * O PageHeader do web (`components/page-header.tsx`): título de 40 px em
@@ -147,7 +148,7 @@ export function BackButton({ fallback = "/dashboard" }: { fallback?: Href }) {
   return (
     <Pressable
       onPress={() => (router.canGoBack() ? router.back() : router.navigate(fallback))}
-      accessibilityLabel="Voltar"
+      accessibilityLabel={t("Voltar")}
       className="h-11 w-11 items-center justify-center rounded-full bg-card active:bg-elevated"
     >
       <Icon node={arrowLeft} color={cor} size={20} />

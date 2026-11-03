@@ -7,6 +7,7 @@ import { useCurrentUserId } from "@/hooks/use-current-user";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MUSCLE_LABELS, label } from "@forja/app-core/lib/labels";
 import { cn } from "@/lib/utils";
+import { t } from "@forja/app-core/i18n";
 
 const SEGMENTOS = 10;
 
@@ -41,12 +42,12 @@ export function ReadinessCard() {
     <Link
       to="/stats"
       className="block rounded-[1.5rem] bg-card p-5 transition-colors hover:bg-elevated"
-      aria-label={`Prontidão do corpo: ${media}%`}
+      aria-label={t("Prontidão do corpo: {{media}}%", { media })}
     >
       <div className="flex items-center justify-between gap-3">
         <p className="flex items-center gap-2 text-lg text-muted-foreground">
           <BatteryCharging className="size-5 text-primary" aria-hidden />
-          Prontidão do corpo
+          {t("Prontidão do corpo")}
         </p>
         <ChevronRight className="size-5 shrink-0" aria-hidden />
       </div>
@@ -68,7 +69,7 @@ export function ReadinessCard() {
 
       {recuperando.length === 0 ? (
         <p className="mt-3 text-muted-foreground">
-          Tudo recuperado — dia perfeito para um treino pesado.
+          {t("Tudo recuperado — dia perfeito para um treino pesado.")}
         </p>
       ) : (
         <ul className="mt-4 space-y-1.5">
@@ -83,8 +84,8 @@ export function ReadinessCard() {
               <span className="tabular-nums text-muted-foreground">
                 {m.hoursRemaining < 24
                   ? `${m.hoursRemaining}h`
-                  : `${Math.round(m.hoursRemaining / 24)}d`}{" "}
-                para recuperar
+                  : `${Math.round(m.hoursRemaining / 24)}d`}
+                {t("para recuperar")}
               </span>
             </li>
           ))}
@@ -96,7 +97,7 @@ export function ReadinessCard() {
                   .slice(0, 4)
                   .map((m) => label(MUSCLE_LABELS, m.muscle))
                   .join(", ")}
-                {prontos.length > 4 ? ` e mais ${prontos.length - 4}` : ""}
+                {prontos.length > 4 ? t(" e mais {{v0}}", { v0: prontos.length - 4 }) : ""}
               </span>
             </li>
           )}

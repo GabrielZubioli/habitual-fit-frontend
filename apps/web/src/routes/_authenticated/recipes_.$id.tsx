@@ -43,14 +43,15 @@ import { toast } from "sonner";
 import { MEALS, type MealValue } from "@forja/app-core/lib/labels";
 import { todayISO } from "@forja/app-core/lib/date";
 import { nutritionTotals, perServing, portionMacros } from "@forja/domain";
+import { t } from "@forja/app-core/i18n";
 
 export const Route = createFileRoute("/_authenticated/recipes_/$id")({
   head: () => ({
     meta: [
-      { title: "Editar receita — Habitual Fit" },
-      { name: "description", content: "Ajuste ingredientes e porções." },
-      { property: "og:title", content: "Editar receita — Habitual Fit" },
-      { property: "og:description", content: "Cálculo automático de macros por porção." },
+      { title: t("Editar receita — Habitual Fit") },
+      { name: "description", content: t("Ajuste ingredientes e porções.") },
+      { property: "og:title", content: t("Editar receita — Habitual Fit") },
+      { property: "og:description", content: t("Cálculo automático de macros por porção.") },
     ],
   }),
   component: RecipeEditor,
@@ -87,7 +88,7 @@ function RecipeEditor() {
   const save = useMutation({
     mutationFn: () => saveRecipe(id, { name, servings, notes }),
     onSuccess: () => {
-      toast.success("Receita salva");
+      toast.success(t("Receita salva"));
       void qc.invalidateQueries({ queryKey: queryKeys.recipes.all });
     },
     onError: (e) => toast.error(errorMessage(e)),
@@ -130,7 +131,7 @@ function RecipeEditor() {
         items: list,
       }),
     onSuccess: (today) => {
-      toast.success("Adicionado ao diário de hoje");
+      toast.success(t("Adicionado ao diário de hoje"));
       // Antes o cache do diário não era invalidado: ao navegar para /diet o
       // usuário via os dados antigos até o refetch.
       void qc.invalidateQueries({ queryKey: queryKeys.diet.log(today) });
@@ -142,7 +143,7 @@ function RecipeEditor() {
   if (recipe.isError) {
     return (
       <>
-        <PageHeader title="Receita" description="" />
+        <PageHeader title={t("Receita")} description="" />
         <PageBody>
           <ErrorState message={errorMessage(recipe.error)} onRetry={recipe.refetch} />
         </PageBody>
@@ -157,7 +158,7 @@ function RecipeEditor() {
         <div className="flex items-center justify-between gap-3 pb-3 pt-2">
           <Link
             to="/recipes"
-            aria-label="Voltar para as receitas"
+            aria-label={t("Voltar para as receitas")}
             className="grid size-11 shrink-0 place-items-center rounded-full bg-card transition-colors hover:bg-elevated"
           >
             <ArrowLeft className="size-5" />
@@ -168,26 +169,28 @@ function RecipeEditor() {
           />
         </div>
         <h1 className="break-words text-[1.75rem] font-extrabold leading-tight">
-          {recipe.isPending ? "Carregando…" : name || "Receita"}
+          {recipe.isPending ? t("Carregando…") : name || t("Receita")}
         </h1>
         <p className="mb-4 mt-1 text-sm text-muted-foreground">
-          {list.length === 1 ? "1 ingrediente" : `${list.length} ingredientes`} ·{" "}
-          {servings === 1 ? "1 porção" : `${servings} porções`}
+          {list.length === 1
+            ? t("1 ingrediente")
+            : t("{{length}} ingredientes", { length: list.length })}{" "}
+          · {servings === 1 ? t("1 porção") : t("{{servings}} porções", { servings })}
         </p>
         <div className="grid gap-4 lg:grid-cols-3">
           <Card>
             <CardContent className="space-y-3 p-4">
               <div className="space-y-1.5">
-                <Label htmlFor="recipe-name">Nome</Label>
+                <Label htmlFor="recipe-name">{t("Nome")}</Label>
                 <Input
                   id="recipe-name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Ex: Panqueca de banana"
+                  placeholder={t("Ex: Panqueca de banana")}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="recipe-servings">Porções</Label>
+                <Label htmlFor="recipe-servings">{t("Porções")}</Label>
                 <Input
                   id="recipe-servings"
                   type="number"
@@ -197,22 +200,22 @@ function RecipeEditor() {
                   onChange={(e) => setServings(Math.max(1, Number(e.target.value) || 1))}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Em quantas porções esta receita rende. Os macros abaixo são por porção.
+                  {t("Em quantas porções esta receita rende. Os macros abaixo são por porção.")}
                 </p>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="recipe-notes">Notas</Label>
+                <Label htmlFor="recipe-notes">{t("Notas")}</Label>
                 <Textarea
                   id="recipe-notes"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={3}
-                  placeholder="Modo de preparo, observações…"
+                  placeholder={t("Modo de preparo, observações…")}
                 />
               </div>
 
               <div className="rounded-lg border border-border p-3 text-sm">
-                <p className="mb-2 font-semibold">Por porção</p>
+                <p className="mb-2 font-semibold">{t("Por porção")}</p>
                 {items.isPending ? (
                   <div className="space-y-2">
                     {[0, 1, 2, 3, 4].map((i) => (
@@ -221,25 +224,25 @@ function RecipeEditor() {
                   </div>
                 ) : (
                   <dl className="grid grid-cols-2 gap-1 text-xs text-muted-foreground">
-                    <dt>Calorias</dt>
+                    <dt>{t("Calorias")}</dt>
                     <dd className="text-right font-medium text-foreground">
-                      {Math.round(porPorcao.kcal)} kcal
+                      {t("{{v0}} kcal", { v0: Math.round(porPorcao.kcal) })}
                     </dd>
-                    <dt>Proteína</dt>
+                    <dt>{t("Proteína")}</dt>
                     <dd className="text-right font-medium text-foreground">
-                      {porPorcao.proteinG.toFixed(1)} g
+                      {t("{{v0}} g", { v0: porPorcao.proteinG.toFixed(1) })}
                     </dd>
-                    <dt>Carboidrato</dt>
+                    <dt>{t("Carboidrato")}</dt>
                     <dd className="text-right font-medium text-foreground">
-                      {porPorcao.carbsG.toFixed(1)} g
+                      {t("{{v0}} g", { v0: porPorcao.carbsG.toFixed(1) })}
                     </dd>
-                    <dt>Gordura</dt>
+                    <dt>{t("Gordura")}</dt>
                     <dd className="text-right font-medium text-foreground">
-                      {porPorcao.fatG.toFixed(1)} g
+                      {t("{{v0}} g", { v0: porPorcao.fatG.toFixed(1) })}
                     </dd>
-                    <dt>Fibra</dt>
+                    <dt>{t("Fibra")}</dt>
                     <dd className="text-right font-medium text-foreground">
-                      {porPorcao.fiberG.toFixed(1)} g
+                      {t("{{v0}} g", { v0: porPorcao.fiberG.toFixed(1) })}
                     </dd>
                   </dl>
                 )}
@@ -250,15 +253,15 @@ function RecipeEditor() {
           <Card className="lg:col-span-2">
             <CardContent className="p-4">
               <div className="mb-3 flex items-center justify-between">
-                <h2 className="font-semibold">Ingredientes</h2>
+                <h2 className="font-semibold">{t("Ingredientes")}</h2>
                 <FoodPicker
-                  title="Adicionar ingrediente"
+                  title={t("Adicionar ingrediente")}
                   isPending={addItem.isPending}
                   onPick={(food, grams) => addItem.mutateAsync({ foodId: food.id, grams })}
                   trigger={
                     <Button size="sm">
                       <Plus className="mr-1 size-4" />
-                      Ingrediente
+                      {t("Ingrediente")}
                     </Button>
                   }
                 />
@@ -278,7 +281,7 @@ function RecipeEditor() {
                 <ErrorState message={errorMessage(items.error)} onRetry={items.refetch} compact />
               ) : list.length === 0 ? (
                 <p className="py-8 text-center text-sm text-muted-foreground">
-                  Adicione ingredientes para calcular os macros automaticamente.
+                  {t("Adicione ingredientes para calcular os macros automaticamente.")}
                 </p>
               ) : (
                 <ul className="divide-y divide-border">
@@ -292,11 +295,15 @@ function RecipeEditor() {
                         />
                         <div className="min-w-0 flex-1">
                           <p className="truncate font-medium">
-                            {it.foods?.name ?? "Alimento removido"}
+                            {it.foods?.name ?? t("Alimento removido")}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {Math.round(macros.kcal)} kcal · P {macros.proteinG.toFixed(1)} · C{" "}
-                            {macros.carbsG.toFixed(1)} · G {macros.fatG.toFixed(1)}
+                            {t("{{v0}} kcal · P {{v1}} · C {{v2}} · G {{v3}}", {
+                              v0: Math.round(macros.kcal),
+                              v1: macros.proteinG.toFixed(1),
+                              v2: macros.carbsG.toFixed(1),
+                              v3: macros.fatG.toFixed(1),
+                            })}
                           </p>
                         </div>
                         <div className="flex items-center gap-1">
@@ -306,7 +313,9 @@ function RecipeEditor() {
                             max={10000}
                             defaultValue={num(it.grams)}
                             className="w-20"
-                            aria-label={`Gramas de ${it.foods?.name ?? "ingrediente"}`}
+                            aria-label={t("Gramas de {{v0}}", {
+                              v0: it.foods?.name ?? "ingrediente",
+                            })}
                             onBlur={(e) => {
                               const grams = Number(e.target.value);
                               if (!Number.isFinite(grams) || grams < 0 || grams > 10_000) {
@@ -318,13 +327,15 @@ function RecipeEditor() {
                                 updateItem.mutate({ itemId: it.id, grams });
                             }}
                           />
-                          <span className="text-xs text-muted-foreground">g</span>
+                          <span className="text-xs text-muted-foreground">{t("g")}</span>
                         </div>
                         <ConfirmButton
-                          aria-label={`Remover ${it.foods?.name ?? "ingrediente"} da receita`}
-                          title="Remover ingrediente?"
-                          description="Os macros da receita serão recalculados."
-                          confirmLabel="Remover"
+                          aria-label={t("Remover {{v0}} da receita", {
+                            v0: it.foods?.name ?? "ingrediente",
+                          })}
+                          title={t("Remover ingrediente?")}
+                          description={t("Os macros da receita serão recalculados.")}
+                          confirmLabel={t("Remover")}
                           onConfirm={() => removeItem.mutate(it.id)}
                         >
                           <Trash2 className="size-4" />
@@ -346,7 +357,7 @@ function RecipeEditor() {
             loading={save.isPending}
           >
             <Save className="mr-1.5 size-5" />
-            Salvar receita
+            {t("Salvar receita")}
           </Button>
         </div>
       </PageBody>
@@ -373,16 +384,16 @@ function LogToDiary({
       <DialogTrigger asChild>
         <Button variant="outline" disabled={disabled} className="h-11 rounded-full px-4">
           <Plus className="mr-1 size-4" />
-          Diário
+          {t("Diário")}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>Adicionar ao diário de hoje</DialogTitle>
+          <DialogTitle>{t("Adicionar ao diário de hoje")}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1.5">
-            <Label htmlFor="log-meal">Refeição</Label>
+            <Label htmlFor="log-meal">{t("Refeição")}</Label>
             <Select value={meal} onValueChange={(v) => setMeal(v as MealValue)}>
               <SelectTrigger id="log-meal">
                 <SelectValue />
@@ -397,7 +408,7 @@ function LogToDiary({
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="log-portions">Porções</Label>
+            <Label htmlFor="log-portions">{t("Porções")}</Label>
             <Input
               id="log-portions"
               type="number"
@@ -411,7 +422,7 @@ function LogToDiary({
             />
             {invalid && (
               <p id="log-portions-error" className="text-xs text-destructive">
-                Informe um valor entre 0,25 e 50.
+                {t("Informe um valor entre 0,25 e 50.")}
               </p>
             )}
           </div>
@@ -423,7 +434,7 @@ function LogToDiary({
               setOpen(false);
             }}
           >
-            Adicionar
+            {t("Adicionar")}
           </Button>
         </div>
       </DialogContent>

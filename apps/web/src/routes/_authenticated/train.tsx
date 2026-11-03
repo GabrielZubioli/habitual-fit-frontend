@@ -19,6 +19,7 @@ import { ErrorState } from "@/components/query-boundary";
 import { NoRoutineCard } from "@/components/home/today-workout-card";
 import { RoutineIcon } from "@/components/workouts/routine-icon";
 import { formatLongDate, todayISO } from "@forja/app-core/lib/date";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Treinar: o que falta fazer hoje e, abaixo, todos os treinos do plano.
@@ -33,7 +34,7 @@ import { formatLongDate, todayISO } from "@forja/app-core/lib/date";
  */
 export const Route = createFileRoute("/_authenticated/train")({
   head: () => ({
-    meta: [{ title: "Treinar — Habitual Fit" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: t("Treinar — Habitual Fit") }, { name: "robots", content: "noindex" }],
   }),
   component: TrainPage,
 });
@@ -82,7 +83,7 @@ function TrainPage() {
   if (aberto.isPending || aberto.data || rotina.isPending || feitos.isPending) {
     return (
       <TelaVerde>
-        <div className="space-y-3" role="status" aria-label="Carregando">
+        <div className="space-y-3" role="status" aria-label={t("Carregando")}>
           <div className="h-32 animate-pulse rounded-[1.5rem] bg-[#020306]/15" />
           <div className="h-20 animate-pulse rounded-[1.25rem] bg-[#020306]/10" />
           <div className="h-20 animate-pulse rounded-[1.25rem] bg-[#020306]/10" />
@@ -116,65 +117,66 @@ function TrainPage() {
 
   const deHoje = feitos.data.filter((w) => w.date === hoje);
   const treinouHoje = deHoje.length > 0;
-  const feita = (t: Template) => deHoje.some((w) => w.splitIndex === t.order);
+  const feita = (item: Template) => deHoje.some((w) => w.splitIndex === item.order);
 
   // Semana fixa: todas as rotinas do dia que faltam. Rotação: a próxima da
   // sequência, se hoje é dia de treino e ainda não treinou.
   let pendentes: Template[];
   if (r.scheduleMode === "fixed") {
     const dia = weekdayOf(hoje);
-    pendentes = r.templates.filter((t) => t.weekdays.includes(dia) && !feita(t));
+    pendentes = r.templates.filter((item) => item.weekdays.includes(dia) && !feita(item));
   } else {
     const { splitIndex, isPlannedDay, alreadyDone } = todaysWorkout(
       hoje,
       scheduleInputOf(r),
       feitos.data,
     );
-    const t = r.templates[splitIndex];
-    pendentes = t && isPlannedDay && !alreadyDone ? [t] : [];
+    const item = r.templates[splitIndex];
+    pendentes = item && isPlannedDay && !alreadyDone ? [item] : [];
   }
-  pendentes = pendentes.filter((t) => t.exerciseCount > 0);
-  const outros = r.templates.filter((t) => !pendentes.includes(t));
+  pendentes = pendentes.filter((item) => item.exerciseCount > 0);
+  const outros = r.templates.filter((item) => !pendentes.includes(item));
 
   return (
     <TelaVerde>
       {pendentes.length > 0 ? (
-        <section aria-label="Treinos de hoje">
-          <Titulo>{pendentes.length === 1 ? "Treino de hoje" : "Treinos de hoje"}</Titulo>
+        <section aria-label={t("Treinos de hoje")}>
+          <Titulo>{pendentes.length === 1 ? t("Treino de hoje") : t("Treinos de hoje")}</Titulo>
           <ul className="space-y-3">
-            {pendentes.map((t, i) => (
+            {pendentes.map((item, i) => (
               <li
-                key={t.id}
+                key={item.id}
                 className="animate-in fade-in slide-in-from-bottom-3 fill-mode-backwards duration-500"
                 style={{ animationDelay: `${200 + i * 90}ms` }}
               >
                 <button
                   type="button"
-                  onClick={() => iniciar(t.id)}
-                  aria-busy={abrindo(t.id)}
+                  onClick={() => iniciar(item.id)}
+                  aria-busy={abrindo(item.id)}
                   className="flex w-full items-center gap-4 rounded-[1.75rem] bg-[#020306] p-5 text-left text-white shadow-[0_18px_40px_-18px_rgba(2,3,6,0.7)] transition-transform active:scale-[0.98] disabled:opacity-70"
                 >
                   <RoutineIcon
-                    icon={t.icon}
-                    name={t.name}
+                    icon={item.icon}
+                    name={item.name}
                     className="size-14 rounded-2xl bg-[#01D798] text-[#020306] [&>svg]:size-7"
                   />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-2xl font-extrabold">
-                      {splitDisplayName(t.name)}
+                      {splitDisplayName(item.name)}
                     </span>
                     <span className="block text-white/60">
-                      {t.exerciseCount} {t.exerciseCount === 1 ? "exercício" : "exercícios"}
+                      {item.exerciseCount}{" "}
+                      {item.exerciseCount === 1 ? t("exercício") : t("exercícios")}
                     </span>
                   </span>
                   <span className="grid size-14 shrink-0 place-items-center rounded-full bg-[#01D798] text-[#020306]">
-                    {abrindo(t.id) ? (
+                    {abrindo(item.id) ? (
                       <Loader2 className="size-6 animate-spin" aria-hidden />
                     ) : (
                       <Play className="ml-0.5 size-6 fill-current" aria-hidden />
                     )}
                   </span>
-                  <span className="sr-only">Começar</span>
+                  <span className="sr-only">{t("Começar")}</span>
                 </button>
               </li>
             ))}
@@ -183,7 +185,7 @@ function TrainPage() {
       ) : (
         <section
           className="flex items-center gap-4 rounded-[1.75rem] bg-[#020306] p-5 text-white animate-in fade-in slide-in-from-bottom-3 fill-mode-backwards delay-200 duration-500"
-          aria-label="Hoje"
+          aria-label={t("Hoje")}
         >
           {treinouHoje ? (
             <CheckCircle2
@@ -198,49 +200,54 @@ function TrainPage() {
           )}
           <div className="min-w-0">
             <p className="text-xl font-bold">
-              {treinouHoje ? "Você já treinou hoje" : "Hoje é dia de descanso"}
+              {treinouHoje ? t("Você já treinou hoje") : t("Hoje é dia de descanso")}
             </p>
             <p className="text-white/60">
               {treinouHoje
-                ? "Se quiser treinar mais, escolha abaixo."
-                : "Aproveite para recuperar. Se quiser treinar mesmo assim, escolha abaixo."}
+                ? t("Se quiser treinar mais, escolha abaixo.")
+                : t("Aproveite para recuperar. Se quiser treinar mesmo assim, escolha abaixo.")}
             </p>
           </div>
         </section>
       )}
 
       {outros.length > 0 && (
-        <section aria-label="Seus treinos" className="mt-8">
-          <Titulo>{pendentes.length > 0 ? "Outros treinos" : "Seus treinos"}</Titulo>
+        <section aria-label={t("Seus treinos")} className="mt-8">
+          <Titulo>{pendentes.length > 0 ? t("Outros treinos") : t("Seus treinos")}</Titulo>
           <ul className="space-y-2.5">
-            {outros.map((t, i) => (
+            {outros.map((item, i) => (
               <li
-                key={t.id}
+                key={item.id}
                 className="flex items-center gap-3 rounded-[1.25rem] bg-[#020306]/90 p-3.5 text-white animate-in fade-in slide-in-from-bottom-2 fill-mode-backwards duration-500"
                 style={{ animationDelay: `${320 + i * 60}ms` }}
               >
-                <RoutineIcon icon={t.icon} name={t.name} className="bg-white/10 text-[#01D798]" />
+                <RoutineIcon
+                  icon={item.icon}
+                  name={item.name}
+                  className="bg-white/10 text-[#01D798]"
+                />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-lg font-semibold">
-                    {splitDisplayName(t.name)}
+                    {splitDisplayName(item.name)}
                   </span>
                   <span className="block text-sm text-white/55">
-                    {t.exerciseCount} {t.exerciseCount === 1 ? "exercício" : "exercícios"}
-                    {feita(t) && " · feito hoje ✓"}
+                    {item.exerciseCount}{" "}
+                    {item.exerciseCount === 1 ? t("exercício") : t("exercícios")}
+                    {feita(item) && " · feito hoje ✓"}
                   </span>
                 </span>
                 <button
                   type="button"
-                  onClick={() => iniciar(t.id)}
-                  aria-busy={abrindo(t.id)}
-                  disabled={t.exerciseCount === 0}
+                  onClick={() => iniciar(item.id)}
+                  aria-busy={abrindo(item.id)}
+                  disabled={item.exerciseCount === 0}
                   className="grid min-w-[6.5rem] shrink-0 place-items-center rounded-full bg-[#01D798] px-4 py-2 font-bold text-[#020306] transition-transform active:scale-95 disabled:opacity-50"
-                  aria-label={`Começar ${splitDisplayName(t.name)}`}
+                  aria-label={t("Começar {{v0}}", { v0: splitDisplayName(item.name) })}
                 >
-                  {abrindo(t.id) ? (
+                  {abrindo(item.id) ? (
                     <Loader2 className="size-5 animate-spin" aria-hidden />
                   ) : (
-                    "Começar"
+                    t("Começar")
                   )}
                 </button>
               </li>
@@ -253,7 +260,7 @@ function TrainPage() {
         to="/plan"
         className="mt-6 flex items-center justify-between rounded-[1.25rem] px-4 py-3 font-semibold text-[#020306]/75 transition-colors hover:bg-[#020306]/10 hover:text-[#020306]"
       >
-        Editar rotinas e agenda no Plano
+        {t("Editar rotinas e agenda no Plano")}
         <ChevronRight className="size-5" aria-hidden />
       </Link>
     </TelaVerde>
@@ -269,7 +276,9 @@ function TelaVerde({ children }: { children: ReactNode }) {
     <div className="-mb-28 min-h-dvh bg-[#01D798] pb-36 text-[#020306] md:mb-0 md:pb-10">
       <div className="mx-auto w-full max-w-3xl px-4 pt-6 md:px-8 md:pt-8">
         <header className="mb-6">
-          <h1 className="text-[2.75rem] font-extrabold leading-none tracking-tight">Treinar</h1>
+          <h1 className="text-[2.75rem] font-extrabold leading-none tracking-tight">
+            {t("Treinar")}
+          </h1>
           <p className="mt-2 text-lg font-medium text-[#020306]/65 first-letter:uppercase">
             {formatLongDate(todayISO()).toLowerCase()}
           </p>

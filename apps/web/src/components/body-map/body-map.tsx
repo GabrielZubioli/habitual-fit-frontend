@@ -14,6 +14,7 @@ import {
   suggestedView,
   type MuscleIntensity,
 } from "@forja/app-core/lib/body-map/intensity";
+import { t } from "@forja/app-core/i18n";
 
 export {
   aggregateMuscleIntensities,
@@ -134,8 +135,10 @@ export function BodyMap({
           role="img"
           aria-label={
             destacados.length > 0
-              ? `Músculos trabalhados: ${destacados.map(([m]) => label(MUSCLE_LABELS, m)).join(", ")}`
-              : "Nenhum músculo destacado"
+              ? t("Músculos trabalhados: {{v0}}", {
+                  v0: destacados.map(([m]) => label(MUSCLE_LABELS, m)).join(", "),
+                })
+              : t("Nenhum músculo destacado")
           }
         >
           {/* 1 — silhueta */}
@@ -203,7 +206,7 @@ export function BodyMap({
                       : "text-muted-foreground hover:text-foreground",
                   )}
                 >
-                  {v === "front" ? "Frente" : "Costas"}
+                  {v === "front" ? t("Frente") : t("Costas")}
                 </button>
               ))}
             </div>

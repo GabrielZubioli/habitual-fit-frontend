@@ -15,6 +15,7 @@ import {
 import { toWebp } from "@/lib/to-webp";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { cn } from "@/lib/utils";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Avatar com troca de foto.
@@ -60,7 +61,7 @@ export function AvatarPicker({
       return novoCaminho;
     },
     onSuccess: () => {
-      toast.success("Foto atualizada");
+      toast.success(t("Foto atualizada"));
       void qc.invalidateQueries({ queryKey: queryKeys.profile() });
     },
     onError: (e) => toast.error(errorMessage(e)),
@@ -74,7 +75,7 @@ export function AvatarPicker({
         type="button"
         onClick={() => inputRef.current?.click()}
         disabled={enviar.isPending}
-        aria-label={url ? "Trocar foto de perfil" : "Adicionar foto de perfil"}
+        aria-label={url ? t("Trocar foto de perfil") : t("Adicionar foto de perfil")}
         className={cn(
           "press-feedback group relative grid size-16 place-items-center overflow-hidden rounded-full",
           "border border-border bg-primary-soft text-primary-soft-foreground",

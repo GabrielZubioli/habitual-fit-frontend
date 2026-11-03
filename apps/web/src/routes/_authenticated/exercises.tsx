@@ -1,3 +1,4 @@
+import { exerciseName } from "@forja/app-core/data/exercise-library";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -55,14 +56,16 @@ import { CardGridSkeleton, EmptyState, ErrorState } from "@/components/query-bou
 import { cn } from "@/lib/utils";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { EQUIPMENT_LABELS, MUSCLE_LABELS, label } from "@forja/app-core/lib/labels";
+import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 type Aba = "musculos" | "equipamentos" | "favoritos";
 
 export const Route = createFileRoute("/_authenticated/exercises")({
   head: () => ({
     meta: [
-      { title: "Exercícios — Habitual Fit" },
-      { name: "description", content: "Mais de mil exercícios com demonstração animada." },
+      { title: t("Exercícios — Habitual Fit") },
+      { name: "description", content: t("Mais de mil exercícios com demonstração animada.") },
     ],
   }),
   validateSearch: (
@@ -110,10 +113,12 @@ function ExerciseLibrary() {
   return (
     <>
       <PageHeader
-        title="Exercícios"
+        title={t("Exercícios")}
         description={
           contagem.data
-            ? `${contagem.data.total.toLocaleString("pt-BR")} exercícios com demonstração`
+            ? t("{{v0}} exercícios com demonstração", {
+                v0: contagem.data.total.toLocaleString(LOCALE),
+              })
             : undefined
         }
       />
@@ -126,14 +131,14 @@ function ExerciseLibrary() {
           <>
             <div
               role="tablist"
-              aria-label="Navegar exercícios"
+              aria-label={t("Navegar exercícios")}
               className="mt-4 flex rounded-2xl bg-card p-1"
             >
               {(
                 [
-                  ["musculos", "Músculos"],
-                  ["equipamentos", "Equipamentos"],
-                  ["favoritos", "Favoritos"],
+                  ["musculos", t("Músculos")],
+                  ["equipamentos", t("Equipamentos")],
+                  ["favoritos", t("Favoritos")],
                 ] as const
               ).map(([v, rotulo]) => (
                 <button
@@ -172,7 +177,7 @@ function Busca({
   carregando,
 }: {
   term: string;
-  setTerm: (t: string) => void;
+  setTerm: (item: string) => void;
   carregando: boolean;
 }) {
   return (
@@ -182,11 +187,11 @@ function Busca({
         aria-hidden
       />
       <Input
-        placeholder="Buscar exercício…"
+        placeholder={t("Buscar exercício…")}
         value={term}
         onChange={(ev) => setTerm(ev.target.value)}
         className="h-13 rounded-2xl border-transparent bg-card pl-12 pr-10 text-base"
-        aria-label="Buscar exercício"
+        aria-label={t("Buscar exercício")}
       />
       {carregando ? (
         <Loader2
@@ -198,7 +203,7 @@ function Busca({
           <button
             type="button"
             onClick={() => setTerm("")}
-            aria-label="Limpar busca"
+            aria-label={t("Limpar busca")}
             className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:text-foreground"
           >
             <X className="size-4" />
@@ -241,7 +246,7 @@ function AbaMusculos({ porMusculo }: { porMusculo?: Map<string, number> }) {
                 </span>
                 <span className="mt-2 font-bold leading-tight">{g.nome}</span>
                 <span className="text-xs text-muted-foreground">
-                  {n === null ? "…" : `${n} ${n === 1 ? "exercício" : "exercícios"}`}
+                  {n === null ? "…" : `${n} ${n === 1 ? t("exercício") : t("exercícios")}`}
                 </span>
               </Link>
             </li>
@@ -262,7 +267,7 @@ function AbaEquipamentos({ porEquip }: { porEquip?: Map<string, number> }) {
     <>
       <div
         role="radiogroup"
-        aria-label="Estrutura de treino"
+        aria-label={t("Estrutura de treino")}
         className="grid grid-cols-3 gap-1 rounded-2xl bg-card p-1"
       >
         {ESTRUTURAS.map((x) => (
@@ -326,7 +331,7 @@ function CartaoEquipamento({
       <span className="block p-3">
         <span className="block font-bold leading-tight">{equipamento.nome}</span>
         <span className="text-xs text-muted-foreground">
-          {n === null ? "…" : `${n} ${n === 1 ? "exercício" : "exercícios"}`}
+          {n === null ? "…" : `${n} ${n === 1 ? t("exercício") : t("exercícios")}`}
         </span>
       </span>
     </Link>
@@ -347,8 +352,8 @@ function AbaFavoritos({ rotina }: { rotina: ActiveRoutine | null }) {
     return (
       <EmptyState
         icon={<Heart className="size-6" />}
-        title="Nenhum favorito ainda"
-        description="Toque no coração de um exercício para guardá-lo aqui."
+        title={t("Nenhum favorito ainda")}
+        description={t("Toque no coração de um exercício para guardá-lo aqui.")}
       />
     );
   }
@@ -391,21 +396,27 @@ function TelaFiltrada({
       </div>
       <Busca term={term} setTerm={setTerm} carregando={false} />
       <div className="mt-3 grid grid-cols-2 gap-2">
-        <Seletor rotulo="Nível" valor={nivel} onChange={setNivel} todos="Nível" opcoes={NIVEIS} />
+        <Seletor
+          rotulo={t("Nível")}
+          valor={nivel}
+          onChange={setNivel}
+          todos={t("Nível")}
+          opcoes={NIVEIS}
+        />
         {musculos ? (
           <Seletor
-            rotulo="Equipamento"
+            rotulo={t("Equipamento")}
             valor={equip}
             onChange={setEquip}
-            todos="Equipamento"
+            todos={t("Equipamento")}
             opcoes={EQUIPAMENTOS.map((e) => ({ value: e.key, label: e.nome }))}
           />
         ) : (
           <Seletor
-            rotulo="Grupo muscular"
+            rotulo={t("Grupo muscular")}
             valor={grupo}
             onChange={setGrupo}
-            todos="Músculo"
+            todos={t("Músculo")}
             opcoes={GRUPOS.map((g) => ({ value: g.key, label: g.nome }))}
           />
         )}
@@ -459,7 +470,7 @@ function ListaExercicios({
   if (lista.isError) {
     return (
       <ErrorState
-        message={lista.error instanceof Error ? lista.error.message : "Erro ao carregar."}
+        message={lista.error instanceof Error ? lista.error.message : t("Erro ao carregar.")}
         onRetry={lista.refetch}
       />
     );
@@ -469,11 +480,13 @@ function ListaExercicios({
     return (
       <EmptyState
         icon={<SearchX className="size-6" />}
-        title="Nenhum exercício encontrado"
+        title={t("Nenhum exercício encontrado")}
         description={
           termo
-            ? `Nada corresponde a “${termo}”. A busca também aceita o nome em inglês.`
-            : "Nenhum exercício com esta combinação de filtros."
+            ? t("Nada corresponde a “{{termo}}”. A busca também aceita o nome em inglês.", {
+                termo,
+              })
+            : t("Nenhum exercício com esta combinação de filtros.")
         }
       />
     );
@@ -489,7 +502,7 @@ function ListaExercicios({
       {lista.isFetchingNextPage && (
         <p className="py-6 text-center text-sm text-muted-foreground">
           <Loader2 className="mr-2 inline size-4 animate-spin" aria-hidden />
-          Carregando mais…
+          {t("Carregando mais…")}
         </p>
       )}
     </>
@@ -508,9 +521,9 @@ function CriarExercicio() {
             <Sparkles className="size-5" aria-hidden />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block font-bold">Criar seu exercício</span>
+            <span className="block font-bold">{t("Criar seu exercício")}</span>
             <span className="block text-sm text-muted-foreground">
-              Nome e músculo, sem animação
+              {t("Nome e músculo, sem animação")}
             </span>
           </span>
           <ChevronRight className="mr-1 size-5 shrink-0 text-primary" aria-hidden />
@@ -532,14 +545,14 @@ function ExerciseListRow({
   const miniatura = miniaturaDe(exercise);
 
   const adicionar = useMutation({
-    mutationFn: (t: { id: string; exerciseCount: number }) =>
-      addTemplateItem(t.id, exercise.id, t.exerciseCount + 1),
-    onSuccess: (_d, t) => {
-      const nome = (rotina?.templates.find((x) => x.id === t.id)?.name ?? "a rotina").replace(
+    mutationFn: (item: { id: string; exerciseCount: number }) =>
+      addTemplateItem(item.id, exercise.id, item.exerciseCount + 1),
+    onSuccess: (_d, item) => {
+      const nome = (rotina?.templates.find((x) => x.id === item.id)?.name ?? t("a rotina")).replace(
         /^[A-Z]\s*—\s*/,
         "",
       );
-      toast.success(`Adicionado a ${nome}`);
+      toast.success(t("Adicionado a {{nome}}", { nome }));
       void qc.invalidateQueries({ queryKey: queryKeys.workouts.all });
     },
     onError: (e) => toast.error(errorMessage(e)),
@@ -551,7 +564,7 @@ function ExerciseListRow({
         to="/exercises/$id"
         params={{ id: exercise.id }}
         className="flex min-w-0 flex-1 items-center gap-3.5"
-        aria-label={`Abrir ${exercise.name}`}
+        aria-label={t("Abrir {{name}}", { name: exerciseName(exercise) })}
       >
         <span className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-xl bg-white">
           {miniatura ? (
@@ -561,7 +574,7 @@ function ExerciseListRow({
           )}
         </span>
         <span className="min-w-0">
-          <span className="block font-semibold leading-snug">{exercise.name}</span>
+          <span className="block font-semibold leading-snug">{exerciseName(exercise)}</span>
           <span className="block text-sm text-muted-foreground">
             {label(MUSCLE_LABELS, exercise.primary_muscle)} ·{" "}
             {label(EQUIPMENT_LABELS, exercise.equipment)}
@@ -569,23 +582,23 @@ function ExerciseListRow({
           </span>
         </span>
       </Link>
-      <FavoriteButton exerciseId={exercise.id} nome={exercise.name} />
+      <FavoriteButton exerciseId={exercise.id} nome={exerciseName(exercise)} />
       {rotina && rotina.templates.length > 0 && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
               type="button"
               className="grid size-10 shrink-0 place-items-center rounded-full border border-primary/40 text-primary transition-colors hover:bg-primary/10"
-              aria-label={`Adicionar ${exercise.name} a uma rotina`}
+              aria-label={t("Adicionar {{name}} a uma rotina", { name: exerciseName(exercise) })}
             >
               <Plus className="size-5" aria-hidden />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Adicionar à rotina</DropdownMenuLabel>
-            {rotina.templates.map((t) => (
-              <DropdownMenuItem key={t.id} onSelect={() => adicionar.mutate(t)}>
-                {t.name.replace(/^[A-Z]\s*—\s*/, "")}
+            <DropdownMenuLabel>{t("Adicionar à rotina")}</DropdownMenuLabel>
+            {rotina.templates.map((item) => (
+              <DropdownMenuItem key={item.id} onSelect={() => adicionar.mutate(item)}>
+                {item.name.replace(/^[A-Z]\s*—\s*/, "")}
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
@@ -603,12 +616,18 @@ function BuscaComFiltros({ termo, rotina }: { termo: string; rotina: ActiveRouti
   return (
     <>
       <div className="mt-3 grid grid-cols-2 gap-2">
-        <Seletor rotulo="Nível" valor={nivel} onChange={setNivel} todos="Nível" opcoes={NIVEIS} />
         <Seletor
-          rotulo="Grupo muscular"
+          rotulo={t("Nível")}
+          valor={nivel}
+          onChange={setNivel}
+          todos={t("Nível")}
+          opcoes={NIVEIS}
+        />
+        <Seletor
+          rotulo={t("Grupo muscular")}
           valor={grupo}
           onChange={setGrupo}
-          todos="Músculo"
+          todos={t("Músculo")}
           opcoes={GRUPOS.map((g) => ({ value: g.key, label: g.nome }))}
         />
       </div>

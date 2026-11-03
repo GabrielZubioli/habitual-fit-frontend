@@ -16,6 +16,7 @@ import {
   SearchDialog,
   SearchField,
 } from "./search-dialog";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Trocar um exercício no meio do treino — o `pickers/substitute-exercise-dialog.tsx`
@@ -79,13 +80,16 @@ export function SubstituteExerciseDialog({
     <SearchDialog
       open={open}
       onClose={onClose}
-      title="Substituir exercício"
-      description={`Trocando ${currentExerciseName}. As séries já registradas são mantidas — muda só o movimento.`}
+      title={t("Substituir exercício")}
+      description={t(
+        "Trocando {{currentExerciseName}}. As séries já registradas são mantidas — muda só o movimento.",
+        { currentExerciseName },
+      )}
       top={
         <SearchField
           value={term}
           onChange={setTerm}
-          placeholder={`Buscar em ${musculo}…`}
+          placeholder={t("Buscar em {{musculo}}…", { musculo })}
           loading={alternatives.isFetching}
         />
       }
@@ -94,12 +98,17 @@ export function SubstituteExerciseDialog({
         <ResultsLoading />
       ) : alternatives.isError ? (
         <ErrorState
-          message="Falha ao buscar alternativas."
+          message={t("Falha ao buscar alternativas.")}
           onRetry={() => void alternatives.refetch()}
           compact
         />
       ) : alternatives.data.length === 0 ? (
-        <ResultsEmpty>{`Nenhuma alternativa para ${musculo}${debouncedTerm ? ` com “${debouncedTerm}”` : ""}.`}</ResultsEmpty>
+        <ResultsEmpty>
+          {t("Nenhuma alternativa para {{musculo}}{{v1}}.", {
+            musculo,
+            v1: debouncedTerm ? ` com “${debouncedTerm}”` : "",
+          })}
+        </ResultsEmpty>
       ) : (
         <View className="gap-2">
           {alternatives.data.map((exercise) => {
@@ -111,7 +120,9 @@ export function SubstituteExerciseDialog({
                 title={exercise.name}
                 detail={
                   mesmoEquip
-                    ? `${label(EQUIPMENT_LABELS, exercise.equipment)} · mesmo equipamento`
+                    ? t("{{v0}} · mesmo equipamento", {
+                        v0: label(EQUIPMENT_LABELS, exercise.equipment),
+                      })
                     : label(EQUIPMENT_LABELS, exercise.equipment)
                 }
                 highlight={mesmoEquip}

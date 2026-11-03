@@ -11,6 +11,7 @@ import { assertOk, found, num, unwrap, unwrapList } from "./supabase-helpers";
 import { agoraIso, bool, inserir, jsonList, localDb, marcadores } from "../local";
 import { countsTowardVolume, epley1RM, type MuscleSetEntry } from "@forja/domain";
 import { formatDate, localDayRange, toISODate } from "../lib/date";
+import { t } from "../i18n";
 
 /** Defaults de template, alinhados com os do banco. */
 const DEFAULT_TARGET_SETS = 3;
@@ -77,7 +78,11 @@ export async function fetchLastPerformances(
 /** Cria uma sessão em branco ("treino rápido"). */
 export async function startBlankSession(userId: string): Promise<string> {
   if (localDb()) {
-    return criarSessaoLocal(userId, null, `Treino ${formatDate(new Date(), "dd/MM HH:mm")}`);
+    return criarSessaoLocal(
+      userId,
+      null,
+      t("Treino {{v0}}", { v0: formatDate(new Date(), "dd/MM HH:mm") }),
+    );
   }
   const session = unwrap(
     "criar treino",
@@ -126,7 +131,7 @@ export async function startSessionFromTemplate(
     "criar treino",
     await supabase
       .from("workout_sessions")
-      .insert({ user_id: userId, template_id: templateId, name: template.name || "Treino" })
+      .insert({ user_id: userId, template_id: templateId, name: template.name || t("Treino") })
       .select("id")
       .single(),
   );
@@ -251,7 +256,7 @@ async function iniciarDoTemplateLocal(userId: string, templateId: string): Promi
        FROM workout_template_exercises WHERE template_id = ? ORDER BY position`,
     [templateId],
   );
-  const sessionId = await criarSessaoLocal(userId, templateId, template.name || "Treino");
+  const sessionId = await criarSessaoLocal(userId, templateId, template.name || t("Treino"));
   if (items.length > 0) await inserirSeries(await seriesDoTemplate(userId, sessionId, items));
   return sessionId;
 }
@@ -350,7 +355,7 @@ export async function fetchPersonalRecords(limit = 8): Promise<PersonalRecord[]>
     const reps = num(r.reps);
     porExercicio.set(r.exercise_id, {
       exerciseId: r.exercise_id,
-      exerciseName: r.exercises?.name ?? "Exercício",
+      exerciseName: r.exercises?.name ?? t("Exercício"),
       weightKg,
       reps,
       e1rm: epley1RM(weightKg, reps),

@@ -21,15 +21,16 @@ import { BrandSymbol } from "./brand-symbol";
 import { Icon, type IconNode } from "./icon";
 import { Text } from "./text";
 import { TrainLaunchOverlay, useTrainLaunch } from "./train-launch";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * A barra de baixo do web (`_authenticated/route.tsx`): Início, Plano, o botão
  * de treinar no centro, Dieta e Menu.
  */
 const ABAS = {
-  dashboard: { label: "Início", icon: house },
-  plan: { label: "Plano", icon: calendarDays },
-  diet: { label: "Dieta", icon: utensils },
+  dashboard: { label: t("Início"), icon: house },
+  plan: { label: t("Plano"), icon: calendarDays },
+  diet: { label: t("Dieta"), icon: utensils },
 } satisfies Record<string, { label: string; icon: IconNode }>;
 
 export function TabBar({ state, navigation }: BottomTabBarProps) {
@@ -110,7 +111,7 @@ export function TabBar({ state, navigation }: BottomTabBarProps) {
             onPress={aoTocarTreinar}
             accessibilityRole="button"
             accessibilityLabel={
-              naSessao ? "Terminar treino" : sessao ? "Voltar ao treino" : "Treinar"
+              naSessao ? t("Terminar treino") : sessao ? t("Voltar ao treino") : t("Treinar")
             }
             // O botão "gravando" é 12 px maior: sobe junto para a barra não crescer.
             // `active:` só no Pressable: numa View, o NativeWind faz ela capturar o toque.
@@ -130,7 +131,7 @@ export function TabBar({ state, navigation }: BottomTabBarProps) {
                 <View className="h-16 w-16 items-center justify-center rounded-full bg-[#01D798]">
                   <BrandSymbol width={36} escuro />
                 </View>
-                <Text className="text-[12px] font-bold text-primary">Treinar</Text>
+                <Text className="text-[12px] font-bold text-primary">{t("Treinar")}</Text>
               </>
             )}
           </Pressable>
@@ -138,11 +139,11 @@ export function TabBar({ state, navigation }: BottomTabBarProps) {
           <Pressable
             onPress={() => setMenuAberto(true)}
             accessibilityRole="button"
-            accessibilityLabel="Menu"
+            accessibilityLabel={t("Menu")}
             className="min-h-[60px] flex-1 items-center justify-center gap-1 px-1 py-2"
           >
             <Icon node={menu} color={apagada} />
-            <Text className="text-[12px] text-muted-foreground">Menu</Text>
+            <Text className="text-[12px] text-muted-foreground">{t("Menu")}</Text>
           </Pressable>
         </View>
       </View>

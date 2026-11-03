@@ -24,6 +24,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { t } from "@forja/app-core/i18n";
 
 const PALAVRA = "EXCLUIR";
 
@@ -36,7 +37,7 @@ export function DeleteAccountCard() {
     setExcluindo(true);
     try {
       await deleteAccount();
-      toast.success("Conta excluída", { description: "Seus dados foram apagados." });
+      toast.success(t("Conta excluída"), { description: t("Seus dados foram apagados.") });
       void navigate({ to: "/" });
     } catch (e) {
       toast.error("Não foi possível excluir a conta", { description: errorMessage(e) });
@@ -47,30 +48,32 @@ export function DeleteAccountCard() {
   return (
     <Card className="border-destructive/40">
       <CardHeader>
-        <CardTitle className="text-base">Excluir conta</CardTitle>
+        <CardTitle className="text-base">{t("Excluir conta")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         <p className="text-sm text-muted-foreground">
-          Apaga seus treinos, dieta, medidas, fotos e a conta. Não dá para desfazer — se quiser
-          guardar algo, exporte antes. Assinaturas feitas na App Store ou no Google Play são
-          canceladas na própria loja.
+          {t(
+            "Apaga seus treinos, dieta, medidas, fotos e a conta. Não dá para desfazer — se quiser guardar algo, exporte antes. Assinaturas feitas na App Store ou no Google Play são canceladas na própria loja.",
+          )}
         </p>
         <AlertDialog onOpenChange={(aberto) => !aberto && setTexto("")}>
           <AlertDialogTrigger asChild>
             <Button variant="outline" className="text-destructive">
               <Trash2 className="mr-1.5 size-4" aria-hidden />
-              Excluir minha conta
+              {t("Excluir minha conta")}
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Excluir a conta para sempre?</AlertDialogTitle>
+              <AlertDialogTitle>{t("Excluir a conta para sempre?")}</AlertDialogTitle>
               <AlertDialogDescription>
-                Digite {PALAVRA} para confirmar. Todos os seus dados serão apagados.
+                {t("Digite {{PALAVRA}} para confirmar. Todos os seus dados serão apagados.", {
+                  PALAVRA,
+                })}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <label className="block">
-              <span className="sr-only">Digite {PALAVRA} para confirmar</span>
+              <span className="sr-only">{t("Digite {{PALAVRA}} para confirmar", { PALAVRA })}</span>
               <Input
                 value={texto}
                 onChange={(e) => setTexto(e.target.value)}
@@ -79,13 +82,13 @@ export function DeleteAccountCard() {
               />
             </label>
             <AlertDialogFooter>
-              <AlertDialogCancel disabled={excluindo}>Cancelar</AlertDialogCancel>
+              <AlertDialogCancel disabled={excluindo}>{t("Cancelar")}</AlertDialogCancel>
               <Button
                 variant="destructive"
                 disabled={texto.trim().toUpperCase() !== PALAVRA || excluindo}
                 onClick={() => void excluir()}
               >
-                {excluindo ? "Excluindo…" : "Excluir para sempre"}
+                {excluindo ? t("Excluindo…") : t("Excluir para sempre")}
               </Button>
             </AlertDialogFooter>
           </AlertDialogContent>

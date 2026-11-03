@@ -43,6 +43,8 @@ import { ConfirmDialog } from "@/ui/dialog";
 import { Icon, type IconNode } from "@/ui/icon";
 import { PageHeader, PageScroll } from "@/ui/page-header";
 import { Text } from "@/ui/text";
+import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Progresso corporal — o `body.tsx` do web: o Resumo (a leitura: "estou indo
@@ -61,7 +63,12 @@ export default function BodyPage() {
 
   return (
     <PageScroll
-      header={<PageHeader title="Progresso" description="Onde você está e para onde está indo." />}
+      header={
+        <PageHeader
+          title={t("Progresso")}
+          description={t("Onde você está e para onde está indo.")}
+        />
+      }
       className="flex-1 bg-background"
       contentContainerClassName="pb-28"
       keyboardShouldPersistTaps="handled"
@@ -70,9 +77,9 @@ export default function BodyPage() {
         <View accessibilityRole="tablist" className="flex-row rounded-lg bg-muted p-1">
           {(
             [
-              ["overview", "Resumo", chartLine],
-              ["weight", "Peso", scale],
-              ["measures", "Medidas", ruler],
+              ["overview", t("Resumo"), chartLine],
+              ["weight", t("Peso"), scale],
+              ["measures", t("Medidas"), ruler],
             ] as const
           ).map(([v, rotulo, icone]) => (
             <Aba
@@ -164,7 +171,7 @@ function Campo({
   );
 }
 
-function WeightPanel({ avisar }: { avisar: (t: string, erro?: boolean) => void }) {
+function WeightPanel({ avisar }: { avisar: (item: string, erro?: boolean) => void }) {
   const qc = useQueryClient();
   const userId = useCurrentUserId();
   const texto = useColor("foreground");
@@ -186,7 +193,7 @@ function WeightPanel({ avisar }: { avisar: (t: string, erro?: boolean) => void }
   const save = useMutation({
     mutationFn: () => saveBodyWeight(userId, logDate, value),
     onSuccess: () => {
-      avisar("Peso registrado");
+      avisar(t("Peso registrado"));
       setWeight("");
       void qc.invalidateQueries({ queryKey: queryKeys.body.all });
     },
@@ -213,7 +220,7 @@ function WeightPanel({ avisar }: { avisar: (t: string, erro?: boolean) => void }
     <View className="gap-4">
       <Card>
         <View className="gap-3 p-4">
-          <Text className="text-base font-semibold">Registrar peso</Text>
+          <Text className="text-base font-semibold">{t("Registrar peso")}</Text>
           {ultimo ? (
             <View className="overflow-hidden rounded-2xl p-4" style={{ backgroundColor: VERDE }}>
               <View className="absolute -right-6 -top-8 h-24 w-24 rounded-full bg-white/20" />
@@ -221,29 +228,32 @@ function WeightPanel({ avisar }: { avisar: (t: string, erro?: boolean) => void }
                 className="text-xs font-bold uppercase tracking-wider"
                 style={{ color: `${TINTA}B3` }}
               >
-                Último registro
+                {t("Último registro")}
               </Text>
               <View className="mt-0.5 flex-row items-baseline gap-1.5">
                 <Text className="text-4xl font-extrabold tracking-tight" style={{ color: TINTA }}>
-                  {ultimo.peso.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}
+                  {ultimo.peso.toLocaleString(LOCALE, { maximumFractionDigits: 1 })}
                 </Text>
                 <Text className="text-sm font-semibold" style={{ color: `${TINTA}B3` }}>
-                  kg · {ultimo.label}
+                  {t("kg · {{label}}", { label: ultimo.label })}
                 </Text>
               </View>
             </View>
           ) : null}
-          <Campo rotulo="Data">
+          <Campo rotulo={t("Data")}>
             <DatePicker value={logDate} max={todayISO()} onChange={setLogDate} />
           </Campo>
-          <Campo rotulo="Peso (kg)" dica="Registrar de novo no mesmo dia atualiza o valor.">
+          <Campo
+            rotulo={t("Peso (kg)")}
+            dica={t("Registrar de novo no mesmo dia atualiza o valor.")}
+          >
             <TextInput
               value={weight}
               onChangeText={setWeight}
               keyboardType="decimal-pad"
-              placeholder="Ex: 75,4"
+              placeholder={t("Ex: 75,4")}
               placeholderTextColor={apagada}
-              accessibilityLabel="Peso (kg)"
+              accessibilityLabel={t("Peso (kg)")}
               onSubmitEditing={() => !invalid && save.mutate()}
               className={cn(
                 "h-10 rounded-md border bg-background px-3 font-sans text-base",
@@ -258,7 +268,7 @@ function WeightPanel({ avisar }: { avisar: (t: string, erro?: boolean) => void }
             loading={save.isPending}
             disabled={invalid}
           >
-            Adicionar peso
+            {t("Adicionar peso")}
           </Button>
         </View>
       </Card>
@@ -266,12 +276,14 @@ function WeightPanel({ avisar }: { avisar: (t: string, erro?: boolean) => void }
       <Card className="border border-primary/25">
         <View className="p-4">
           <View className="mb-3 flex-row items-baseline justify-between gap-2">
-            <Text className="text-base font-semibold">Histórico — {HISTORY_DAYS} dias</Text>
+            <Text className="text-base font-semibold">
+              {t("Histórico — {{HISTORY_DAYS}} dias", { HISTORY_DAYS })}
+            </Text>
             {delta !== null ? (
               <View className="rounded-full bg-primary/15 px-2.5 py-1">
                 <Text className="text-xs font-bold text-primary">
-                  tendência {delta >= 0 ? "+" : ""}
-                  {delta.toFixed(2)} kg
+                  {t("tendência")} {delta >= 0 ? "+" : ""}
+                  {t("{{v0}} kg", { v0: delta.toFixed(2) })}
                 </Text>
               </View>
             ) : null}
@@ -281,7 +293,7 @@ function WeightPanel({ avisar }: { avisar: (t: string, erro?: boolean) => void }
           ) : chart.length === 0 ? (
             <View className="h-72 items-center justify-center">
               <Text className="text-sm text-muted-foreground">
-                Registre seu primeiro peso para ver a tendência.
+                {t("Registre seu primeiro peso para ver a tendência.")}
               </Text>
             </View>
           ) : (
@@ -293,7 +305,7 @@ function WeightPanel({ avisar }: { avisar: (t: string, erro?: boolean) => void }
   );
 }
 
-function MeasurementsPanel({ avisar }: { avisar: (t: string, erro?: boolean) => void }) {
+function MeasurementsPanel({ avisar }: { avisar: (item: string, erro?: boolean) => void }) {
   const qc = useQueryClient();
   const userId = useCurrentUserId();
   const texto = useColor("foreground");
@@ -312,7 +324,7 @@ function MeasurementsPanel({ avisar }: { avisar: (t: string, erro?: boolean) => 
   const save = useMutation({
     mutationFn: () => saveMeasurements(userId, logDate, values),
     onSuccess: () => {
-      avisar("Medidas registradas");
+      avisar(t("Medidas registradas"));
       setValues({});
       void qc.invalidateQueries({ queryKey: queryKeys.body.measurements() });
     },
@@ -321,7 +333,7 @@ function MeasurementsPanel({ avisar }: { avisar: (t: string, erro?: boolean) => 
   const remove = useMutation({
     mutationFn: deleteMeasurement,
     onSuccess: () => {
-      avisar("Registro excluído");
+      avisar(t("Registro excluído"));
       void qc.invalidateQueries({ queryKey: queryKeys.body.measurements() });
     },
     onError: (e) => avisar(errorMessage(e), true),
@@ -335,8 +347,8 @@ function MeasurementsPanel({ avisar }: { avisar: (t: string, erro?: boolean) => 
     <View className="gap-4">
       <Card>
         <View className="gap-3 p-4">
-          <Text className="text-base font-semibold">Registrar medidas</Text>
-          <Campo rotulo="Data">
+          <Text className="text-base font-semibold">{t("Registrar medidas")}</Text>
+          <Campo rotulo={t("Data")}>
             <DatePicker value={logDate} max={todayISO()} onChange={setLogDate} />
           </Campo>
           {/* Agrupado por região: dá para preencher só o bloco que interessa. */}
@@ -352,7 +364,15 @@ function MeasurementsPanel({ avisar }: { avisar: (t: string, erro?: boolean) => 
                   <Campo
                     key={f.key}
                     rotulo={`${f.label} (${f.unit})`}
-                    dica={bad ? `Esperado entre ${f.min} e ${f.max} ${f.unit}.` : null}
+                    dica={
+                      bad
+                        ? t("Esperado entre {{min}} e {{max}} {{unit}}.", {
+                            min: f.min,
+                            max: f.max,
+                            unit: f.unit,
+                          })
+                        : null
+                    }
                   >
                     <TextInput
                       value={raw}
@@ -377,17 +397,17 @@ function MeasurementsPanel({ avisar }: { avisar: (t: string, erro?: boolean) => 
             loading={save.isPending}
             disabled={preenchidos.length === 0 || invalidos.length > 0}
           >
-            Salvar
+            {t("Salvar")}
           </Button>
           <Text className="text-xs text-muted-foreground">
-            Preencha só o que quiser acompanhar.
+            {t("Preencha só o que quiser acompanhar.")}
           </Text>
         </View>
       </Card>
 
       <Card>
         <View className="p-4">
-          <Text className="mb-3 text-base font-semibold">Tendências</Text>
+          <Text className="mb-3 text-base font-semibold">{t("Tendências")}</Text>
           {measurements.isPending ? (
             <View className="gap-3">
               {[0, 1].map((i) => (
@@ -396,7 +416,7 @@ function MeasurementsPanel({ avisar }: { avisar: (t: string, erro?: boolean) => 
             </View>
           ) : linhas.length === 0 ? (
             <Text className="py-8 text-center text-sm text-muted-foreground">
-              Registre suas medidas para ver a evolução.
+              {t("Registre suas medidas para ver a evolução.")}
             </Text>
           ) : (
             <View className="gap-3">
@@ -429,7 +449,7 @@ function MeasurementsPanel({ avisar }: { avisar: (t: string, erro?: boolean) => 
       </Card>
 
       <Card>
-        <Text className="px-4 pb-2 pt-4 text-base font-semibold">Histórico</Text>
+        <Text className="px-4 pb-2 pt-4 text-base font-semibold">{t("Histórico")}</Text>
         {measurements.isPending ? (
           <View className="gap-2 p-4">
             {[0, 1, 2].map((i) => (
@@ -437,7 +457,9 @@ function MeasurementsPanel({ avisar }: { avisar: (t: string, erro?: boolean) => 
             ))}
           </View>
         ) : linhas.length === 0 ? (
-          <Text className="py-8 text-center text-sm text-muted-foreground">Sem registros.</Text>
+          <Text className="py-8 text-center text-sm text-muted-foreground">
+            {t("Sem registros.")}
+          </Text>
         ) : (
           [...linhas].reverse().map((m, i) => {
             const resumo = MEASURE_FIELDS.filter((f) => m[f.key] != null)
@@ -458,7 +480,7 @@ function MeasurementsPanel({ avisar }: { avisar: (t: string, erro?: boolean) => 
                 </View>
                 <Pressable
                   onPress={() => setExcluindo({ id: String(m.id), date: data })}
-                  accessibilityLabel={`Excluir medidas de ${formatShortDate(data)}`}
+                  accessibilityLabel={t("Excluir medidas de {{v0}}", { v0: formatShortDate(data) })}
                   className="h-9 w-9 items-center justify-center rounded-full active:bg-elevated"
                 >
                   <Icon node={trash2} color={apagada} size={16} />
@@ -472,9 +494,9 @@ function MeasurementsPanel({ avisar }: { avisar: (t: string, erro?: boolean) => 
       <ConfirmDialog
         open={excluindo !== null}
         onClose={() => setExcluindo(null)}
-        title="Excluir este registro?"
-        description="As medidas desta data são removidas permanentemente."
-        confirmLabel="Excluir"
+        title={t("Excluir este registro?")}
+        description={t("As medidas desta data são removidas permanentemente.")}
+        confirmLabel={t("Excluir")}
         destructive
         onConfirm={() => excluindo && remove.mutate(excluindo.id)}
       />
@@ -483,12 +505,12 @@ function MeasurementsPanel({ avisar }: { avisar: (t: string, erro?: boolean) => 
 }
 
 const BMI_LABELS: Record<string, string> = {
-  underweight: "Abaixo do peso",
-  normal: "Faixa saudável",
-  overweight: "Acima do peso",
-  obese_1: "Obesidade grau I",
-  obese_2: "Obesidade grau II",
-  obese_3: "Obesidade grau III",
+  underweight: t("Abaixo do peso"),
+  normal: t("Faixa saudável"),
+  overweight: t("Acima do peso"),
+  obese_1: t("Obesidade grau I"),
+  obese_2: t("Obesidade grau II"),
+  obese_3: t("Obesidade grau III"),
 };
 
 /** O Resumo — o `progress/progress-overview.tsx` do web. */
@@ -557,32 +579,32 @@ function ProgressOverview() {
       <View className="flex-row flex-wrap gap-3">
         <StatCard
           icon={scale}
-          label="Peso atual"
+          label={t("Peso atual")}
           destaque
           value={pesoAtual !== undefined ? `${pesoAtual.toFixed(1)}` : "—"}
           unit="kg"
         />
         <StatCard
           icon={ritmo !== null && ritmo < 0 ? trendingDown : trendingUp}
-          label="Ritmo"
+          label={t("Ritmo")}
           value={ritmo !== null ? `${ritmo > 0 ? "+" : ""}${ritmo.toFixed(2)}` : "—"}
           unit="kg/sem"
-          hint={ritmo === null ? "4 pesagens" : undefined}
+          hint={ritmo === null ? t("4 pesagens") : undefined}
         />
         <StatCard
           icon={activity}
           label="IMC"
           value={imc ? String(imc.bmi) : "—"}
-          hint={imc ? BMI_LABELS[imc.category] : "informe a altura"}
+          hint={imc ? BMI_LABELS[imc.category] : t("informe a altura")}
         />
         <StatCard
           icon={flame}
-          label="Gordura"
+          label={t("Gordura")}
           value={gordura !== null ? gordura.toFixed(1) : "—"}
           unit="%"
           hint={
             gordura === null
-              ? "meça cintura e pescoço"
+              ? t("meça cintura e pescoço")
               : gorduraEhEstimativa
                 ? "estimativa"
                 : "medido"
@@ -592,23 +614,23 @@ function ProgressOverview() {
 
       {imc ? (
         <Text className="px-1 text-xs leading-relaxed text-muted-foreground">
-          O IMC não distingue músculo de gordura — quem treina há anos costuma aparecer acima da
-          faixa mesmo com pouca gordura. As medidas de circunferência dizem mais sobre a sua
-          composição do que o peso sozinho.
+          {t(
+            "O IMC não distingue músculo de gordura — quem treina há anos costuma aparecer acima da faixa mesmo com pouca gordura. As medidas de circunferência dizem mais sobre a sua composição do que o peso sozinho.",
+          )}
         </Text>
       ) : null}
       {gorduraEhEstimativa ? (
         <Text className="px-1 text-xs leading-relaxed text-muted-foreground">
           O percentual de gordura é estimado a partir das circunferências, com margem de 3 a 4
           pontos. Medido sempre do mesmo jeito, o erro é constante — então a{" "}
-          <Text className="text-xs italic">variação</Text> é confiável mesmo que o valor absoluto
-          não seja.
+          <Text className="text-xs italic">{t("variação")}</Text> é confiável mesmo que o valor
+          absoluto não seja.
         </Text>
       ) : null}
 
       {metaPeso !== null && pesoAtual !== undefined && serie[0] ? (
         <GoalCard
-          label={metaPeso < pesoAtual ? "Chegar ao peso desejado" : "Ganhar até a meta"}
+          label={metaPeso < pesoAtual ? t("Chegar ao peso desejado") : t("Ganhar até a meta")}
           start={serie[0].weightKg}
           current={pesoAtual}
           target={metaPeso}
@@ -622,7 +644,7 @@ function ProgressOverview() {
           <View className="mb-2 flex-row items-center gap-1.5 px-1">
             <Icon node={target} color={primaria} size={14} />
             <Text className="text-xs font-bold uppercase tracking-wider text-primary">
-              Suas metas
+              {t("Suas metas")}
             </Text>
           </View>
           <Card>
@@ -654,10 +676,11 @@ function ProgressOverview() {
             <View className="h-11 w-11 items-center justify-center rounded-xl bg-primary">
               <Icon node={ruler} color={branco} size={20} />
             </View>
-            <Text className="mt-2 text-sm font-medium">Registre suas medidas</Text>
+            <Text className="mt-2 text-sm font-medium">{t("Registre suas medidas")}</Text>
             <Text className="mt-1 text-center text-xs text-muted-foreground">
-              Cintura e pescoço destravam a estimativa de gordura corporal — e a cintura é o número
-              que melhor acompanha a mudança de composição.
+              {t(
+                "Cintura e pescoço destravam a estimativa de gordura corporal — e a cintura é o número que melhor acompanha a mudança de composição.",
+              )}
             </Text>
           </View>
         </Card>
@@ -665,7 +688,7 @@ function ProgressOverview() {
 
       <Button variant="ghost" className="w-full" onPress={() => router.push("/plan")}>
         <Text className="text-sm font-semibold text-primary">
-          Ver progressão de cargas nos treinos
+          {t("Ver progressão de cargas nos treinos")}
         </Text>
       </Button>
     </View>
@@ -773,11 +796,16 @@ function GoalCard({
           <View className="min-w-0 flex-1">
             <Text className="font-semibold leading-tight">{label}</Text>
             <Text className="mt-0.5 text-sm text-muted-foreground">
-              {start.toFixed(1)} → {current.toFixed(1)} de {alvo.toFixed(1)} {unit}
+              {t("{{v0}} → {{v1}} de {{v2}} {{unit}}", {
+                v0: start.toFixed(1),
+                v1: current.toFixed(1),
+                v2: alvo.toFixed(1),
+                unit,
+              })}
             </Text>
           </View>
           {progresso.achieved ? (
-            <Badge>Atingida</Badge>
+            <Badge>{t("Atingida")}</Badge>
           ) : (
             <Text className="text-lg font-bold">{Math.round(pct)}%</Text>
           )}

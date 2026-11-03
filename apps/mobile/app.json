@@ -13,7 +13,7 @@
     },
     "android": {
       "package": "com.habitualfit.myapp",
-      "versionCode": 4,
+      "versionCode": 5,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#020306"
@@ -99,6 +99,10 @@
         "projectId": "38569e1c-6410-4cb1-9d7e-5e96a30847a0"
       }
     },
-    "owner": "zubioli"
+    "owner": "zubioli",
+    "locales": {
+      "en": "./locales/en.json",
+      "es": "./locales/es.json"
+    }
   }
 }

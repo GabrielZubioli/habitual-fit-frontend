@@ -12,6 +12,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { BrandSymbol } from "./brand-symbol";
 import { Glow } from "./glow";
+import { t } from "@forja/app-core/i18n";
 
 // A tela nativa (logo parada, fundo escuro) fica até esta camada estar
 // desenhada por cima — a troca não pisca.
@@ -84,7 +85,7 @@ export function Abertura() {
       <Animated.View style={estiloLogo}>
         <BrandSymbol width={LOGO} />
       </Animated.View>
-      <Animated.Text style={[styles.nome, estiloNome]}>Habitual Fit</Animated.Text>
+      <Animated.Text style={[styles.nome, estiloNome]}>{t("Habitual Fit")}</Animated.Text>
     </Animated.View>
   );
 }

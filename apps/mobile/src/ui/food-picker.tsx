@@ -37,6 +37,8 @@ import {
   SearchField,
 } from "./search-dialog";
 import { Text } from "./text";
+import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Seletor de alimento com quantidade — o `pickers/food-picker.tsx` do web.
@@ -47,15 +49,15 @@ import { Text } from "./text";
 const QUICK_GRAMS = [50, 100, 150, 200, 300];
 const PORCOES = [0.5, 1, 1.5, 2, 3];
 
-const kcalFmt = (n: number) => Math.round(n).toLocaleString("pt-BR");
-const gFmt = (n: number) => n.toLocaleString("pt-BR", { maximumFractionDigits: n < 10 ? 1 : 0 });
-const porcaoFmt = (n: number) => (n === 0.5 ? "½" : n.toLocaleString("pt-BR"));
+const kcalFmt = (n: number) => Math.round(n).toLocaleString(LOCALE);
+const gFmt = (n: number) => n.toLocaleString(LOCALE, { maximumFractionDigits: n < 10 ? 1 : 0 });
+const porcaoFmt = (n: number) => (n === 0.5 ? "½" : n.toLocaleString(LOCALE));
 
 export function FoodPicker({
   open,
   onClose,
-  title = "Adicionar alimento",
-  confirmLabel = "Adicionar alimento",
+  title = t("Adicionar alimento"),
+  confirmLabel = t("Adicionar alimento"),
   defaultGrams = 100,
   onPick,
   onPickRecipe,
@@ -139,9 +141,9 @@ export function FoodPicker({
   const lista = !selected && !receita;
   const rotuloCategoria =
     categoria === null
-      ? "Todas as categorias"
+      ? t("Todas as categorias")
       : categoria === "minhas"
-        ? "Minhas receitas"
+        ? t("Minhas receitas")
         : `${recipeCategoryOf(categoria)?.emoji ?? ""} ${recipeCategoryOf(categoria)?.label ?? ""}`;
 
   return (
@@ -149,7 +151,7 @@ export function FoodPicker({
       open={open}
       onClose={onClose}
       title={receita?.name ?? title}
-      description={selected ? "Escolha a quantidade e confira os valores." : undefined}
+      description={selected ? t("Escolha a quantidade e confira os valores.") : undefined}
       top={
         lista ? (
           <>
@@ -172,7 +174,7 @@ export function FoodPicker({
                         aba === a ? "text-primary-foreground" : "text-muted-foreground",
                       )}
                     >
-                      {a === "alimentos" ? "Alimentos" : "Receitas"}
+                      {a === "alimentos" ? t("Alimentos") : t("Receitas")}
                     </Text>
                   </Pressable>
                 ))}
@@ -181,13 +183,15 @@ export function FoodPicker({
             <SearchField
               value={term}
               onChange={setTerm}
-              placeholder={aba === "alimentos" ? "Buscar alimento pelo nome…" : "Buscar receita…"}
+              placeholder={
+                aba === "alimentos" ? t("Buscar alimento pelo nome…") : t("Buscar receita…")
+              }
               loading={foods.isFetching || receitas.isFetching}
             />
             {aba === "receitas" ? (
               <Pressable
                 onPress={() => setEscolhendoCategoria(true)}
-                accessibilityLabel="Categoria"
+                accessibilityLabel={t("Categoria")}
                 className={cn(
                   "h-11 flex-row items-center justify-between rounded-2xl border bg-card px-4",
                   categoria ? "border-primary/50" : "border-transparent",
@@ -228,23 +232,30 @@ export function FoodPicker({
           <ResultsLoading />
         ) : foods.isError ? (
           <ErrorState
-            message="Não foi possível buscar os alimentos. Verifique a conexão e tente de novo."
+            message={t(
+              "Não foi possível buscar os alimentos. Verifique a conexão e tente de novo.",
+            )}
             onRetry={() => void foods.refetch()}
             compact
           />
         ) : foods.data.length === 0 ? (
           <ResultsEmpty>
             {debouncedTerm
-              ? `Nenhum alimento encontrado para “${debouncedTerm}”.\nTente outro nome ou uma palavra mais curta.`
-              : "Nenhum alimento no catálogo."}
+              ? t(
+                  "Nenhum alimento encontrado para “{{debouncedTerm}}”.\nTente outro nome ou uma palavra mais curta.",
+                  { debouncedTerm },
+                )
+              : t("Nenhum alimento no catálogo.")}
           </ResultsEmpty>
         ) : (
           <View className={cn(foods.isPlaceholderData && "opacity-60")}>
             <Text className="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               {!debouncedTerm
-                ? "Catálogo de alimentos"
+                ? t("Catálogo de alimentos")
                 : foods.data.length >= FOOD_SEARCH_LIMIT
-                  ? `Primeiros ${FOOD_SEARCH_LIMIT} resultados — refine a busca`
+                  ? t("Primeiros {{FOOD_SEARCH_LIMIT}} resultados — refine a busca", {
+                      FOOD_SEARCH_LIMIT,
+                    })
                   : `${foods.data.length} ${foods.data.length === 1 ? "resultado" : "resultados"}`}
             </Text>
             <View className="gap-2">
@@ -253,7 +264,11 @@ export function FoodPicker({
                   key={f.id}
                   thumb={<FoodThumb food={f} />}
                   title={f.name}
-                  detail={`${kcalFmt(f.kcal)} kcal em ${gFmt(f.servingSizeG)} g${f.brand ? ` · ${f.brand}` : ""}`}
+                  detail={t("{{v0}} kcal em {{v1}} g{{v2}}", {
+                    v0: kcalFmt(f.kcal),
+                    v1: gFmt(f.servingSizeG),
+                    v2: f.brand ? ` · ${f.brand}` : "",
+                  })}
                   aside={<Icon node={chevronRight} color={apagada} size={20} />}
                   onPress={() => setSelected(f)}
                 >
@@ -267,12 +282,12 @@ export function FoodPicker({
         <ResultsLoading />
       ) : receitas.isError ? (
         <ErrorState
-          message="Falha ao carregar receitas."
+          message={t("Falha ao carregar receitas.")}
           onRetry={() => void receitas.refetch()}
           compact
         />
       ) : receitasFiltradas.length === 0 ? (
-        <ResultsEmpty>Nenhuma receita encontrada.</ResultsEmpty>
+        <ResultsEmpty>{t("Nenhuma receita encontrada.")}</ResultsEmpty>
       ) : (
         <View className="gap-2">
           {receitasFiltradas.map((r) => (
@@ -280,9 +295,12 @@ export function FoodPicker({
               key={r.id}
               thumb={<RecipeThumb recipe={r} />}
               title={r.name}
-              detail={`${kcalFmt(r.perServing.kcal)} kcal · P ${Math.round(r.perServing.proteinG)} g${
-                r.prepMinutes ? ` · ${r.prepMinutes} min` : ""
-              }${!r.isSystem ? " · sua" : ""}`}
+              detail={t("{{v0}} kcal · P {{v1}} g{{v2}}{{v3}}", {
+                v0: kcalFmt(r.perServing.kcal),
+                v1: Math.round(r.perServing.proteinG),
+                v2: r.prepMinutes ? ` · ${r.prepMinutes} min` : "",
+                v3: !r.isSystem ? " · sua" : "",
+              })}
               aside={<Icon node={chevronRight} color={apagada} size={20} />}
               onPress={() => setReceita(r)}
             />
@@ -293,15 +311,15 @@ export function FoodPicker({
       <MenuSheet
         open={escolhendoCategoria}
         onClose={() => setEscolhendoCategoria(false)}
-        title="Categoria"
+        title={t("Categoria")}
         corIcone={primaria}
         opcoes={[
-          { label: "Todas as categorias", onPress: () => setCategoria(null) },
+          { label: t("Todas as categorias"), onPress: () => setCategoria(null) },
           ...RECIPE_CATEGORIES.map((c) => ({
             label: `${c.emoji} ${c.label}`,
             onPress: () => setCategoria(c.key),
           })),
-          { label: "Minhas receitas", onPress: () => setCategoria("minhas") },
+          { label: t("Minhas receitas"), onPress: () => setCategoria("minhas") },
         ]}
       />
     </SearchDialog>
@@ -364,7 +382,7 @@ function MacrosLinha({ food }: { food: FoodOption }) {
       {macros.map(([rotulo, v]) => (
         <View key={rotulo} className="rounded-full bg-muted px-2 py-0.5">
           <Text className="text-[11px] font-medium text-muted-foreground">
-            {rotulo} {gFmt(v)} g
+            {t("{{rotulo}} {{v1}} g", { rotulo, v1: gFmt(v) })}
           </Text>
         </View>
       ))}
@@ -399,14 +417,22 @@ function EscolherGramas({
     setGrams(String(Math.min(10_000, Math.max(1, (invalid ? 0 : valor) + delta))));
   const atalhos = [
     ...(food.measure && food.measureG
-      ? [{ g: food.measureG, rotulo: `1 ${food.measure} · ${gFmt(food.measureG)} g` }]
+      ? [
+          {
+            g: food.measureG,
+            rotulo: t("1 {{measure}} · {{v1}} g", {
+              measure: food.measure,
+              v1: gFmt(food.measureG),
+            }),
+          },
+        ]
       : []),
-    ...QUICK_GRAMS.map((g) => ({ g, rotulo: `${g} g` })),
+    ...QUICK_GRAMS.map((g) => ({ g, rotulo: t("{{g}} g", { g }) })),
   ];
   const valores: [string, number | null][] = [
-    ["Proteína", food.proteinG],
-    ["Carbo", food.carbsG],
-    ["Gordura", food.fatG],
+    [t("Proteína"), food.proteinG],
+    [t("Carbo"), food.carbsG],
+    [t("Gordura"), food.fatG],
   ];
 
   return (
@@ -416,22 +442,22 @@ function EscolherGramas({
         <View className="min-w-0 flex-1">
           <Text className="font-bold leading-snug">{food.name}</Text>
           <Text className="mt-0.5 text-xs text-muted-foreground">
-            {kcalFmt(food.kcal)} kcal em {gFmt(food.servingSizeG)} g
+            {t("{{v0}} kcal em {{v1}} g", { v0: kcalFmt(food.kcal), v1: gFmt(food.servingSizeG) })}
             {food.brand ? ` · ${food.brand}` : ""}
           </Text>
         </View>
         <Pressable onPress={onBack} className="rounded-full px-3 py-1.5 active:bg-primary/10">
-          <Text className="text-xs font-semibold text-primary">Trocar</Text>
+          <Text className="text-xs font-semibold text-primary">{t("Trocar")}</Text>
         </Pressable>
       </View>
 
       <View className="gap-2.5">
-        <Text className="text-sm font-medium">Quantidade</Text>
+        <Text className="text-sm font-medium">{t("Quantidade")}</Text>
         <View className="flex-row items-center gap-2">
           <Pressable
             onPress={() => passo(-10)}
             disabled={invalid || valor <= 1}
-            accessibilityLabel="Diminuir 10 g"
+            accessibilityLabel={t("Diminuir 10 g")}
             className={cn(
               "h-14 w-14 items-center justify-center rounded-2xl bg-card active:bg-elevated",
               (invalid || valor <= 1) && "opacity-40",
@@ -444,7 +470,7 @@ function EscolherGramas({
               value={grams}
               onChangeText={setGrams}
               keyboardType="decimal-pad"
-              accessibilityLabel="Quantidade em gramas"
+              accessibilityLabel={t("Quantidade em gramas")}
               onSubmitEditing={onConfirm}
               className={cn(
                 "h-14 rounded-2xl border bg-background pr-10 text-center font-sans text-2xl font-bold",
@@ -452,19 +478,23 @@ function EscolherGramas({
               )}
               style={{ color: texto }}
             />
-            <Text className="absolute right-4 text-sm font-semibold text-muted-foreground">g</Text>
+            <Text className="absolute right-4 text-sm font-semibold text-muted-foreground">
+              {t("g")}
+            </Text>
           </View>
           <Pressable
             onPress={() => passo(10)}
             disabled={!invalid && valor >= 10_000}
-            accessibilityLabel="Aumentar 10 g"
+            accessibilityLabel={t("Aumentar 10 g")}
             className="h-14 w-14 items-center justify-center rounded-2xl bg-card active:bg-elevated"
           >
             <Icon node={plus} color={texto} size={20} />
           </Pressable>
         </View>
         {invalid ? (
-          <Text className="text-xs text-destructive">Informe um valor entre 1 e 10.000 g.</Text>
+          <Text className="text-xs text-destructive">
+            {t("Informe um valor entre 1 e 10.000 g.")}
+          </Text>
         ) : null}
         <View className="flex-row flex-wrap gap-1.5">
           {atalhos.map((a) => (
@@ -489,10 +519,10 @@ function EscolherGramas({
 
       <View className="rounded-2xl bg-card p-4">
         <View className="flex-row items-baseline justify-between gap-3">
-          <Text className="text-sm text-muted-foreground">Nesta quantidade</Text>
+          <Text className="text-sm text-muted-foreground">{t("Nesta quantidade")}</Text>
           <Text className="text-2xl font-extrabold text-primary">
             {invalid ? "—" : kcalFmt(food.kcal * fator)}
-            <Text className="text-sm font-semibold text-primary"> kcal</Text>
+            <Text className="text-sm font-semibold text-primary"> {t("kcal")}</Text>
           </Text>
         </View>
         <View className="mt-3 flex-row gap-2">
@@ -503,20 +533,22 @@ function EscolherGramas({
             >
               <Text className="text-[11px] text-muted-foreground">{rotulo}</Text>
               <Text className="font-bold">
-                {v === null || invalid ? "—" : `${gFmt(v * fator)} g`}
+                {v === null || invalid ? "—" : t("{{v0}} g", { v0: gFmt(v * fator) })}
               </Text>
             </View>
           ))}
         </View>
         {valores.some(([, v]) => v === null) ? (
-          <Text className="mt-2 text-[11px] text-muted-foreground">— sem dado no catálogo</Text>
+          <Text className="mt-2 text-[11px] text-muted-foreground">
+            {t("— sem dado no catálogo")}
+          </Text>
         ) : null}
       </View>
 
       <View className="flex-row gap-2 border-t border-border/60 pt-3">
         <Button variant="outline" className="h-12 rounded-xl" onPress={onBack}>
           <Icon node={arrowLeft} color={texto} size={16} />
-          <Text className="text-sm font-medium">Voltar</Text>
+          <Text className="text-sm font-medium">{t("Voltar")}</Text>
         </Button>
         <Button
           className="h-12 flex-1 rounded-xl"
@@ -554,8 +586,11 @@ function EscolherPorcoes({
   return (
     <View className="gap-4">
       <Text className="text-sm text-muted-foreground">
-        {recipeCategoryOf(receita.category)?.label ?? "Sua receita"} · rende {receita.servings}{" "}
-        {receita.servings === 1 ? "porção" : "porções"}
+        {t("{{v0}} · rende {{servings}}", {
+          v0: recipeCategoryOf(receita.category)?.label ?? "Sua receita",
+          servings: receita.servings,
+        })}
+        {receita.servings === 1 ? t("porção") : t("porções")}
         {receita.prepMinutes ? ` · ${receita.prepMinutes} min` : ""}
       </Text>
 
@@ -563,7 +598,7 @@ function EscolherPorcoes({
         <Pressable
           onPress={() => setPorcoes(PORCOES[Math.max(0, idx - 1)]!)}
           disabled={idx <= 0}
-          accessibilityLabel="Menos"
+          accessibilityLabel={t("Menos")}
           className={cn(
             "h-11 w-11 items-center justify-center rounded-xl bg-elevated",
             idx <= 0 && "opacity-40",
@@ -574,13 +609,13 @@ function EscolherPorcoes({
         <View className="items-center">
           <Text className="text-2xl font-extrabold">{porcaoFmt(porcoes)}</Text>
           <Text className="text-xs text-muted-foreground">
-            {porcoes <= 1 ? "porção" : "porções"}
+            {porcoes <= 1 ? t("porção") : t("porções")}
           </Text>
         </View>
         <Pressable
           onPress={() => setPorcoes(PORCOES[Math.min(PORCOES.length - 1, idx + 1)]!)}
           disabled={idx >= PORCOES.length - 1}
-          accessibilityLabel="Mais"
+          accessibilityLabel={t("Mais")}
           className={cn(
             "h-11 w-11 items-center justify-center rounded-xl bg-elevated",
             idx >= PORCOES.length - 1 && "opacity-40",
@@ -594,9 +629,9 @@ function EscolherPorcoes({
         {(
           [
             ["kcal", m.kcal * porcoes],
-            ["Prot.", m.proteinG * porcoes],
-            ["Carbo", m.carbsG * porcoes],
-            ["Gord.", m.fatG * porcoes],
+            [t("Prot."), m.proteinG * porcoes],
+            [t("Carbo"), m.carbsG * porcoes],
+            [t("Gord."), m.fatG * porcoes],
           ] as const
         ).map(([rotulo, valor]) => (
           <View key={rotulo} className="flex-1 items-center rounded-2xl bg-card px-1 py-2.5">
@@ -607,7 +642,7 @@ function EscolherPorcoes({
       </View>
 
       <View>
-        <Text className="mb-2 text-sm font-semibold">Ingredientes</Text>
+        <Text className="mb-2 text-sm font-semibold">{t("Ingredientes")}</Text>
         <View className="rounded-2xl bg-card">
           {receita.items.map((i, k) => (
             <View
@@ -618,7 +653,9 @@ function EscolherPorcoes({
               )}
             >
               <Text className="min-w-0 flex-1 text-sm">{i.name}</Text>
-              <Text className="text-sm text-muted-foreground">{Math.round(i.grams * fator)} g</Text>
+              <Text className="text-sm text-muted-foreground">
+                {t("{{v0}} g", { v0: Math.round(i.grams * fator) })}
+              </Text>
             </View>
           ))}
         </View>
@@ -626,7 +663,7 @@ function EscolherPorcoes({
 
       {receita.instructions ? (
         <View>
-          <Text className="mb-1 text-sm font-semibold">Modo de preparo</Text>
+          <Text className="mb-1 text-sm font-semibold">{t("Modo de preparo")}</Text>
           <Text className="text-sm leading-relaxed text-muted-foreground">
             {receita.instructions}
           </Text>
@@ -636,10 +673,10 @@ function EscolherPorcoes({
       <View className="flex-row gap-2 pt-2">
         <Button variant="outline" className="h-12" onPress={onBack}>
           <Icon node={arrowLeft} color={texto} size={16} />
-          <Text className="text-sm font-medium">Voltar</Text>
+          <Text className="text-sm font-medium">{t("Voltar")}</Text>
         </Button>
         <Button className="h-12 flex-1" onPress={onConfirm} loading={isPending}>
-          Adicionar receita
+          {t("Adicionar receita")}
         </Button>
       </View>
     </View>

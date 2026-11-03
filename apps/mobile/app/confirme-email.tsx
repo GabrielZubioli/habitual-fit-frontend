@@ -8,6 +8,7 @@ import { useColor } from "@/theme/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { Text } from "@/ui/text";
+import { t, tRich } from "@forja/app-core/i18n";
 
 /** O `routes/confirme-email.tsx` do web: o e-mail vem por parâmetro para poder reenviar. */
 export default function ConfirmeEmail() {
@@ -28,7 +29,7 @@ export default function ConfirmeEmail() {
     setResending(false);
     if (error) return setMensagem({ ok: false, texto: errorMessage(error) });
     setSentAt(Date.now());
-    setMensagem({ ok: true, texto: "E-mail reenviado." });
+    setMensagem({ ok: true, texto: t("E-mail reenviado.") });
   };
 
   // O reenvio tem limite no Supabase: um minuto entre tentativas.
@@ -39,11 +40,19 @@ export default function ConfirmeEmail() {
       <View className="h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
         <Icon node={mailCheck} color={primaria} size={32} />
       </View>
-      <Text className="mt-6 text-2xl font-bold tracking-tight">Confirme seu e-mail</Text>
+      <Text className="mt-6 text-2xl font-bold tracking-tight">{t("Confirme seu e-mail")}</Text>
       <Text className="mt-3 text-center text-sm leading-relaxed text-muted-foreground">
-        Enviamos um link para{" "}
-        {email ? <Text className="text-sm font-medium">{email}</Text> : "o seu e-mail"}. Toque no
-        botão do e-mail para confirmar sua conta e montar seu plano.
+        {email
+          ? tRich(
+              t(
+                "Enviamos um link para <0>{{email}}</0>. Toque no botão do e-mail para confirmar sua conta e montar seu plano.",
+              ),
+              [(s) => <Text className="text-sm font-medium">{s}</Text>],
+              { email },
+            )
+          : t(
+              "Enviamos um link para o seu e-mail. Toque no botão do e-mail para confirmar sua conta e montar seu plano.",
+            )}
       </Text>
 
       <View className="mt-8 w-full gap-3">
@@ -55,7 +64,7 @@ export default function ConfirmeEmail() {
             loading={resending}
             disabled={!podeReenviar}
           >
-            {podeReenviar ? "Reenviar e-mail" : "Aguarde um minuto para reenviar"}
+            {podeReenviar ? t("Reenviar e-mail") : t("Aguarde um minuto para reenviar")}
           </Button>
         ) : null}
         <Button
@@ -63,7 +72,7 @@ export default function ConfirmeEmail() {
           className="h-12 w-full rounded-xl"
           onPress={() => router.replace("/auth")}
         >
-          Já confirmei — entrar
+          {t("Já confirmei — entrar")}
         </Button>
       </View>
 
@@ -75,7 +84,7 @@ export default function ConfirmeEmail() {
         </Text>
       ) : null}
       <Text className="mt-6 text-xs text-muted-foreground">
-        Não chegou? Verifique a caixa de spam ou de promoções.
+        {t("Não chegou? Verifique a caixa de spam ou de promoções.")}
       </Text>
     </View>
   );

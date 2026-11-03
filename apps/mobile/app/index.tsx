@@ -1,16 +1,9 @@
+import { WEEKDAY_LABELS } from "@forja/app-core/lib/labels";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, useWindowDimensions, View } from "react-native";
-import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
-import { StatusBar } from "expo-status-bar";
+import { Pressable, ScrollView, View } from "react-native";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { __iconNode as arrowLeft } from "lucide-react/dist/esm/icons/arrow-left.js";
-import { __iconNode as arrowRight } from "lucide-react/dist/esm/icons/arrow-right.js";
-import { __iconNode as clock } from "lucide-react/dist/esm/icons/clock.js";
-import { __iconNode as dumbbell } from "lucide-react/dist/esm/icons/dumbbell.js";
-import { __iconNode as shieldCheck } from "lucide-react/dist/esm/icons/shield-check.js";
-import { __iconNode as sliders } from "lucide-react/dist/esm/icons/sliders-horizontal.js";
-import { __iconNode as utensils } from "lucide-react/dist/esm/icons/utensils-crossed.js";
 import { answersSchema, type Answers } from "@forja/app-core/lib/onboarding/schema";
 import { visibleSteps } from "@forja/app-core/lib/onboarding/steps";
 import {
@@ -34,15 +27,13 @@ import {
   weightGoalFeedback,
 } from "@forja/app-core/lib/onboarding/options";
 import { hasCompletedOnboarding } from "@forja/app-core/data/onboarding";
-import { WEEKDAY_LABELS, type Weekday } from "@forja/domain";
+import { type Weekday } from "@forja/domain";
 import { supabase } from "@/lib/supabase";
 import { loadDraft, loadStep, saveDraft, saveStep } from "@/lib/onboarding-storage";
 import { cn } from "@/lib/cn";
 import { useColor } from "@/theme/theme";
 import { BrandSymbol } from "@/ui/brand-symbol";
-import { Glow } from "@/ui/glow";
-import { Icon, type IconNode } from "@/ui/icon";
-import { Punho } from "@/ui/punho";
+import { Icon } from "@/ui/icon";
 import { Text } from "@/ui/text";
 import {
   ChipGroup,
@@ -55,6 +46,7 @@ import {
   Stepper,
   WeekdayPicker,
 } from "@/ui/onboarding";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * A raiz do app: boas-vindas e, para quem já tem conta, o questionário —
@@ -80,7 +72,7 @@ export default function OnboardingQuiz() {
   const [stepIndex, setStepIndex] = useState(0);
   const [hydrated, setHydrated] = useState(false);
   /** `null` enquanto confere a sessão; sem conta, só as boas-vindas. */
-  const [logado, setLogado] = useState<boolean | null>(null);
+  const [logado, setLogado] = useState(false);
 
   useEffect(() => {
     void Promise.all([loadDraft(), loadStep()]).then(([a, s]) => {
@@ -95,14 +87,14 @@ export default function OnboardingQuiz() {
   useEffect(() => {
     void (async () => {
       const { data } = await supabase.auth.getSession();
-      if (!data.session) return setLogado(false);
+      if (!data.session) return router.replace("/auth");
       if (await hasCompletedOnboarding()) return router.replace("/dashboard");
       setLogado(true);
     })();
   }, []);
 
   const steps = useMemo(() => visibleSteps(answers), [answers]);
-  const safeIndex = logado === false ? 0 : Math.min(stepIndex, steps.length - 1);
+  const safeIndex = Math.min(stepIndex, steps.length - 1);
   const step = steps[safeIndex];
 
   const update = useCallback((patch: Partial<Answers>) => {
@@ -139,9 +131,7 @@ export default function OnboardingQuiz() {
 
   const textoForte = useColor("foreground");
 
-  if (!hydrated || !step || logado === null) return <QuizSkeleton />;
-
-  if (step.id === "welcome") return <Welcome onStart={next} logado={logado} />;
+  if (!hydrated || !step || !logado) return <QuizSkeleton />;
 
   const level = derivedLevel(answers);
   const objective = derivedObjective(answers);
@@ -158,7 +148,7 @@ export default function OnboardingQuiz() {
           {safeIndex > 0 ? (
             <Pressable
               onPress={back}
-              accessibilityLabel="Voltar para a pergunta anterior"
+              accessibilityLabel={t("Voltar para a pergunta anterior")}
               className="h-10 w-10 items-center justify-center rounded-full active:bg-accent"
             >
               <Icon node={arrowLeft} color={textoForte} size={20} />
@@ -175,8 +165,8 @@ export default function OnboardingQuiz() {
         <View className="flex-1">
           {step.id === "objective" && (
             <Question
-              title="Qual é o seu objetivo?"
-              subtitle="Ele define o treino e as repetições do seu plano."
+              title={t("Qual é o seu objetivo?")}
+              subtitle={t("Ele define o treino e as repetições do seu plano.")}
             >
               <ChoiceList
                 options={OBJECTIVE_OPTIONS}
@@ -188,8 +178,8 @@ export default function OnboardingQuiz() {
 
           {step.id === "sex" && (
             <Question
-              title="Com qual gênero você se identifica?"
-              subtitle="Usamos apenas para calcular seu gasto energético."
+              title={t("Com qual gênero você se identifica?")}
+              subtitle={t("Usamos apenas para calcular seu gasto energético.")}
             >
               <ChoiceList
                 options={SEX_OPTIONS}
@@ -200,7 +190,7 @@ export default function OnboardingQuiz() {
           )}
 
           {step.id === "experience" && (
-            <Question title="Qual sua experiência com musculação?">
+            <Question title={t("Qual sua experiência com musculação?")}>
               <ChoiceList
                 options={EXPERIENCE_OPTIONS}
                 selected={answers.experience}
@@ -210,7 +200,7 @@ export default function OnboardingQuiz() {
           )}
 
           {step.id === "consistency" && (
-            <Question title="Como está sua rotina de treino hoje?">
+            <Question title={t("Como está sua rotina de treino hoje?")}>
               <ChoiceList
                 options={CONSISTENCY_OPTIONS}
                 selected={answers.consistency}
@@ -220,13 +210,13 @@ export default function OnboardingQuiz() {
           )}
 
           {step.id === "age" && (
-            <Question title="Quantos anos você tem?">
+            <Question title={t("Quantos anos você tem?")}>
               <NumberField
                 value={answers.age ?? RANGES.age.default}
                 min={RANGES.age.min}
                 max={RANGES.age.max}
                 unit="anos"
-                label="Idade"
+                label={t("Idade")}
                 onChange={(v) => update({ age: v })}
               />
               <NextButton
@@ -239,13 +229,13 @@ export default function OnboardingQuiz() {
           )}
 
           {step.id === "height" && (
-            <Question title="Qual sua altura?">
+            <Question title={t("Qual sua altura?")}>
               <NumberField
                 value={answers.heightCm ?? RANGES.heightCm.default}
                 min={RANGES.heightCm.min}
                 max={RANGES.heightCm.max}
                 unit="cm"
-                label="Altura em centímetros"
+                label={t("Altura em centímetros")}
                 onChange={(v) => update({ heightCm: v })}
               />
               <NextButton
@@ -264,7 +254,7 @@ export default function OnboardingQuiz() {
           )}
 
           {step.id === "place" && (
-            <Question title="Onde você vai treinar?">
+            <Question title={t("Onde você vai treinar?")}>
               <ChoiceList
                 options={PLACE_OPTIONS}
                 selected={answers.place}
@@ -279,8 +269,8 @@ export default function OnboardingQuiz() {
 
           {step.id === "equipment" && (
             <Question
-              title="O que você tem disponível?"
-              subtitle="Já marcamos o mais comum para o lugar que você escolheu."
+              title={t("O que você tem disponível?")}
+              subtitle={t("Já marcamos o mais comum para o lugar que você escolheu.")}
             >
               <ChipGroup
                 options={EQUIPMENT_OPTIONS}
@@ -288,26 +278,28 @@ export default function OnboardingQuiz() {
                 onToggle={(v) => toggle("equipment", v)}
               />
               <Feedback>
-                Só prescrevemos exercícios que você consegue fazer. Desmarcar algo troca o
-                exercício, não remove o estímulo.
+                {t(
+                  "Só prescrevemos exercícios que você consegue fazer. Desmarcar algo troca o exercício, não remove o estímulo.",
+                )}
               </Feedback>
               <NextButton onPress={next} disabled={answers.equipment.length === 0} />
             </Question>
           )}
 
           {step.id === "daysPerWeek" && (
-            <Question title="Quantos dias por semana você consegue treinar?">
+            <Question title={t("Quantos dias por semana você consegue treinar?")}>
               <Stepper
                 value={answers.daysPerWeek ?? RANGES.daysPerWeek.default}
                 min={RANGES.daysPerWeek.min}
                 max={RANGES.daysPerWeek.max}
-                unit="dias por semana"
+                unit={t("dias por semana")}
                 onChange={(v) => update({ daysPerWeek: v, weekdays: suggestWeekdays(v) })}
               />
               <Feedback>
-                Para o seu nível e objetivo, {recommendedDays(level, objective.goal)} dias por
-                semana costuma render mais. Prefira o que você consegue sustentar: consistência
-                vence intensidade.
+                {t(
+                  "Para o seu nível e objetivo, {{v0}} dias por semana costuma render mais. Prefira o que você consegue sustentar: consistência vence intensidade.",
+                  { v0: recommendedDays(level, objective.goal) },
+                )}
               </Feedback>
               <NextButton
                 onPress={() => {
@@ -323,7 +315,7 @@ export default function OnboardingQuiz() {
           )}
 
           {step.id === "duration" && (
-            <Question title="Quanto tempo você tem por treino?">
+            <Question title={t("Quanto tempo você tem por treino?")}>
               <View className="gap-2.5">
                 {DURATION_OPTIONS.map((o) => {
                   const ativo = answers.duration === o.value;
@@ -345,7 +337,7 @@ export default function OnboardingQuiz() {
                         </View>
                         <Text className="mt-0.5 text-sm text-muted-foreground">{o.exercises}</Text>
                       </View>
-                      {o.recommended ? <Badge>Recomendado</Badge> : null}
+                      {o.recommended ? <Badge>{t("Recomendado")}</Badge> : null}
                     </Pressable>
                   );
                 })}
@@ -354,7 +346,7 @@ export default function OnboardingQuiz() {
           )}
 
           {step.id === "weekdays" && (
-            <Question title="Em quais dias?">
+            <Question title={t("Em quais dias?")}>
               <WeekdayPicker
                 selected={answers.weekdays}
                 onToggle={(dia) =>
@@ -367,8 +359,13 @@ export default function OnboardingQuiz() {
               />
               <Feedback>
                 {answers.weekdays.length === (answers.daysPerWeek ?? 0)
-                  ? "Estes dias são um guia, não uma cobrança. A sequência A → B → C avança a cada treino concluído, não pela data: se você faltar na segunda, o treino A espera na quarta."
-                  : `Escolha ${answers.daysPerWeek ?? 3} dias — você marcou ${answers.weekdays.length}.`}
+                  ? t(
+                      "Estes dias são um guia, não uma cobrança. A sequência A → B → C avança a cada treino concluído, não pela data: se você faltar na segunda, o treino A espera na quarta.",
+                    )
+                  : t("Escolha {{v0}} dias — você marcou {{length}}.", {
+                      v0: answers.daysPerWeek ?? 3,
+                      length: answers.weekdays.length,
+                    })}
               </Feedback>
               <NextButton
                 onPress={next}
@@ -379,8 +376,10 @@ export default function OnboardingQuiz() {
 
           {step.id === "focus" && (
             <Question
-              title="Alguma região que você quer priorizar?"
-              subtitle="O resto do corpo continua no plano. A região escolhida ganha mais volume e, conforme os dias, mais sessões."
+              title={t("Alguma região que você quer priorizar?")}
+              subtitle={t(
+                "O resto do corpo continua no plano. A região escolhida ganha mais volume e, conforme os dias, mais sessões.",
+              )}
             >
               <ChoiceList
                 options={FOCUS_OPTIONS}
@@ -393,8 +392,8 @@ export default function OnboardingQuiz() {
 
           {step.id === "injuries" && (
             <Question
-              title="Você tem alguma lesão ou dor?"
-              subtitle="Deixamos de fora os exercícios que carregam essa região."
+              title={t("Você tem alguma lesão ou dor?")}
+              subtitle={t("Deixamos de fora os exercícios que carregam essa região.")}
             >
               <ChipGroup
                 options={INJURY_OPTIONS}
@@ -402,38 +401,40 @@ export default function OnboardingQuiz() {
                 onToggle={(v) => toggle("injuries", v)}
               />
               {answers.injuries.length > 0 ? (
-                <Feedback title="Importante">
-                  A seleção automática é só uma referência geral: não é avaliação clínica e não
-                  garante que um exercício seja seguro para você. Antes de treinar com lesão ou dor,
-                  procure orientação de um profissional de saúde e de educação física.
+                <Feedback title={t("Importante")}>
+                  {t(
+                    "A seleção automática é só uma referência geral: não é avaliação clínica e não garante que um exercício seja seguro para você. Antes de treinar com lesão ou dor, procure orientação de um profissional de saúde e de educação física.",
+                  )}
                 </Feedback>
               ) : null}
               <NextButton
                 onPress={next}
-                label={answers.injuries.length ? "Continuar" : "Não tenho nenhuma"}
+                label={answers.injuries.length ? t("Continuar") : t("Não tenho nenhuma")}
               />
             </Question>
           )}
 
           {step.id === "mealsPerDay" && (
             <Question
-              title="Quantas refeições por dia você faz?"
-              subtitle="Criamos essas refeições vazias na sua dieta, para você preencher como quiser."
+              title={t("Quantas refeições por dia você faz?")}
+              subtitle={t(
+                "Criamos essas refeições vazias na sua dieta, para você preencher como quiser.",
+              )}
             >
               <ChoiceList
                 options={MEALS_PER_DAY_OPTIONS.map((n) => ({
                   value: String(n),
-                  label: `${n} refeições`,
+                  label: t("{{n}} refeições", { n }),
                   hint:
                     n === 3
-                      ? "Café, almoço e jantar"
+                      ? t("Café, almoço e jantar")
                       : n === 4
-                        ? "Com um lanche"
+                        ? t("Com um lanche")
                         : n === 5
-                          ? "Com dois lanches"
+                          ? t("Com dois lanches")
                           : n === 6
-                            ? "Refeições menores e mais frequentes"
-                            : "O dia completo, com pré e pós-treino e ceia",
+                            ? t("Refeições menores e mais frequentes")
+                            : t("O dia completo, com pré e pós-treino e ceia"),
                 }))}
                 selected={answers.mealsPerDay ? String(answers.mealsPerDay) : undefined}
                 onSelect={(v) => choose({ mealsPerDay: Number(v) })}
@@ -491,217 +492,6 @@ function Badge({
   );
 }
 
-/** As cores do painel verde do login (`BRAND` e `INK` em auth.tsx). */
-const BRAND = "#3ad598";
-const INK = "#04261a";
-
-/**
- * Boas-vindas: o painel verde da marca com a mão da tela Treinar ao fundo e
- * dois cartões flutuando — o treino e a dieta que a pessoa vai receber —, e
- * embaixo a promessa e um único botão.
- */
-function Welcome({ onStart, logado }: { onStart: () => void; logado: boolean }) {
-  const insets = useSafeAreaInsets();
-  const { width, height } = useWindowDimensions();
-  const primaria = useColor("primary");
-  const alturaHero = Math.min(440, Math.max(280, Math.round(height * 0.44)));
-  const alturaMao = (width * 870) / 1092;
-
-  return (
-    <View className="flex-1 bg-background">
-      {/* Ícones escuros sobre o verde. */}
-      <StatusBar style="dark" />
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 12 }}
-        bounces={false}
-        showsVerticalScrollIndicator={false}
-      >
-        <View
-          className="overflow-hidden rounded-b-[40px]"
-          style={{ height: alturaHero, backgroundColor: BRAND }}
-        >
-          <Glow
-            size={width * 1.3}
-            color="#ffffff"
-            opacity={0.45}
-            style={{ top: -width * 0.75, left: -width * 0.15 }}
-          />
-          <Animated.View
-            entering={FadeIn.duration(900)}
-            pointerEvents="none"
-            style={{ position: "absolute", left: 0, bottom: -alturaMao * 0.12, opacity: 0.14 }}
-          >
-            <Punho width={width} height={alturaMao} cor={INK} />
-          </Animated.View>
-
-          <Animated.View
-            entering={FadeInDown.duration(500)}
-            className="flex-row items-center justify-center gap-2"
-            style={{ paddingTop: insets.top + 16 }}
-          >
-            <BrandSymbol width={34} escuro />
-            <Text className="text-lg font-extrabold tracking-tight" style={{ color: INK }}>
-              Habitual Fit
-            </Text>
-          </Animated.View>
-
-          <Animated.View
-            entering={FadeInDown.delay(250).duration(600).springify()}
-            style={{
-              position: "absolute",
-              left: 20,
-              top: alturaHero * 0.36,
-              transform: [{ rotate: "-4deg" }],
-            }}
-          >
-            <CartaoFlutuante
-              icon={dumbbell}
-              titulo="Treino A · Peito"
-              detalhe="6 exercícios · 45 min"
-            />
-          </Animated.View>
-          <Animated.View
-            entering={FadeInDown.delay(420).duration(600).springify()}
-            style={{
-              position: "absolute",
-              right: 20,
-              top: alturaHero * 0.62,
-              transform: [{ rotate: "3deg" }],
-            }}
-          >
-            <CartaoFlutuante
-              icon={utensils}
-              titulo="Dieta de hoje"
-              detalhe="5 refeições · 2.150 kcal"
-            />
-          </Animated.View>
-        </View>
-
-        <View className="flex-1 justify-between px-6 pt-8">
-          <View>
-            <Animated.View entering={FadeInDown.delay(150).duration(500)}>
-              <Text className="text-xs font-bold uppercase tracking-[2px] text-primary">
-                Seu plano em 2 minutos
-              </Text>
-              <Text
-                textBreakStrategy="balanced"
-                className="mt-3 text-[34px] font-extrabold leading-[38px] tracking-tight"
-              >
-                Seu treino montado{" "}
-                <Text className="text-[34px] font-extrabold leading-[38px] text-primary">
-                  para você.
-                </Text>
-              </Text>
-              <Text className="mt-3 text-base leading-6 text-muted-foreground">
-                {logado
-                  ? "Responda algumas perguntas rápidas e receba o treino da semana pronto e suas refeições organizadas."
-                  : "Crie sua conta, responda algumas perguntas rápidas e receba o treino da semana pronto e suas refeições organizadas."}
-              </Text>
-            </Animated.View>
-
-            <Animated.View
-              entering={FadeInDown.delay(300).duration(500)}
-              className="mt-5 flex-row flex-wrap gap-2"
-            >
-              {(
-                [
-                  [clock, "Cerca de 2 min"],
-                  [shieldCheck, "Salvo na sua conta"],
-                  [sliders, "Ajuste quando quiser"],
-                ] as const
-              ).map(([icone, texto]) => (
-                <View
-                  key={texto}
-                  className="flex-row items-center gap-1.5 rounded-full border border-border bg-card px-3 py-2"
-                >
-                  <Icon node={icone} color={primaria} size={14} />
-                  <Text className="text-xs font-semibold">{texto}</Text>
-                </View>
-              ))}
-            </Animated.View>
-          </View>
-
-          <Animated.View entering={FadeInDown.delay(450).duration(500)} className="mt-8 gap-3">
-            <Pressable
-              onPress={logado ? onStart : () => router.push("/auth?modo=cadastro")}
-              accessibilityRole="button"
-              className="h-14 w-full flex-row items-center justify-center gap-2 rounded-2xl active:scale-[0.98]"
-              style={{
-                backgroundColor: BRAND,
-                shadowColor: BRAND,
-                shadowOpacity: 0.6,
-                shadowRadius: 16,
-                shadowOffset: { width: 0, height: 8 },
-                elevation: 8,
-              }}
-            >
-              <Text className="text-base font-bold" style={{ color: INK }}>
-                {logado ? "Montar meu plano" : "Criar minha conta"}
-              </Text>
-              <Icon node={arrowRight} color={INK} size={18} />
-            </Pressable>
-
-            {logado ? (
-              <Text className="text-center text-xs text-muted-foreground">
-                Você pode mudar tudo depois.
-              </Text>
-            ) : (
-              <Pressable
-                onPress={() => router.push("/auth")}
-                accessibilityRole="link"
-                className="h-11 items-center justify-center"
-              >
-                <Text className="text-sm text-muted-foreground">
-                  Já tem conta? <Text className="text-sm font-bold text-primary">Entrar</Text>
-                </Text>
-              </Pressable>
-            )}
-          </Animated.View>
-        </View>
-      </ScrollView>
-    </View>
-  );
-}
-
-/** Um cartão branco que flutua sobre o verde: o que a pessoa vai receber. */
-function CartaoFlutuante({
-  icon,
-  titulo,
-  detalhe,
-}: {
-  icon: IconNode;
-  titulo: string;
-  detalhe: string;
-}) {
-  return (
-    <View
-      className="flex-row items-center gap-3 rounded-2xl bg-white py-3 pl-3 pr-4"
-      style={{
-        shadowColor: INK,
-        shadowOpacity: 0.25,
-        shadowRadius: 18,
-        shadowOffset: { width: 0, height: 10 },
-        elevation: 10,
-      }}
-    >
-      <View
-        className="h-10 w-10 items-center justify-center rounded-xl"
-        style={{ backgroundColor: INK }}
-      >
-        <Icon node={icon} color={BRAND} size={20} />
-      </View>
-      <View>
-        <Text className="text-sm font-bold" style={{ color: INK }}>
-          {titulo}
-        </Text>
-        <Text className="text-xs" style={{ color: "#04261a99" }}>
-          {detalhe}
-        </Text>
-      </View>
-    </View>
-  );
-}
-
 function WeightStep({
   answers,
   update,
@@ -716,7 +506,7 @@ function WeightStep({
   const imc = bmiFeedback(peso, altura);
 
   return (
-    <Question title="Qual seu peso atual?">
+    <Question title={t("Qual seu peso atual?")}>
       <NumberField
         value={peso}
         min={RANGES.weightKg.min}
@@ -724,7 +514,7 @@ function WeightStep({
         step={RANGES.weightKg.step}
         decimals={1}
         unit="kg"
-        label="Peso em quilos"
+        label={t("Peso em quilos")}
         onChange={(v) =>
           update({
             weightKg: v,
@@ -735,7 +525,7 @@ function WeightStep({
           })
         }
       />
-      <Feedback title={`IMC ${imc.bmi}`}>{imc.text}</Feedback>
+      <Feedback title={t("IMC {{bmi}}", { bmi: imc.bmi })}>{imc.text}</Feedback>
       <NextButton
         onPress={() => {
           update({ weightKg: peso });
@@ -759,7 +549,7 @@ function GoalWeightStep({
   const meta = answers.goalWeightKg ?? atual;
 
   return (
-    <Question title="Qual peso você quer alcançar?">
+    <Question title={t("Qual peso você quer alcançar?")}>
       <NumberField
         value={meta}
         min={RANGES.weightKg.min}
@@ -767,7 +557,7 @@ function GoalWeightStep({
         step={RANGES.weightKg.step}
         decimals={1}
         unit="kg"
-        label="Peso desejado em quilos"
+        label={t("Peso desejado em quilos")}
         onChange={(v) => update({ goalWeightKg: v })}
       />
       <Feedback>{weightGoalFeedback(atual, meta)}</Feedback>
@@ -797,40 +587,40 @@ function Review({
   const indexOf = (id: string) => steps.findIndex((s) => s.id === id);
 
   const linhas = [
-    { label: "Objetivo", value: objective.label, step: "objective" },
+    { label: t("Objetivo"), value: objective.label, step: "objective" },
     {
-      label: "Perfil",
+      label: t("Perfil"),
       value: `${answers.age ?? "—"} anos · ${answers.heightCm ?? "—"} cm · ${answers.weightKg ?? "—"} kg`,
       step: "age",
     },
     {
-      label: "Treino",
+      label: t("Treino"),
       value: `${answers.daysPerWeek ?? "—"}× por semana · ${
         DURATION_OPTIONS.find((d) => d.value === answers.duration)?.minutes ?? "duração livre"
       }`,
       step: "daysPerWeek",
     },
     {
-      label: "Dias",
+      label: t("Dias"),
       value: answers.weekdays.length
         ? answers.weekdays.map((d) => WEEKDAY_LABELS[d as Weekday].slice(0, 3)).join(" · ")
-        : "a definir",
+        : t("a definir"),
       step: "weekdays",
     },
     {
-      label: "Local",
+      label: t("Local"),
       value: PLACE_OPTIONS.find((p) => p.value === answers.place)?.label ?? "—",
       step: "place",
     },
     {
-      label: "Refeições",
+      label: t("Refeições"),
       value: `${answers.mealsPerDay ?? DEFAULT_MEALS_PER_DAY} por dia`,
       step: "mealsPerDay",
     },
     ...(answers.injuries.length
       ? [
           {
-            label: "Cuidados",
+            label: t("Cuidados"),
             value: answers.injuries
               .map((i) => INJURY_OPTIONS.find((o) => o.value === i)?.label ?? i)
               .join(" · "),
@@ -842,8 +632,8 @@ function Review({
 
   return (
     <Question
-      title="É isso mesmo?"
-      subtitle="Confira antes de montarmos seu plano. Toque em qualquer linha para corrigir."
+      title={t("É isso mesmo?")}
+      subtitle={t("Confira antes de montarmos seu plano. Toque em qualquer linha para corrigir.")}
     >
       <View className="overflow-hidden rounded-2xl border border-border">
         {linhas.map((l, i) => {
@@ -866,12 +656,13 @@ function Review({
         })}
       </View>
 
-      <Feedback title="O que vem agora">
-        Montamos o plano de treino sugerido para as suas respostas e criamos suas refeições, vazias.
-        No fim, você escolhe se segue com o plano ou se começa sem um.
+      <Feedback title={t("O que vem agora")}>
+        {t(
+          "Montamos o plano de treino sugerido para as suas respostas e criamos suas refeições, vazias. No fim, você escolhe se segue com o plano ou se começa sem um.",
+        )}
       </Feedback>
 
-      <NextButton onPress={onConfirm} label="Montar meu plano" />
+      <NextButton onPress={onConfirm} label={t("Montar meu plano")} />
     </Question>
   );
 }

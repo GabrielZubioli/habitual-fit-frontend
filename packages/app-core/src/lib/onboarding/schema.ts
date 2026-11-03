@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { t } from "../../i18n";
 
 /**
  * Respostas do questionário de entrada.
@@ -68,7 +69,7 @@ export const COOKING_SKILLS = ["none", "basic", "confident"] as const;
 /** `HH:MM`. O banco guarda `TIME`; o formulário, string. */
 const timeString = z
   .string()
-  .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Horário inválido")
+  .regex(/^([01]\d|2[0-3]):[0-5]\d$/, t("Horário inválido"))
   .optional();
 
 export const answersSchema = z.object({

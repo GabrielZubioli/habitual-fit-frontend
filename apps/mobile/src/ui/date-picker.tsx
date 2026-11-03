@@ -18,6 +18,7 @@ import { cn } from "@/lib/cn";
 import { useColor } from "@/theme/theme";
 import { Icon } from "./icon";
 import { Text } from "./text";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * O seletor de data do app — o `date-picker.tsx` do web: o botão com a data e,
@@ -46,7 +47,8 @@ export function DatePicker({
   const hoje = todayISO();
   const primaria = useColor("primary");
   const apagada = useColor("muted-foreground");
-  const rotuloTexto = simples && value === hoje ? "Hoje" : value ? rotulo(value) : "Escolher data";
+  const rotuloTexto =
+    simples && value === hoje ? t("Hoje") : value ? rotulo(value) : t("Escolher data");
 
   return (
     <>
@@ -89,10 +91,11 @@ export function DatePicker({
 /** "sáb., 10 de out." — com o ano só quando não é o corrente. */
 function rotulo(iso: string): string {
   const mesmoAno = iso.slice(0, 4) === todayISO().slice(0, 4);
-  return formatDate(iso, mesmoAno ? "EEE, d 'de' MMM" : "d 'de' MMM 'de' yyyy");
+  return formatDate(iso, mesmoAno ? t("EEE, d 'de' MMM") : t("d 'de' MMM 'de' yyyy"));
 }
 
-const DIAS = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
+/** Dom → sáb, abreviados no idioma do app (7/1/2024 foi domingo). */
+const DIAS = Array.from({ length: 7 }, (_, i) => formatDate(new Date(2024, 0, 7 + i), "EEE"));
 
 function Calendario({
   value,
@@ -115,7 +118,7 @@ function Calendario({
   const fim = endOfWeek(endOfMonth(mes));
   const dias: Date[] = [];
   for (let d = inicio; d <= fim; d = addDays(d, 1)) dias.push(d);
-  const titulo = formatDate(mes, "MMMM 'de' yyyy");
+  const titulo = formatDate(mes, t("MMMM 'de' yyyy"));
 
   return (
     <Modal visible transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
@@ -127,7 +130,7 @@ function Calendario({
           <View className="mb-2 flex-row items-center justify-between px-1">
             <Pressable
               onPress={() => setMes((m) => addMonths(m, -1))}
-              accessibilityLabel="Mês anterior"
+              accessibilityLabel={t("Mês anterior")}
               className="h-9 w-9 items-center justify-center rounded-full active:bg-elevated"
             >
               <Icon node={chevronLeft} color={texto} size={18} />
@@ -137,7 +140,7 @@ function Calendario({
             </Text>
             <Pressable
               onPress={() => setMes((m) => addMonths(m, 1))}
-              accessibilityLabel="Próximo mês"
+              accessibilityLabel={t("Próximo mês")}
               className="h-9 w-9 items-center justify-center rounded-full active:bg-elevated"
             >
               <Icon node={chevronRight} color={texto} size={18} />
@@ -164,7 +167,7 @@ function Calendario({
                     <Pressable
                       disabled={!ok}
                       onPress={() => onPick(iso)}
-                      accessibilityLabel={`${iso === hoje ? "Hoje, " : ""}${formatDate(iso, "EEEE, d 'de' MMMM 'de' yyyy")}${escolhido ? ", escolhido" : ""}`}
+                      accessibilityLabel={`${iso === hoje ? t("Hoje, ") : ""}${formatDate(iso, t("EEEE, d 'de' MMMM 'de' yyyy"))}${escolhido ? ", escolhido" : ""}`}
                       className={cn(
                         "aspect-square items-center justify-center rounded-full active:bg-elevated",
                         escolhido && "bg-primary",
@@ -194,7 +197,7 @@ function Calendario({
               onPress={() => onPick(hoje)}
               className="mt-1 items-center rounded-xl py-2.5 active:bg-elevated"
             >
-              <Text className="text-sm font-semibold text-primary">Hoje</Text>
+              <Text className="text-sm font-semibold text-primary">{t("Hoje")}</Text>
             </Pressable>
           ) : null}
         </Pressable>

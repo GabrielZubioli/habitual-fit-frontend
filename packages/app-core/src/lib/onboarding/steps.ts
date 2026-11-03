@@ -31,7 +31,6 @@ export interface StepDef {
 }
 
 export const STEPS = [
-  { id: "welcome" },
   { id: "objective", autoAdvance: true },
   { id: "sex", autoAdvance: true },
   { id: "experience", autoAdvance: true },

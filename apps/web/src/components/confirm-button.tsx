@@ -20,13 +20,14 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { t } from "@forja/app-core/i18n";
 
 export function ConfirmButton({
   onConfirm,
   title,
   description,
-  confirmLabel = "Excluir",
-  cancelLabel = "Cancelar",
+  confirmLabel = t("Excluir"),
+  cancelLabel = t("Cancelar"),
   children,
   disabled,
   className,

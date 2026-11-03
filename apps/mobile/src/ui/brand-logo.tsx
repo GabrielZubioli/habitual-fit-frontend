@@ -1,5 +1,6 @@
 import { G, Path, Svg } from "react-native-svg";
 import { useTheme } from "@/theme/theme";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Símbolo + nome — o `BrandLogo` do web, com os desenhos de
@@ -21,7 +22,7 @@ export function BrandLogo({ height }: { height: number }) {
       height={height}
       viewBox="0 0 1741 368"
       accessibilityRole="image"
-      accessibilityLabel="Habitual Fit"
+      accessibilityLabel={t("Habitual Fit")}
     >
       <Path
         d={SIMBOLO}

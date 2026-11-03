@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { BrandLogo } from "@/components/brand-logo";
 import { EMPRESA, VIGENCIA } from "@forja/app-core/lib/legal";
+import { formatDate } from "@forja/app-core/lib/date";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Casca das páginas legais (Privacidade e Termos): públicas, sem login, legíveis
@@ -20,12 +22,16 @@ export function LegalPage({
   return (
     <div className="min-h-dvh bg-background text-foreground">
       <div className="mx-auto w-full max-w-2xl px-5 pb-16 pt-8">
-        <Link to="/" aria-label="Habitual Fit — início" className="inline-flex">
+        <Link to="/" aria-label={t("Habitual Fit — início")} className="inline-flex">
           <BrandLogo className="h-10" />
         </Link>
 
         <h1 className="mt-8 text-[2rem] font-extrabold leading-tight tracking-tight">{titulo}</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Em vigor desde {VIGENCIA}.</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {t("Em vigor desde {{data}}.", {
+            data: formatDate(VIGENCIA, t("d 'de' MMMM 'de' yyyy")),
+          })}
+        </p>
 
         <div className="mt-6 rounded-[1.25rem] border border-primary/30 bg-primary/[0.06] p-5 text-pretty leading-relaxed">
           {resumo}
@@ -37,17 +43,17 @@ export function LegalPage({
 
         <footer className="mt-12 border-t border-border pt-6 text-sm text-muted-foreground">
           <p>
-            Dúvidas ou pedidos: <a href={`mailto:${EMPRESA.email}`}>{EMPRESA.email}</a>
+            {t("Dúvidas ou pedidos:")} <a href={`mailto:${EMPRESA.email}`}>{EMPRESA.email}</a>
           </p>
-          <nav className="mt-3 flex flex-wrap gap-x-4 gap-y-1" aria-label="Documentos">
+          <nav className="mt-3 flex flex-wrap gap-x-4 gap-y-1" aria-label={t("Documentos")}>
             <Link to="/privacidade" className="hover:text-foreground">
-              Política de Privacidade
+              {t("Política de Privacidade")}
             </Link>
             <Link to="/termos" className="hover:text-foreground">
-              Termos de Uso
+              {t("Termos de Uso")}
             </Link>
             <Link to="/" className="hover:text-foreground">
-              Voltar ao app
+              {t("Voltar ao app")}
             </Link>
           </nav>
         </footer>

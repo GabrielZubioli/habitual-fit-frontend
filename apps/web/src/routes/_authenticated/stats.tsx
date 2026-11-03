@@ -22,6 +22,8 @@ import { RecoveryCard } from "@/components/workouts/progress-cards";
 import { formatDate, formatDuration, toISODate, todayISO } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
 import { diasSeguidos } from "@forja/app-core/lib/streak";
+import { LOCALE } from "@forja/app-core/i18n";
+import { t } from "@forja/app-core/i18n";
 
 /**
  * Estatísticas: os números, a constância do ano e o corpo — o que foi
@@ -30,8 +32,8 @@ import { diasSeguidos } from "@forja/app-core/lib/streak";
 export const Route = createFileRoute("/_authenticated/stats")({
   head: () => ({
     meta: [
-      { title: "Estatísticas — Habitual Fit" },
-      { name: "description", content: "Progresso e histórico de treino." },
+      { title: t("Estatísticas — Habitual Fit") },
+      { name: "description", content: t("Progresso e histórico de treino.") },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -68,7 +70,7 @@ function StatsPage() {
   const diasDoPlano = new Set(
     r
       ? r.scheduleMode === "fixed"
-        ? r.templates.flatMap((t) => t.weekdays)
+        ? r.templates.flatMap((item) => item.weekdays)
         : r.trainingWeekdays
       : [],
   );
@@ -101,8 +103,8 @@ function StatsPage() {
   return (
     <>
       <PageHeader
-        title="Estatísticas"
-        description="Progresso e histórico"
+        title={t("Estatísticas")}
+        description={t("Progresso e histórico")}
         action={
           <Link
             to="/workouts/calendar"
@@ -115,11 +117,11 @@ function StatsPage() {
       />
       <PageBody>
         {/* Herói: a semana atual contra a meta e as últimas 12 semanas. */}
-        <section className="animate-in fade-in duration-500" aria-label="Constância">
+        <section className="animate-in fade-in duration-500" aria-label={t("Constância")}>
           <div className="relative flex items-start justify-between gap-3">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-primary">
-                Esta semana
+                {t("Esta semana")}
               </p>
               {recentes.isPending ? (
                 <Skeleton className="mt-2 h-12 w-24" />
@@ -131,7 +133,7 @@ function StatsPage() {
                   {meta ? (
                     <span className="text-xl font-bold text-muted-foreground">/ {meta}</span>
                   ) : null}
-                  <span className="ml-1 text-sm text-muted-foreground">treinos</span>
+                  <span className="ml-1 text-sm text-muted-foreground">{t("treinos")}</span>
                 </p>
               )}
             </div>
@@ -151,7 +153,7 @@ function StatsPage() {
               role="progressbar"
               aria-valuenow={estaSemana}
               aria-valuemax={meta}
-              aria-label="Meta da semana"
+              aria-label={t("Meta da semana")}
             >
               <div
                 className="hf-cresce h-full rounded-full bg-primary"
@@ -167,40 +169,40 @@ function StatsPage() {
             )}
           </div>
           <p className="relative mt-1 text-center text-xs text-muted-foreground">
-            Treinos por semana · toque nas barras
+            {t("Treinos por semana · toque nas barras")}
           </p>
         </section>
 
         <div className="mt-6 grid grid-cols-3 divide-x divide-border border-y border-border py-4">
           <Numero
             icon={<Dumbbell />}
-            rotulo="Treinos"
+            rotulo={t("Treinos")}
             valor={contagem.data?.total}
             solido
             indice={0}
           />
           <Numero
             icon={<CalendarDays />}
-            rotulo="Este mês"
+            rotulo={t("Este mês")}
             valor={contagem.data?.month}
             indice={1}
           />
           <Numero
             icon={<Scale />}
-            rotulo="Peso 30d"
+            rotulo={t("Peso 30d")}
             valor={
               pesos.isPending
                 ? undefined
                 : variacao === null
                   ? "—"
-                  : `${variacao > 0 ? "+" : ""}${variacao.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}`
+                  : `${variacao > 0 ? "+" : ""}${variacao.toLocaleString(LOCALE, { maximumFractionDigits: 1 })}`
             }
             unidade={variacao === null ? undefined : "kg"}
             indice={2}
           />
         </div>
 
-        <Titulo>Atividade — últimos 12 meses</Titulo>
+        <Titulo>{t("Atividade — últimos 12 meses")}</Titulo>
         <ActivityHeatmap />
 
         <MusculosCard />
@@ -265,7 +267,7 @@ function Numero({
 }
 
 const PERIODOS = [
-  { value: 1, label: "Semana" },
+  { value: 1, label: t("Semana") },
   { value: 30, label: "30d" },
   { value: 90, label: "90d" },
 ] as const;
@@ -300,21 +302,23 @@ function MusculosCard() {
   const maxRecorde = Math.max(1, ...(recordes.data ?? []).map((r) => r.e1rm));
 
   return (
-    <section aria-label="Músculos">
-      <Titulo>Músculos</Titulo>
+    <section aria-label={t("Músculos")}>
+      <Titulo>{t("Músculos")}</Titulo>
       <Abas
         value={aba}
         onChange={setAba}
         options={[
-          { value: "equilibrio", label: "Equilíbrio" },
-          { value: "fadiga", label: "Fadiga" },
-          { value: "forca", label: "Força" },
+          { value: "equilibrio", label: t("Equilíbrio") },
+          { value: "fadiga", label: t("Fadiga") },
+          { value: "forca", label: t("Força") },
         ]}
       />
 
       {aba === "equilibrio" && (
         <div className="mt-4 animate-in fade-in duration-300">
-          <p className="mb-3 text-muted-foreground">Equilíbrio muscular · por séries feitas</p>
+          <p className="mb-3 text-muted-foreground">
+            {t("Equilíbrio muscular · por séries feitas")}
+          </p>
           <Abas
             value={periodo}
             onChange={setPeriodo}
@@ -325,7 +329,9 @@ function MusculosCard() {
           ) : series.isError ? (
             <ErrorState message={errorMessage(series.error)} onRetry={series.refetch} compact />
           ) : porMusculo.length === 0 ? (
-            <p className="mt-6 text-center text-muted-foreground">Nenhuma série neste período.</p>
+            <p className="mt-6 text-center text-muted-foreground">
+              {t("Nenhuma série neste período.")}
+            </p>
           ) : (
             <div className="mt-4 flex justify-center">
               <BodyMap muscles={porMusculo} size="lg" showLegend={false} />
@@ -346,7 +352,7 @@ function MusculosCard() {
             <Skeleton className="h-40 w-full" />
           ) : (recordes.data ?? []).length === 0 ? (
             <p className="py-6 text-center text-muted-foreground">
-              Seus recordes aparecem aqui depois do primeiro treino com carga.
+              {t("Seus recordes aparecem aqui depois do primeiro treino com carga.")}
             </p>
           ) : (
             <ul className="divide-y divide-border/60">
@@ -373,8 +379,11 @@ function MusculosCard() {
                       <span className="min-w-0 flex-1">
                         <span className="block truncate font-semibold">{r.exerciseName}</span>
                         <span className="block text-xs text-muted-foreground">
-                          {formatDate(r.date, "d 'de' MMM")} · {r.weightKg.toLocaleString("pt-BR")}{" "}
-                          kg × {r.reps}
+                          {t("{{v0}} · {{v1}} kg × {{reps}}", {
+                            v0: formatDate(r.date, "d 'de' MMM"),
+                            v1: r.weightKg.toLocaleString(LOCALE),
+                            reps: r.reps,
+                          })}
                         </span>
                       </span>
                       <span className="shrink-0 text-right">
@@ -382,7 +391,7 @@ function MusculosCard() {
                           {Math.round(r.e1rm)}
                         </span>
                         <span className="text-[10px] font-medium uppercase text-muted-foreground">
-                          1RM kg
+                          {t("1RM kg")}
                         </span>
                       </span>
                     </span>
@@ -417,11 +426,11 @@ function Historico() {
 
   return (
     <section aria-labelledby="historico-titulo">
-      <Titulo id="historico-titulo">Últimos treinos</Titulo>
+      <Titulo id="historico-titulo">{t("Últimos treinos")}</Titulo>
       {historico.isPending ? (
         <Skeleton className="h-32 w-full rounded-[1.25rem]" />
       ) : lista.length === 0 ? (
-        <p className="px-1 text-muted-foreground">Nenhum treino concluído ainda.</p>
+        <p className="px-1 text-muted-foreground">{t("Nenhum treino concluído ainda.")}</p>
       ) : (
         <ul className="divide-y divide-border/60">
           {lista.map((s, i) => {
@@ -449,7 +458,7 @@ function Historico() {
                     <span className="flex items-baseline justify-between gap-2">
                       <span className="truncate font-semibold">{s.name}</span>
                       <span className="shrink-0 text-sm font-bold tabular-nums">
-                        {Math.round(volume).toLocaleString("pt-BR")} kg
+                        {t("{{v0}} kg", { v0: Math.round(volume).toLocaleString(LOCALE) })}
                       </span>
                     </span>
                     <span className="mt-0.5 block text-xs capitalize text-muted-foreground">

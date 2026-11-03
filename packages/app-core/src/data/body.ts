@@ -7,6 +7,7 @@ import { toISODate } from "../lib/date";
 import type { Tables } from "@gabrielzubioli/db/types";
 import { atualizar, localDb } from "../local";
 import { deleteById, insertRow } from "./rows";
+import { t } from "../i18n";
 
 export interface WeighIn {
   /** `YYYY-MM-DD` local. */
@@ -165,16 +166,16 @@ export const MEASURE_FIELDS: {
   max: number;
   grupo: "Tronco" | "Braços" | "Pernas" | "Composição";
 }[] = [
-  { key: "shoulder_cm", label: "Ombro", unit: "cm", min: 60, max: 200, grupo: "Tronco" },
-  { key: "chest_cm", label: "Peito", unit: "cm", min: 30, max: 250, grupo: "Tronco" },
-  { key: "waist_cm", label: "Cintura", unit: "cm", min: 30, max: 250, grupo: "Tronco" },
-  { key: "abdomen_cm", label: "Abdômen", unit: "cm", min: 30, max: 250, grupo: "Tronco" },
-  { key: "hip_cm", label: "Quadril", unit: "cm", min: 30, max: 250, grupo: "Tronco" },
-  { key: "neck_cm", label: "Pescoço", unit: "cm", min: 20, max: 80, grupo: "Tronco" },
-  { key: "arm_cm", label: "Braço", unit: "cm", min: 10, max: 100, grupo: "Braços" },
-  { key: "forearm_cm", label: "Antebraço", unit: "cm", min: 10, max: 80, grupo: "Braços" },
-  { key: "thigh_cm", label: "Coxa", unit: "cm", min: 20, max: 150, grupo: "Pernas" },
-  { key: "calf_cm", label: "Panturrilha", unit: "cm", min: 15, max: 100, grupo: "Pernas" },
+  { key: "shoulder_cm", label: t("Ombro"), unit: "cm", min: 60, max: 200, grupo: "Tronco" },
+  { key: "chest_cm", label: t("Peito"), unit: "cm", min: 30, max: 250, grupo: "Tronco" },
+  { key: "waist_cm", label: t("Cintura"), unit: "cm", min: 30, max: 250, grupo: "Tronco" },
+  { key: "abdomen_cm", label: t("Abdômen"), unit: "cm", min: 30, max: 250, grupo: "Tronco" },
+  { key: "hip_cm", label: t("Quadril"), unit: "cm", min: 30, max: 250, grupo: "Tronco" },
+  { key: "neck_cm", label: t("Pescoço"), unit: "cm", min: 20, max: 80, grupo: "Tronco" },
+  { key: "arm_cm", label: t("Braço"), unit: "cm", min: 10, max: 100, grupo: "Braços" },
+  { key: "forearm_cm", label: t("Antebraço"), unit: "cm", min: 10, max: 80, grupo: "Braços" },
+  { key: "thigh_cm", label: t("Coxa"), unit: "cm", min: 20, max: 150, grupo: "Pernas" },
+  { key: "calf_cm", label: t("Panturrilha"), unit: "cm", min: 15, max: 100, grupo: "Pernas" },
   { key: "body_fat_pct", label: "% Gordura", unit: "%", min: 1, max: 70, grupo: "Composição" },
 ];
 
@@ -218,7 +219,8 @@ export async function saveMeasurements(
   const preenchidos = MEASURE_FIELDS.filter((f) => (values[f.key] ?? "") !== "");
   if (preenchidos.length === 0) throw new Error("Preencha ao menos uma medida.");
   const invalido = preenchidos.find((f) => measureInvalid(f.key, values[f.key]!));
-  if (invalido) throw new Error(`${invalido.label}: valor fora da faixa esperada.`);
+  if (invalido)
+    throw new Error(t("{{campo}}: valor fora da faixa esperada.", { campo: invalido.label }));
   const payload: Record<string, number | string> = { user_id: userId, log_date: date };
   for (const f of preenchidos) payload[f.key] = Number(values[f.key]!.replace(",", "."));
   await insertRow("registrar medidas", "body_measurements", payload as never);

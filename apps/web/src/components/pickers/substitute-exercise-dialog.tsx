@@ -28,6 +28,7 @@ import {
 import { PickerThumb } from "@/components/pickers/exercise-picker";
 import { ErrorState } from "@/components/query-boundary";
 import { EQUIPMENT_LABELS, MUSCLE_LABELS, label } from "@forja/app-core/lib/labels";
+import { t } from "@forja/app-core/i18n";
 
 export type { SubstituteCandidate };
 
@@ -85,7 +86,9 @@ export function SubstituteExerciseDialog({
             size="icon"
             variant="ghost"
             className="size-8"
-            aria-label={`Substituir ${currentExerciseName} por outro exercício`}
+            aria-label={t("Substituir {{currentExerciseName}} por outro exercício", {
+              currentExerciseName,
+            })}
             disabled={isPending}
           >
             <Repeat className="size-4" />
@@ -94,7 +97,7 @@ export function SubstituteExerciseDialog({
       </DialogTrigger>
 
       <SearchDialogContent
-        title="Substituir exercício"
+        title={t("Substituir exercício")}
         description={
           <>
             Trocando <b className="font-semibold text-foreground">{currentExerciseName}</b>. As
@@ -105,7 +108,9 @@ export function SubstituteExerciseDialog({
           <SearchField
             value={term}
             onChange={setTerm}
-            placeholder={`Buscar em ${label(MUSCLE_LABELS, primaryMuscle).toLowerCase()}…`}
+            placeholder={t("Buscar em {{v0}}…", {
+              v0: label(MUSCLE_LABELS, primaryMuscle).toLowerCase(),
+            })}
             loading={alternatives.isFetching}
           />
         }
@@ -114,14 +119,16 @@ export function SubstituteExerciseDialog({
           <ResultsLoading />
         ) : alternatives.isError ? (
           <ErrorState
-            message="Falha ao buscar alternativas."
+            message={t("Falha ao buscar alternativas.")}
             onRetry={alternatives.refetch}
             compact
           />
         ) : alternatives.data.length === 0 ? (
           <ResultsEmpty>
-            Nenhuma alternativa para {label(MUSCLE_LABELS, primaryMuscle).toLowerCase()}
-            {debouncedTerm ? ` com “${debouncedTerm}”` : ""}.
+            {t("Nenhuma alternativa para {{v0}}", {
+              v0: label(MUSCLE_LABELS, primaryMuscle).toLowerCase(),
+            })}
+            {debouncedTerm ? t(" com “{{debouncedTerm}}”", { debouncedTerm }) : ""}.
           </ResultsEmpty>
         ) : (
           <ResultList>
@@ -134,7 +141,9 @@ export function SubstituteExerciseDialog({
                     title={exercise.name}
                     detail={
                       mesmoEquip
-                        ? `${label(EQUIPMENT_LABELS, exercise.equipment)} · mesmo equipamento`
+                        ? t("{{v0}} · mesmo equipamento", {
+                            v0: label(EQUIPMENT_LABELS, exercise.equipment),
+                          })
                         : label(EQUIPMENT_LABELS, exercise.equipment)
                     }
                     highlight={mesmoEquip}
