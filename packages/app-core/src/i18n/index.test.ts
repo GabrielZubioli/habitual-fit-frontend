@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { language, LOCALE, normalizeLanguage, t, tRich } from "./index";
+import { language, LOCALE, normalizeLanguage, resolveLanguage, t, tRich } from "./index";
 
 describe("normalizeLanguage", () => {
   it("pt-* vira pt-BR, es-* vira es e o resto vira en", () => {
@@ -34,5 +34,27 @@ describe("tRich", () => {
       typeof n === "string" ? n : (n as { props: { children: string } }).props.children,
     );
     expect(plano).toEqual(["Aceita os ", "[Termos]", " e a ", "{Política}", "."]);
+  });
+});
+
+describe("resolveLanguage", () => {
+  it("usa a escolha salva antes de tudo", () => {
+    expect(resolveLanguage({ pref: "es", pais: "BR", tag: "pt-BR" })).toBe("es");
+  });
+  it("ignora escolha inválida", () => {
+    expect(resolveLanguage({ pref: "fr", pais: "BR" })).toBe("pt-BR");
+  });
+  it("decide pelo país", () => {
+    expect(resolveLanguage({ pais: "AO", tag: "en-US" })).toBe("pt-BR");
+    expect(resolveLanguage({ pais: "PT" })).toBe("pt-BR");
+    expect(resolveLanguage({ pais: "mx", tag: "en" })).toBe("es");
+    expect(resolveLanguage({ pais: "DE", tag: "pt-BR" })).toBe("en");
+  });
+  it("sem país, usa a região da tag e depois o idioma", () => {
+    expect(resolveLanguage({ tag: "en-BR" })).toBe("pt-BR");
+    expect(resolveLanguage({ tag: "es-419" })).toBe("es");
+    expect(resolveLanguage({ tag: "pt" })).toBe("pt-BR");
+    expect(resolveLanguage({ tag: "fr-FR" })).toBe("en");
+    expect(resolveLanguage({})).toBe("en");
   });
 });

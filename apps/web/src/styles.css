@@ -1139,7 +1139,9 @@
 /* Troca de aba: a tela visível desliza (o snapshot `root` é exatamente o que
    está na tela, na posição de rolagem atual — sem salto) e a barra inferior
    fica parada, numa camada própria acima dela. */
-html:active-view-transition nav[aria-label="Navegação principal"] {
+/* Sempre nomeada (não só durante a transição) e achada por atributo, não pelo
+   aria-label, que muda com o idioma: fora da captura da tela, a barra fica parada. */
+[data-barra-inferior] {
   view-transition-name: barra;
 }
 ::view-transition-group(barra) {

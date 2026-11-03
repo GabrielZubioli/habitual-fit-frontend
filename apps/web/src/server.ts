@@ -44,12 +44,34 @@ function isH3SwallowedErrorBody(body: string): boolean {
   }
 }
 
+/**
+ * Grava o país do visitante (geolocalização do IP feita pela Vercel) no cookie
+ * `forja-pais`, que o i18n lê no navegador para escolher o idioma já na
+ * primeira visita. Sem o cabeçalho (dev local), não faz nada.
+ */
+function comPais(request: Request, response: Response): Response {
+  const pais = request.headers.get("x-vercel-ip-country");
+  if (!pais || !/^[A-Z]{2}$/i.test(pais)) return response;
+  if (!(response.headers.get("content-type") ?? "").includes("text/html")) return response;
+  if ((request.headers.get("cookie") ?? "").includes(`forja-pais=${pais}`)) return response;
+  const headers = new Headers(response.headers);
+  headers.append(
+    "set-cookie",
+    `forja-pais=${pais.toUpperCase()}; Path=/; Max-Age=2592000; SameSite=Lax; Secure`,
+  );
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
-      return await normalizeCatastrophicSsrResponse(response);
+      return comPais(request, await normalizeCatastrophicSsrResponse(response));
     } catch (error) {
       console.error(error);
       return new Response(renderErrorPage(), {

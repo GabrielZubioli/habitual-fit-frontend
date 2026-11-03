@@ -19,6 +19,7 @@ import { AvisoProfissional } from "@/components/aviso-profissional";
 import { ExportDataCard } from "@/components/export-data-card";
 import { DeleteAccountCard } from "@/components/delete-account-card";
 import { ImportDataCard } from "@/components/import-data-card";
+import { LanguageCard } from "@/components/language-card";
 import {
   SETTINGS_SECTIONS,
   isSettingsSection,
@@ -373,6 +374,7 @@ function SettingsPage() {
 
               {mostra("conta") && (
                 <div className="space-y-3">
+                  <LanguageCard />
                   <ImportDataCard />
                   <ExportDataCard />
                   <DeleteAccountCard />

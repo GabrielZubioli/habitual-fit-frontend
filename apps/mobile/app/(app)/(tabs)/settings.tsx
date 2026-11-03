@@ -61,8 +61,16 @@ import { Dialog } from "@/ui/dialog";
 import { Icon, type IconNode } from "@/ui/icon";
 import { PageHeader, PageScroll } from "@/ui/page-header";
 import { Text } from "@/ui/text";
-import { LOCALE } from "@forja/app-core/i18n";
-import { t } from "@forja/app-core/i18n";
+import * as SecureStore from "expo-secure-store";
+import { __iconNode as languages } from "lucide-react/dist/esm/icons/languages.js";
+import {
+  LANGUAGE_NAMES,
+  LANGUAGE_PREF_KEY,
+  LANGUAGES,
+  LOCALE,
+  t,
+  type Language,
+} from "@forja/app-core/i18n";
 
 /**
  * Configurações — o `settings.tsx` do web. Cada seção é uma opção do Menu e
@@ -297,6 +305,7 @@ export default function SettingsPage() {
 
               {mostra("conta") ? (
                 <View className="gap-3">
+                  <LanguageCard avisar={avisar} />
                   <ImportDataCard avisar={avisar} />
                   <ExportDataCard avisar={avisar} />
                   <DeleteAccountCard avisar={avisar} />
@@ -637,6 +646,39 @@ function ManualNutritionTargets({
  * Exportar — o `export-data-card.tsx` do web. No celular o arquivo é gravado
  * numa pasta que a pessoa escolhe (o seletor do sistema).
  */
+/**
+ * Idioma do app. "Automático" segue o país (ver `resolveLanguage`). A escolha
+ * vai para o SecureStore e vale ao reabrir: o `index.js` a lê antes do i18n,
+ * que decide o idioma uma vez, na carga.
+ */
+function LanguageCard({ avisar }: { avisar: (item: string, erro?: boolean) => void }) {
+  const [escolha, setEscolha] = useState<string>(
+    () => SecureStore.getItem(LANGUAGE_PREF_KEY) ?? "auto",
+  );
+  const opcoes = [
+    { value: "auto", label: t("Automático (pelo país)") },
+    ...LANGUAGES.map((l: Language) => ({ value: l, label: LANGUAGE_NAMES[l] })),
+  ];
+
+  const escolher = (v: string) => {
+    if (v === escolha) return;
+    try {
+      if (v === "auto") void SecureStore.deleteItemAsync(LANGUAGE_PREF_KEY);
+      else SecureStore.setItem(LANGUAGE_PREF_KEY, v);
+      setEscolha(v);
+      avisar(t("Idioma salvo. Feche e abra o app para aplicar."));
+    } catch (e) {
+      avisar(errorMessage(e), true);
+    }
+  };
+
+  return (
+    <Cartao titulo={t("Idioma")} icone={languages}>
+      <Chips options={opcoes} ativo={(v) => v === escolha} onPress={escolher} />
+    </Cartao>
+  );
+}
+
 function ExportDataCard({ avisar }: { avisar: (item: string, erro?: boolean) => void }) {
   const [exporting, setExporting] = useState<ExportFormat | null>(null);
   const texto = useColor("foreground");

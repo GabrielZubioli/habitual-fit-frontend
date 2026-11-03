@@ -11,16 +11,25 @@
  *
  * O i18next sobe com os recursos embutidos e `initAsync: false`, então `t()`
  * já funciona em constantes de módulo (`labels.ts`, opções do questionário).
- * Isso só vale porque o idioma é decidido uma vez, na carga. Se um dia houver
- * seletor de idioma, trocar recarrega o app.
+ * Isso só vale porque o idioma é decidido uma vez, na carga: trocar no seletor
+ * grava a escolha e recarrega o app (web) ou pede para reabri-lo (nativo).
  *
- * ## Onde o idioma é lido
+ * ## Como o idioma é escolhido (`resolveLanguage`)
  *
- * Web: `navigator.language`. App nativo (Hermes): `Intl`, que no Android e no
- * iOS reflete o idioma do sistema — sem módulo nativo extra. No servidor
- * (SSR do web) não há `navigator`: sai pt-BR.
+ * 1. A escolha salva no seletor, se houver.
+ * 2. O país: Brasil, Portugal, Angola e os outros lusófonos → pt-BR; países de
+ *    língua espanhola → es; qualquer outro país → en.
+ * 3. Sem país conhecido, o idioma do aparelho/navegador; não sendo pt nem es, en.
+ *
+ * O país vem, no web, do cookie `forja-pais`, gravado pelo servidor a partir da
+ * geolocalização do IP (`x-vercel-ip-country`); na falta dele, da região do
+ * `navigator.language` ("en-BR" → BR). No nativo, da região do sistema (`Intl`).
+ * A escolha salva fica no `localStorage` (web) ou no SecureStore, lida pelo
+ * `index.js` do app antes de tudo e exposta em `globalThis.__forjaIdioma`.
+ *
+ * No servidor (SSR do web) e nos testes sai pt-BR.
  * ponytail: páginas públicas renderizadas no servidor saem em pt e o React
- * refaz no cliente para en/es (aviso de hidratação); ler o Accept-Language por
+ * refaz no cliente para en/es (aviso de hidratação); ler o cookie por
  * requisição se isso incomodar.
  */
 import i18next from "i18next";
@@ -40,20 +49,112 @@ export function normalizeLanguage(tag: string | undefined | null): Language {
   return "en";
 }
 
-function detect(): string | undefined {
-  const nav = (globalThis as { navigator?: { language?: string; product?: string } }).navigator;
-  // Servidor e testes (Node também tem `navigator.language`): pt-BR.
-  if (typeof document === "undefined" && nav?.product !== "ReactNative") return "pt-BR";
-  // No React Native o `navigator` não tem `language`: vale o `Intl`.
-  if (nav?.language) return nav.language;
-  try {
-    return Intl.DateTimeFormat().resolvedOptions().locale;
-  } catch {
-    return undefined;
-  }
+export const LANGUAGES: readonly Language[] = ["pt-BR", "en", "es"];
+
+/** Chave da escolha salva (localStorage no web, SecureStore no nativo). */
+export const LANGUAGE_PREF_KEY = "forja.idioma";
+
+const PAISES_PT = new Set(["BR", "PT", "AO", "MZ", "CV", "GW", "ST", "TL"]);
+const PAISES_ES = new Set([
+  "ES", "MX", "AR", "CO", "CL", "PE", "VE", "EC", "GT", "CU", "BO", "DO",
+  "HN", "PY", "SV", "NI", "CR", "PA", "UY", "PR", "GQ",
+]); // prettier-ignore
+
+/** Idioma de um país (código ISO de 2 letras); `undefined` se não houver país. */
+export function languageForCountry(pais: string | undefined | null): Language | undefined {
+  const cc = (pais ?? "").trim().toUpperCase();
+  if (!/^[A-Z]{2}$/.test(cc)) return undefined;
+  if (PAISES_PT.has(cc)) return "pt-BR";
+  if (PAISES_ES.has(cc)) return "es";
+  return "en";
 }
 
-export const language: Language = normalizeLanguage(detect());
+/** Região de uma tag de idioma: "en-BR" → "BR", "es-419" → undefined. */
+function regiao(tag: string | undefined): string | undefined {
+  return tag?.split(/[-_]/).find((p, i) => i > 0 && /^[A-Za-z]{2}$/.test(p));
+}
+
+/** Escolha salva → país → idioma do aparelho → en. */
+export function resolveLanguage(entrada: {
+  pref?: string | null;
+  pais?: string | null;
+  tag?: string | null;
+}): Language {
+  if (LANGUAGES.includes(entrada.pref as Language)) return entrada.pref as Language;
+  return (
+    languageForCountry(entrada.pais) ??
+    languageForCountry(regiao(entrada.tag ?? undefined)) ??
+    normalizeLanguage(entrada.tag)
+  );
+}
+
+type Ambiente = {
+  navigator?: { language?: string; product?: string };
+  localStorage?: { getItem(k: string): string | null };
+  __forjaIdioma?: string | null;
+};
+
+function detect(): Language {
+  const g = globalThis as Ambiente;
+  const nav = g.navigator;
+  // Nativo: escolha salva vem do index.js; país e idioma, do `Intl`.
+  if (nav?.product === "ReactNative") {
+    let tag: string | undefined;
+    try {
+      tag = Intl.DateTimeFormat().resolvedOptions().locale;
+    } catch {
+      tag = undefined;
+    }
+    return resolveLanguage({ pref: g.__forjaIdioma, tag });
+  }
+  // Servidor e testes (Node também tem `navigator.language`): pt-BR.
+  if (typeof document === "undefined") return "pt-BR";
+  let pref: string | null = null;
+  try {
+    pref = g.localStorage?.getItem(LANGUAGE_PREF_KEY) ?? null;
+  } catch {
+    pref = null; // modo privado bloqueia o storage
+  }
+  const pais = /(?:^|;\s*)forja-pais=([A-Za-z]{2})/.exec(document.cookie)?.[1];
+  return resolveLanguage({ pref, pais, tag: nav?.language });
+}
+
+export const language: Language = detect();
+
+/** Nome de cada idioma nele mesmo, para o seletor. */
+export const LANGUAGE_NAMES: Record<Language, string> = {
+  "pt-BR": "Português",
+  en: "English",
+  es: "Español",
+};
+
+/**
+ * Grava a escolha do seletor e recarrega a página (web). `null` volta ao
+ * automático. No nativo quem grava é o app (SecureStore).
+ */
+export function setLanguagePreference(lang: Language | null): void {
+  const g = globalThis as Ambiente & {
+    localStorage?: { setItem(k: string, v: string): void; removeItem(k: string): void };
+    location?: { reload(): void };
+  };
+  try {
+    if (lang) g.localStorage?.setItem(LANGUAGE_PREF_KEY, lang);
+    else g.localStorage?.removeItem(LANGUAGE_PREF_KEY);
+  } catch {
+    // sem storage, a escolha vale só até recarregar
+  }
+  g.location?.reload();
+}
+
+/** Escolha salva no web (`null` = automático). */
+export function languagePreference(): Language | null {
+  try {
+    const v = (globalThis as Ambiente).localStorage?.getItem(LANGUAGE_PREF_KEY);
+    return LANGUAGES.includes(v as Language) ? (v as Language) : null;
+  } catch {
+    return null;
+  }
+}
 
 /** Locale para `Intl.*` e `toLocaleString`. */
 export const LOCALE = { "pt-BR": "pt-BR", en: "en-US", es: "es" }[language];
