@@ -1,3 +1,4 @@
+import { exerciseSteps, idiomaDiferente } from "@forja/app-core/data/exercise-library";
 import { AlertTriangle, Languages, Lightbulb, ListOrdered } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +35,7 @@ export type ExerciseHowToData = {
   /** Texto original da fonte importada, em inglês. */
   instructions: string | null;
   execution_en: string[] | null;
+  execution_es?: string[] | null;
   cues: string[] | null;
   common_mistakes: string[] | null;
   contraindications: string[] | null;
@@ -51,13 +53,12 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
    * falta dele, o original em inglês — em passos (`execution_en`) ou corrido
    * (`instructions`), sempre com o rótulo "em inglês".
    */
-  const passosPt = exercise.execution ?? [];
-  const passosEn = exercise.execution_en ?? [];
-  const textoEn = exercise.instructions?.trim() ?? "";
-
-  const passos = passosPt.length > 0 ? passosPt : passosEn;
-  const emIngles = passosPt.length === 0 && (passosEn.length > 0 || textoEn.length > 0);
-  const mostrarTextoCorrido = passosPt.length === 0 && passosEn.length === 0 && textoEn.length > 0;
+  // No idioma do app; na falta dele, no mais próximo que houver, com selo.
+  const { passos, texto: textoCorrido, idioma } = exerciseSteps(exercise);
+  const selo = idiomaDiferente(idioma);
+  const lang =
+    idioma === "en" ? "en" : idioma === "es" ? "es" : idioma === "pt" ? "pt-BR" : undefined;
+  const mostrarTextoCorrido = passos.length === 0 && !!textoCorrido;
 
   return (
     <div className="space-y-3">
@@ -66,14 +67,16 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
           titulo={t("Execução")}
           icone={<ListOrdered className="size-4" aria-hidden />}
           extra={
-            <Badge variant="warning" className="normal-case tracking-normal">
-              <Languages aria-hidden />
-              {t("em inglês")}
-            </Badge>
+            selo ? (
+              <Badge variant="warning" className="normal-case tracking-normal">
+                <Languages aria-hidden />
+                {selo}
+              </Badge>
+            ) : null
           }
         >
-          <p className="whitespace-pre-line text-[15px] leading-relaxed" lang="en">
-            {textoEn}
+          <p className="whitespace-pre-line text-[15px] leading-relaxed" lang={lang}>
+            {textoCorrido}
           </p>
         </Bloco>
       )}
@@ -83,10 +86,10 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
           titulo={t("Passo a passo")}
           icone={<ListOrdered className="size-4" aria-hidden />}
           extra={
-            emIngles ? (
+            selo ? (
               <Badge variant="warning" className="normal-case tracking-normal">
                 <Languages aria-hidden />
-                {t("em inglês")}
+                {selo}
               </Badge>
             ) : null
           }
@@ -102,16 +105,16 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
                 >
                   {i + 1}
                 </span>
-                <span className="pt-0.5" lang={emIngles ? "en" : undefined}>
+                <span className="pt-0.5" lang={lang}>
                   {passo}
                 </span>
               </li>
             ))}
           </ol>
-          {emIngles && (
+          {selo && (
             <p className="mt-3 text-xs text-muted-foreground">
               {t(
-                "Sem versão em português na base de origem. O texto original é exibido sem tradução automática — instrução de execução traduzida por máquina pode sair perigosa.",
+                "Ainda sem versão neste idioma. O passo a passo aparece no idioma em que foi escrito, sem tradução automática — instrução de execução traduzida por máquina pode sair perigosa.",
               )}
             </p>
           )}

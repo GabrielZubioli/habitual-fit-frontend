@@ -1,3 +1,4 @@
+import { exerciseName } from "@forja/app-core/data/exercise-library";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -563,7 +564,7 @@ function ExerciseListRow({
         to="/exercises/$id"
         params={{ id: exercise.id }}
         className="flex min-w-0 flex-1 items-center gap-3.5"
-        aria-label={t("Abrir {{name}}", { name: exercise.name })}
+        aria-label={t("Abrir {{name}}", { name: exerciseName(exercise) })}
       >
         <span className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-xl bg-white">
           {miniatura ? (
@@ -573,7 +574,7 @@ function ExerciseListRow({
           )}
         </span>
         <span className="min-w-0">
-          <span className="block font-semibold leading-snug">{exercise.name}</span>
+          <span className="block font-semibold leading-snug">{exerciseName(exercise)}</span>
           <span className="block text-sm text-muted-foreground">
             {label(MUSCLE_LABELS, exercise.primary_muscle)} ·{" "}
             {label(EQUIPMENT_LABELS, exercise.equipment)}
@@ -581,14 +582,14 @@ function ExerciseListRow({
           </span>
         </span>
       </Link>
-      <FavoriteButton exerciseId={exercise.id} nome={exercise.name} />
+      <FavoriteButton exerciseId={exercise.id} nome={exerciseName(exercise)} />
       {rotina && rotina.templates.length > 0 && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
               type="button"
               className="grid size-10 shrink-0 place-items-center rounded-full border border-primary/40 text-primary transition-colors hover:bg-primary/10"
-              aria-label={t("Adicionar {{name}} a uma rotina", { name: exercise.name })}
+              aria-label={t("Adicionar {{name}} a uma rotina", { name: exerciseName(exercise) })}
             >
               <Plus className="size-5" aria-hidden />
             </button>

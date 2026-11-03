@@ -40,8 +40,8 @@ export async function fetchExerciseDetail(id: string): Promise<ExerciseDetail> {
   const ex = found(
     "carregar exercício",
     await db.getOptional<Record<string, unknown> & { id: string }>(
-      `SELECT id, name, primary_muscle, secondary_muscles, equipment, category, level, mechanic,
-              execution, instructions, execution_en, cues, common_mistakes, contraindications,
+      `SELECT id, name, name_en, name_es, primary_muscle, secondary_muscles, equipment, category, level, mechanic,
+              execution, instructions, execution_en, execution_es, cues, common_mistakes, contraindications,
               image_urls, external_id, media_id, media_ref, media_source, video_url
          FROM exercises WHERE id = ?`,
       [id],
@@ -60,6 +60,7 @@ export async function fetchExerciseDetail(id: string): Promise<ExerciseDetail> {
     contraindications: jsonList(ex.contraindications),
     execution: jsonValue(ex.execution, null),
     execution_en: jsonValue(ex.execution_en, null),
+    execution_es: jsonValue(ex.execution_es, null),
     exercise_muscles: musculos,
   } as unknown as ExerciseDetail;
 }
@@ -70,7 +71,7 @@ async function detalheRemoto(id: string) {
     await supabase
       .from("exercises")
       .select(
-        "id, name, primary_muscle, secondary_muscles, equipment, category, level, mechanic, execution, instructions, execution_en, cues, common_mistakes, contraindications, image_urls, external_id, media_id, media_ref, media_source, video_url, exercise_muscles(muscle, contribution)",
+        "id, name, name_en, name_es, primary_muscle, secondary_muscles, equipment, category, level, mechanic, execution, instructions, execution_en, execution_es, cues, common_mistakes, contraindications, image_urls, external_id, media_id, media_ref, media_source, video_url, exercise_muscles(muscle, contribution)",
       )
       .eq("id", id)
       .single(),

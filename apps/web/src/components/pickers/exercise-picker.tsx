@@ -5,6 +5,7 @@
  * músculo, o do template não; as listas de músculos, os limites e o tratamento
  * de "nada encontrado" divergiam. Este componente unifica os dois.
  */
+import { exerciseName } from "@forja/app-core/data/exercise-library";
 import { useEffect, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
@@ -154,7 +155,7 @@ export function ExercisePicker({
                     catálogo tem a imagem numa fonte externa. */}
                 <ResultRow
                   thumb={<PickerThumb exercise={ex} />}
-                  title={ex.name}
+                  title={exerciseName(ex)}
                   detail={`${MUSCLE_LABELS[ex.primary_muscle as MuscleValue] ?? ex.primary_muscle} · ${
                     EQUIPMENT_LABELS[ex.equipment as keyof typeof EQUIPMENT_LABELS] ?? ex.equipment
                   }`}

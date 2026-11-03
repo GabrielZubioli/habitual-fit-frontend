@@ -1,3 +1,4 @@
+import { exerciseName } from "@forja/app-core/data/exercise-library";
 import { useMemo, useState, type ReactElement } from "react";
 import { ActivityIndicator, FlatList, Image, Pressable, TextInput, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
@@ -608,7 +609,7 @@ function ExerciseListRow({
     <View className="flex-row items-center gap-3 rounded-[20px] bg-card p-3">
       <Pressable
         onPress={() => router.push({ pathname: "/exercises/[id]", params: { id: exercise.id } })}
-        accessibilityLabel={t("Abrir {{name}}", { name: exercise.name })}
+        accessibilityLabel={t("Abrir {{name}}", { name: exerciseName(exercise) })}
         className="min-w-0 flex-1 flex-row items-center gap-3.5"
       >
         <View className="h-16 w-16 items-center justify-center overflow-hidden rounded-xl bg-white">
@@ -619,7 +620,7 @@ function ExerciseListRow({
           )}
         </View>
         <View className="min-w-0 flex-1">
-          <Text className="font-semibold leading-snug">{exercise.name}</Text>
+          <Text className="font-semibold leading-snug">{exerciseName(exercise)}</Text>
           <Text className="text-sm text-muted-foreground">
             {label(MUSCLE_LABELS, exercise.primary_muscle)} ·{" "}
             {label(EQUIPMENT_LABELS, exercise.equipment)}
@@ -627,12 +628,14 @@ function ExerciseListRow({
           </Text>
         </View>
       </Pressable>
-      <FavoriteButton exerciseId={exercise.id} nome={exercise.name} />
+      <FavoriteButton exerciseId={exercise.id} nome={exerciseName(exercise)} />
       {rotina && rotina.templates.length > 0 ? (
         <>
           <Pressable
             onPress={() => setMenu(true)}
-            accessibilityLabel={t("Adicionar {{name}} a uma rotina", { name: exercise.name })}
+            accessibilityLabel={t("Adicionar {{name}} a uma rotina", {
+              name: exerciseName(exercise),
+            })}
             className="h-10 w-10 items-center justify-center rounded-full border border-primary/40 active:bg-primary/10"
           >
             <Icon node={plus} color={primaria} size={20} />

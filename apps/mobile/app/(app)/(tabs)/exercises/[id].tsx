@@ -1,3 +1,4 @@
+import { exerciseName } from "@forja/app-core/data/exercise-library";
 import { useMemo, useState } from "react";
 import { Linking, Pressable, ScrollView, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
@@ -87,7 +88,11 @@ function ExerciseDetail({ id }: { id: string }) {
             {t("Exercício")}
           </Text>
           {ex ? (
-            <FavoriteButton exerciseId={ex.id} nome={ex.name} className="h-11 w-11 bg-card" />
+            <FavoriteButton
+              exerciseId={ex.id}
+              nome={exerciseName(ex)}
+              className="h-11 w-11 bg-card"
+            />
           ) : (
             <View className="h-11 w-11" />
           )}
@@ -122,7 +127,7 @@ function ExerciseDetail({ id }: { id: string }) {
             />
           </View>
 
-          <Text className="mt-5 text-[28px] font-extrabold leading-tight">{ex.name}</Text>
+          <Text className="mt-5 text-[28px] font-extrabold leading-tight">{exerciseName(ex)}</Text>
           <View className="mt-3 flex-row flex-wrap gap-2">
             <View className="rounded-full bg-primary px-3 py-1">
               <Text className="text-sm font-bold text-primary-foreground">
@@ -242,7 +247,7 @@ function ExerciseDetail({ id }: { id: string }) {
                   <Pressable
                     onPress={() =>
                       void Linking.openURL(
-                        isSafeUrl(ex.video_url) ? ex.video_url : videoSearchUrl(ex.name),
+                        isSafeUrl(ex.video_url) ? ex.video_url : videoSearchUrl(exerciseName(ex)),
                       )
                     }
                     className="mt-3 flex-row items-center justify-between gap-3 rounded-[20px] border border-border px-4 py-3.5 active:bg-card"
