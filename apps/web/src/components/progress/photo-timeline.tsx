@@ -3,10 +3,10 @@ import { Trash2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmButton } from "@/components/confirm-button";
-import { PHOTO_ANGLE_LABELS, label } from "@/lib/labels";
-import { formatShortDate } from "@/lib/date";
+import { PHOTO_ANGLE_LABELS, label } from "@forja/app-core/lib/labels";
+import { formatShortDate } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
-import type { PhotoSession, ProgressPhoto } from "@/data/progress-photos";
+import type { PhotoSession, ProgressPhoto } from "@forja/app-core/data/progress-photos";
 
 /**
  * Linha do tempo da evolução.
@@ -43,10 +43,7 @@ export function PhotoTimeline({
     <ol className="relative space-y-6">
       {/* A linha vertical liga as paradas. `aria-hidden` porque é desenho: a
           sequência já está na semântica da lista ordenada. */}
-      <span
-        className="absolute inset-y-2 left-[7px] w-0.5 rounded-full bg-border"
-        aria-hidden
-      />
+      <span className="absolute inset-y-2 left-[7px] w-0.5 rounded-full bg-border" aria-hidden />
 
       {sessions.map((sessao, i) => {
         const anterior = sessions[i + 1];
@@ -66,9 +63,7 @@ export function PhotoTimeline({
             <span
               className={cn(
                 "absolute left-0 top-1.5 size-[15px] rounded-full border-2 border-background transition-all",
-                selecionada || i === 0
-                  ? "bg-primary"
-                  : "bg-primary/40",
+                selecionada || i === 0 ? "bg-primary" : "bg-primary/40",
                 selecionada && "scale-125",
               )}
               aria-hidden
@@ -132,7 +127,9 @@ export function PhotoTimeline({
                     )}
 
                     <figcaption className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-black/55 px-2 pb-1.5 pt-6 text-[11px] font-semibold text-white">
-                      <span className="truncate rounded-full bg-[#01D798] px-2 py-0.5 text-[#020306]">{label(PHOTO_ANGLE_LABELS, foto.angle)}</span>
+                      <span className="truncate rounded-full bg-[#01D798] px-2 py-0.5 text-[#020306]">
+                        {label(PHOTO_ANGLE_LABELS, foto.angle)}
+                      </span>
                       <ConfirmButton
                         aria-label={`Excluir foto: ${descricao}`}
                         title="Excluir esta foto?"

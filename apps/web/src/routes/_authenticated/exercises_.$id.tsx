@@ -19,9 +19,17 @@ import { FavoriteButton } from "@/components/exercises/favorite-button";
 import { BodyMap, aggregateMuscleIntensities } from "@/components/body-map/body-map";
 import { ExerciseHowTo } from "@/components/workouts/exercise-how-to";
 import { ExerciseMediaView } from "@/components/workouts/exercise-media-view";
-import { exerciseMedia, videoSearchUrl } from "@/data/exercise-media";
-import { supabase } from "@/integrations/supabase/client";
-import { errorMessage, num, unwrap, unwrapList } from "@/data/supabase-helpers";
+import { exerciseMedia, videoSearchUrl } from "@forja/app-core/data/exercise-media";
+import { errorMessage } from "@forja/app-core/data/supabase-helpers";
+import {
+  PERIODS,
+  exerciseProgress,
+  fetchExerciseDetail,
+  fetchExerciseHistory,
+  summarizeExerciseSessions,
+  type Period,
+  type SessionSummary,
+} from "@forja/app-core/data/exercise-detail";
 import { useCurrentUserId } from "@/hooks/use-current-user";
 import { PageBody } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -39,11 +47,9 @@ import {
   MECHANIC_LABELS,
   MUSCLE_LABELS,
   label,
-} from "@/lib/labels";
-import { formatDate, formatDayMonth, toISODate } from "@/lib/date";
+} from "@forja/app-core/lib/labels";
+import { formatDate, formatDayMonth } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
-import { countsTowardVolume, epley1RM, setVolume } from "@forja/domain";
-import { subDays } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/exercises_/$id")({
   head: () => ({
@@ -55,28 +61,6 @@ export const Route = createFileRoute("/_authenticated/exercises_/$id")({
   component: ExerciseDetail,
 });
 
-const PERIODS = [
-  { value: "90", label: "3 meses" },
-  { value: "180", label: "6 meses" },
-  { value: "365", label: "1 ano" },
-  { value: "all", label: "Tudo" },
-] as const;
-
-type Period = (typeof PERIODS)[number]["value"];
-
-type SessionSummary = {
-  sessionId: string;
-  date: string;
-  /** Melhor 1RM estimado da sessão. */
-  bestE1rm: number;
-  /** Tonelagem do exercício naquela sessão. */
-  volume: number;
-  /** Melhor série (a de maior e1RM), para exibir "80 kg × 8". */
-  bestSet: { weight: number; reps: number } | null;
-  workingSets: number;
-  hasPr: boolean;
-};
-
 function ExerciseDetail() {
   const { id } = Route.useParams();
   const userId = useCurrentUserId();
@@ -85,92 +69,19 @@ function ExerciseDetail() {
 
   const exercise = useQuery({
     queryKey: ["exercise", id],
-    queryFn: async () =>
-      unwrap(
-        "carregar exercício",
-        await supabase
-          .from("exercises")
-          .select(
-            "id, name, primary_muscle, secondary_muscles, equipment, category, level, mechanic, execution, instructions, execution_en, cues, common_mistakes, contraindications, image_urls, external_id, media_id, media_ref, media_source, video_url, exercise_muscles(muscle, contribution)",
-          )
-          .eq("id", id)
-          .single(),
-      ),
+    queryFn: () => fetchExerciseDetail(id),
   });
 
   const history = useQuery({
     queryKey: ["exercise-history", id, period],
-    queryFn: async () => {
-      let query = supabase
-        .from("workout_sets")
-        .select(
-          "id, weight_kg, reps, set_type, completed, is_pr, session_id, workout_sessions!inner(id, user_id, started_at, deleted_at)",
-        )
-        .eq("exercise_id", id)
-        .eq("workout_sessions.user_id", userId)
-        .is("workout_sessions.deleted_at", null)
-        .order("created_at");
-
-      if (period !== "all") {
-        const from = toISODate(subDays(new Date(), Number(period)));
-        query = query.gte("workout_sessions.started_at", `${from}T00:00:00`);
-      }
-
-      return unwrapList("carregar histórico do exercício", await query);
-    },
+    queryFn: () => fetchExerciseHistory(id, userId, period),
   });
 
   /**
    * Agrega as séries por sessão. Só séries válidas (concluídas, não-aquecimento)
    * entram nas métricas — a mesma regra usada na sessão ao vivo e no dashboard.
    */
-  const sessions = useMemo<SessionSummary[]>(() => {
-    const bySession = new Map<string, SessionSummary>();
-
-    for (const set of history.data ?? []) {
-      const parent = set.workout_sessions;
-      if (!parent) continue;
-      if (
-        !countsTowardVolume({
-          weightKg: set.weight_kg,
-          reps: set.reps,
-          setType: set.set_type,
-          completed: set.completed,
-        })
-      ) {
-        continue;
-      }
-
-      const weight = num(set.weight_kg);
-      const reps = num(set.reps);
-      if (weight <= 0 || reps <= 0) continue;
-
-      const current = bySession.get(parent.id) ?? {
-        sessionId: parent.id,
-        date: parent.started_at,
-        bestE1rm: 0,
-        volume: 0,
-        bestSet: null,
-        workingSets: 0,
-        hasPr: false,
-      };
-
-      const e1rm = epley1RM(weight, reps);
-      current.volume += setVolume(weight, reps);
-      current.workingSets += 1;
-      current.hasPr = current.hasPr || Boolean(set.is_pr);
-      if (e1rm > current.bestE1rm) {
-        current.bestE1rm = e1rm;
-        current.bestSet = { weight, reps };
-      }
-
-      bySession.set(parent.id, current);
-    }
-
-    return Array.from(bySession.values()).sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-    );
-  }, [history.data]);
+  const sessions = useMemo(() => summarizeExerciseSessions(history.data ?? []), [history.data]);
 
   const chartData = sessions.map((s) => ({
     date: formatDayMonth(s.date),
@@ -178,16 +89,7 @@ function ExerciseDetail() {
     volume: Math.round(s.volume),
   }));
 
-  const recorde = sessions.reduce<SessionSummary | null>(
-    (best, s) => (!best || s.bestE1rm > best.bestE1rm ? s : best),
-    null,
-  );
-  const primeiro = sessions[0];
-  const ultimo = sessions.at(-1);
-  const ganho =
-    primeiro && ultimo && primeiro.bestE1rm > 0
-      ? ((ultimo.bestE1rm - primeiro.bestE1rm) / primeiro.bestE1rm) * 100
-      : null;
+  const { recorde, ganho } = exerciseProgress(sessions);
 
   // Volta para onde a pessoa estava: a biblioteca, uma rotina do Plano…
   const voltar = <BackButton fallback="/exercises" />;

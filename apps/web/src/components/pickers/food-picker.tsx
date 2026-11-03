@@ -14,16 +14,20 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { ArrowLeft, ChevronRight, Clock, Loader2, Minus, Plus } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { queryKeys } from "@/data/query-keys";
-import { num, unwrapList } from "@/data/supabase-helpers";
+import { queryKeys } from "@forja/app-core/data/query-keys";
+import {
+  FOOD_SEARCH_LIMIT as LIMITE_RESULTADOS,
+  searchFoods,
+  type FoodOption,
+  type PickedFood,
+} from "@forja/app-core/data/foods";
 import {
   RECIPE_CATEGORIES,
   fetchRecipes,
   recipeCategoryOf,
   type RecipeSummary,
-} from "@/data/recipes";
-import { useDebouncedValue } from "@/hooks/use-debounced-value";
+} from "@forja/app-core/data/recipes";
+import { useDebouncedValue } from "@forja/app-core/hooks/use-debounced-value";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,42 +48,17 @@ import {
   SearchField,
 } from "@/components/pickers/search-dialog";
 import { ErrorState } from "@/components/query-boundary";
-import { CATEGORY_EMOJI } from "@/lib/food-emoji";
+import { CATEGORY_EMOJI } from "@forja/app-core/lib/food-emoji";
 import { cn, searchWords } from "@/lib/utils";
 
-export type PickedFood = {
-  id: string;
-  name: string;
-  brand: string | null;
-  servingSizeG: number;
-  kcal: number;
-};
+export type { PickedFood };
 
-/** O alimento como o seletor o mostra: macros `null` quando o catálogo não tem o dado. */
-type FoodOption = PickedFood & {
-  proteinG: number | null;
-  carbsG: number | null;
-  fatG: number | null;
-  imageUrl: string | null;
-  category: string | null;
-  /** Medida caseira ("fatia", "colher de sopa") e quanto ela pesa. */
-  measure: string | null;
-  measureG: number | null;
-};
-
-/** Quantidades comuns — evitam digitação no celular durante a refeição. */
 const QUICK_GRAMS = [50, 100, 150, 200, 300];
 const PORCOES = [0.5, 1, 1.5, 2, 3];
-const LIMITE_RESULTADOS = 50;
 
 const kcalFmt = (n: number) => Math.round(n).toLocaleString("pt-BR");
 const gFmt = (n: number) => n.toLocaleString("pt-BR", { maximumFractionDigits: n < 10 ? 1 : 0 });
 const porcaoFmt = (n: number) => (n === 0.5 ? "½" : n.toLocaleString("pt-BR"));
-/** Número do catálogo, ou `null` quando ausente — dado que falta não vira zero. */
-const opcional = (v: unknown) => {
-  const n = num(v, Number.NaN);
-  return Number.isNaN(n) ? null : n;
-};
 
 export function FoodPicker({
   trigger,
@@ -132,31 +111,7 @@ export function FoodPicker({
     enabled: open && aba === "alimentos" && !selected,
     // Enquanto a nova busca carrega, a lista anterior fica (esmaecida) em vez de piscar.
     placeholderData: keepPreviousData,
-    queryFn: async () => {
-      let query = supabase
-        .from("foods")
-        .select(
-          "id, name, brand, serving_size_g, kcal, protein_g, carbs_g, fat_g, image_url, category, household_measure, household_grams",
-        )
-        .is("deleted_at", null)
-        .order("name")
-        .limit(LIMITE_RESULTADOS);
-      for (const w of searchWords(debouncedTerm)) query = query.ilike("name", `%${w}%`);
-      return unwrapList("buscar alimentos", await query).map((f): FoodOption => ({
-        id: f.id,
-        name: f.name,
-        brand: f.brand,
-        servingSizeG: num(f.serving_size_g, 100),
-        kcal: num(f.kcal),
-        proteinG: opcional(f.protein_g),
-        carbsG: opcional(f.carbs_g),
-        fatG: opcional(f.fat_g),
-        imageUrl: f.image_url,
-        category: f.category,
-        measure: f.household_measure,
-        measureG: opcional(f.household_grams) || null,
-      }));
-    },
+    queryFn: () => searchFoods(debouncedTerm),
   });
 
   const receitas = useQuery({

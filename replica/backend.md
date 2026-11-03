@@ -2,12 +2,12 @@
 
 Auth, banco e RLS já existiam no Forja. O delta:
 
-| peça | onde | estado |
-| --- | --- | --- |
+| peça                                                            | onde                                                   | estado                                                              |
+| --------------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------- |
 | `subscriptions` + `is_premium()` + `apply_subscription_event()` | `supabase/migrations/20261009120000_subscriptions.sql` | testado em Postgres descartável; **não aplicado no projeto remoto** |
-| Edge Function `billing-webhook` (RevenueCat) | `supabase/functions/billing-webhook/` | `deno check` ok, 4 testes do mapeamento ok; **não implantada** |
-| `verify_jwt = false` para o webhook | `supabase/config.toml` | — |
-| `REVENUECAT_WEBHOOK_AUTH` | `.env.example` | sem valor |
+| Edge Function `billing-webhook` (RevenueCat)                    | `supabase/functions/billing-webhook/`                  | `deno check` ok, 4 testes do mapeamento ok; **não implantada**      |
+| `verify_jwt = false` para o webhook                             | `supabase/config.toml`                                 | —                                                                   |
+| `REVENUECAT_WEBHOOK_AUTH`                                       | `.env.example`                                         | sem valor                                                           |
 
 ## O que você precisa fazer (contas e chaves são suas)
 

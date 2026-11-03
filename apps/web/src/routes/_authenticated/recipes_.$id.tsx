@@ -1,8 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { queryKeys } from "@/data/query-keys";
-import { assertOk, errorMessage, num, unwrap, unwrapList } from "@/data/supabase-helpers";
+import { queryKeys } from "@forja/app-core/data/query-keys";
+import { errorMessage, num } from "@forja/app-core/data/supabase-helpers";
+import {
+  addRecipeItem,
+  fetchRecipe,
+  fetchRecipeItems,
+  logRecipeToDiary,
+  recipeItemPortion,
+  removeRecipeItem,
+  saveRecipe,
+  setRecipeItemGrams,
+} from "@forja/app-core/data/recipes";
 import { useCurrentUserId } from "@/hooks/use-current-user";
 import { PageBody, PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
@@ -31,9 +40,9 @@ import {
 import { ArrowLeft, Plus, Trash2, Save, UtensilsCrossed } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { MEALS, type MealValue } from "@/lib/labels";
-import { todayISO } from "@/lib/date";
-import { nutritionTotals, perServing, portionMacros, type Portion } from "@forja/domain";
+import { MEALS, type MealValue } from "@forja/app-core/lib/labels";
+import { todayISO } from "@forja/app-core/lib/date";
+import { nutritionTotals, perServing, portionMacros } from "@forja/domain";
 
 export const Route = createFileRoute("/_authenticated/recipes_/$id")({
   head: () => ({
@@ -47,36 +56,6 @@ export const Route = createFileRoute("/_authenticated/recipes_/$id")({
   component: RecipeEditor,
 });
 
-type RecipeItem = {
-  id: string;
-  grams: number;
-  foods: {
-    id: string;
-    name: string;
-    kcal: number;
-    protein_g: number;
-    carbs_g: number;
-    fat_g: number;
-    fiber_g: number;
-    serving_size_g: number;
-  } | null;
-};
-
-function toPortion(item: RecipeItem): Portion {
-  const f = item.foods;
-  return {
-    food: {
-      servingSizeG: f?.serving_size_g ?? 100,
-      kcal: f?.kcal ?? 0,
-      proteinG: f?.protein_g ?? 0,
-      carbsG: f?.carbs_g ?? 0,
-      fatG: f?.fat_g ?? 0,
-      fiberG: f?.fiber_g ?? 0,
-    },
-    grams: item.grams,
-  };
-}
-
 function RecipeEditor() {
   const { id } = Route.useParams();
   const qc = useQueryClient();
@@ -88,23 +67,12 @@ function RecipeEditor() {
 
   const recipe = useQuery({
     queryKey: queryKeys.recipes.detail(id),
-    queryFn: async () =>
-      unwrap("carregar receita", await supabase.from("recipes").select("*").eq("id", id).single()),
+    queryFn: () => fetchRecipe(id),
   });
 
   const items = useQuery({
     queryKey: queryKeys.recipes.items(id),
-    queryFn: async () =>
-      unwrapList(
-        "carregar ingredientes",
-        await supabase
-          .from("recipe_items")
-          .select(
-            "id, grams, foods(id, name, kcal, protein_g, carbs_g, fat_g, fiber_g, serving_size_g)",
-          )
-          .eq("recipe_id", id)
-          .order("created_at"),
-      ) as RecipeItem[],
+    queryFn: () => fetchRecipeItems(id),
   });
 
   useEffect(() => {
@@ -117,21 +85,7 @@ function RecipeEditor() {
   const invalidateItems = () => qc.invalidateQueries({ queryKey: queryKeys.recipes.items(id) });
 
   const save = useMutation({
-    mutationFn: async () => {
-      const trimmed = name.trim();
-      if (!trimmed) throw new Error("Dê um nome à receita.");
-      assertOk(
-        "salvar receita",
-        await supabase
-          .from("recipes")
-          .update({
-            name: trimmed,
-            servings: Math.max(1, servings || 1),
-            notes: notes.trim() || null,
-          })
-          .eq("id", id),
-      );
-    },
+    mutationFn: () => saveRecipe(id, { name, servings, notes }),
     onSuccess: () => {
       toast.success("Receita salva");
       void qc.invalidateQueries({ queryKey: queryKeys.recipes.all });
@@ -140,65 +94,41 @@ function RecipeEditor() {
   });
 
   const addItem = useMutation({
-    mutationFn: async ({ foodId, grams }: { foodId: string; grams: number }) => {
-      assertOk(
-        "adicionar ingrediente",
-        await supabase.from("recipe_items").insert({ recipe_id: id, food_id: foodId, grams }),
-      );
-    },
+    mutationFn: ({ foodId, grams }: { foodId: string; grams: number }) =>
+      addRecipeItem(id, foodId, grams),
     onSuccess: () => void invalidateItems(),
     onError: (e) => toast.error(errorMessage(e)),
   });
 
   const updateItem = useMutation({
-    mutationFn: async ({ itemId, grams }: { itemId: string; grams: number }) => {
-      assertOk(
-        "atualizar ingrediente",
-        await supabase.from("recipe_items").update({ grams }).eq("id", itemId),
-      );
-    },
+    mutationFn: ({ itemId, grams }: { itemId: string; grams: number }) =>
+      setRecipeItemGrams(itemId, grams),
     onSuccess: () => void invalidateItems(),
     onError: (e) => toast.error(errorMessage(e)),
   });
 
   const removeItem = useMutation({
-    mutationFn: async (itemId: string) => {
-      assertOk(
-        "remover ingrediente",
-        await supabase.from("recipe_items").delete().eq("id", itemId),
-      );
-    },
+    mutationFn: removeRecipeItem,
     onSuccess: () => void invalidateItems(),
     onError: (e) => toast.error(errorMessage(e)),
   });
 
   // `items.data ?? []` criaria um array novo a cada render, invalidando o memo.
   const list = useMemo(() => items.data ?? [], [items.data]);
-  const totals = useMemo(() => nutritionTotals(list.map(toPortion)), [list]);
+  const totals = useMemo(() => nutritionTotals(list.map(recipeItemPortion)), [list]);
   const porPorcao = perServing(totals, servings);
 
   const logToDiary = useMutation({
-    mutationFn: async ({ meal, portions }: { meal: MealValue; portions: number }) => {
-      if (list.length === 0) throw new Error("Adicione ingredientes antes de lançar no diário.");
-      if (!Number.isFinite(portions) || portions <= 0)
-        throw new Error("Informe um número de porções válido.");
-
-      const today = todayISO();
-      const inserts = list
-        .filter((it) => it.foods)
-        .map((it) => ({
-          user_id: userId,
-          food_id: it.foods!.id,
-          log_date: today,
-          meal_slot: meal,
-          grams: (num(it.grams) / Math.max(1, servings)) * portions,
-          servings: 1,
-          notes: `Da receita: ${name}`,
-        }));
-
-      assertOk("lançar receita no diário", await supabase.from("food_log_entries").insert(inserts));
-      return today;
-    },
+    mutationFn: ({ meal, portions }: { meal: MealValue; portions: number }) =>
+      logRecipeToDiary({
+        userId,
+        date: todayISO(),
+        meal,
+        name,
+        servings,
+        portions,
+        items: list,
+      }),
     onSuccess: (today) => {
       toast.success("Adicionado ao diário de hoje");
       // Antes o cache do diário não era invalidado: ao navegar para /diet o
@@ -353,7 +283,7 @@ function RecipeEditor() {
               ) : (
                 <ul className="divide-y divide-border">
                   {list.map((it) => {
-                    const macros = portionMacros(toPortion(it));
+                    const macros = portionMacros(recipeItemPortion(it));
                     return (
                       <li key={it.id} className="flex items-center gap-3 py-3">
                         <UtensilsCrossed

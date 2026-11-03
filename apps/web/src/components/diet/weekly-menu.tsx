@@ -11,16 +11,16 @@ import {
   weekdayOf,
   type Weekday,
 } from "@forja/domain";
-import { ensureActiveMealPlan, type ActiveMealPlan } from "@/data/meal-plans";
+import { ensureActiveMealPlan, type ActiveMealPlan } from "@forja/app-core/data/meal-plans";
 import {
   addPlanItem,
   copyDay,
   itensDoDia,
   refreshFutureDays,
   removePlanItem,
-} from "@/data/diet-week";
-import { queryKeys } from "@/data/query-keys";
-import { errorMessage } from "@/data/supabase-helpers";
+} from "@forja/app-core/data/diet-week";
+import { queryKeys } from "@forja/app-core/data/query-keys";
+import { errorMessage } from "@forja/app-core/data/supabase-helpers";
 import { useCurrentUserId } from "@/hooks/use-current-user";
 import { FoodPicker } from "@/components/pickers/food-picker";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -41,10 +41,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { CATEGORY_EMOJI } from "@/lib/food-emoji";
+import { CATEGORY_EMOJI } from "@forja/app-core/lib/food-emoji";
 import { MACRO_COLORS, MacroRing } from "@/components/home/macro-rings";
-import { MEAL_LABELS, label } from "@/lib/labels";
-import { todayISO } from "@/lib/date";
+import { MEAL_LABELS, label } from "@forja/app-core/lib/labels";
+import { todayISO } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
 
 /** Segunda primeiro, como no Plano. */
@@ -211,14 +211,14 @@ export function WeeklyMenu() {
         <div className="mt-5 grid grid-cols-3 gap-2">
           <MacroRing
             nome="Proteína"
-            icone="🥤"
+            icone="🥩"
             valor={t.proteinG}
             meta={p.proteinTarget}
             cor={MACRO_COLORS.protein}
           />
           <MacroRing
             nome="Carbo"
-            icone="🍚"
+            icone="🫘"
             valor={t.carbsG}
             meta={p.carbsTarget}
             cor={MACRO_COLORS.carbs}

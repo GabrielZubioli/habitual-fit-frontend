@@ -16,9 +16,9 @@ import {
   Stepper,
   WeekdayPicker,
 } from "@/components/onboarding/controls";
-import { answersSchema, type Answers } from "@/lib/onboarding/schema";
+import { answersSchema, type Answers } from "@forja/app-core/lib/onboarding/schema";
 import { loadDraft, loadStep, saveDraft, saveStep } from "@/lib/onboarding/storage";
-import { visibleSteps } from "@/lib/onboarding/steps";
+import { visibleSteps } from "@forja/app-core/lib/onboarding/steps";
 import {
   CONSISTENCY_OPTIONS,
   DURATION_OPTIONS,
@@ -38,10 +38,10 @@ import {
   recommendedDays,
   suggestWeekdays,
   weightGoalFeedback,
-} from "@/lib/onboarding/options";
+} from "@forja/app-core/lib/onboarding/options";
 import { WEEKDAY_LABELS, type Weekday } from "@forja/domain";
 import { BrandSymbol } from "@/components/brand-logo";
-import { hasCompletedOnboarding } from "@/data/onboarding";
+import { hasCompletedOnboarding } from "@forja/app-core/data/onboarding";
 
 /**
  * A raiz do app: boas-vindas e, para quem já tem conta, o questionário.

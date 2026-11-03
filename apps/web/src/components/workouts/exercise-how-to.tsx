@@ -1,7 +1,7 @@
 import { AlertTriangle, Languages, Lightbulb, ListOrdered } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { INJURY_OPTIONS } from "@/lib/onboarding/options";
+import { INJURY_OPTIONS } from "@forja/app-core/lib/onboarding/options";
 import { cn } from "@/lib/utils";
 
 /**

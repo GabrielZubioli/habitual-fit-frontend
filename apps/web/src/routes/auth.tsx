@@ -13,7 +13,7 @@ import {
   User,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { errorMessage } from "@/data/supabase-helpers";
+import { errorMessage } from "@forja/app-core/data/supabase-helpers";
 import { Button } from "@/components/ui/button";
 import { GoogleSignIn } from "@/components/google-sign-in";
 import { Input } from "@/components/ui/input";

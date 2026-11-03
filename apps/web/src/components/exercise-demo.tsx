@@ -13,12 +13,9 @@
 import { ExternalLink, PlayCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { videoSearchUrl } from "@/data/exercise-media";
+import { isSafeUrl, videoSearchUrl } from "@forja/app-core/data/exercise-media";
 
-/** Só http(s) vira `href` — o banco valida o mesmo, mas nunca confie num lado só. */
-export function isSafeUrl(url: string | null | undefined): url is string {
-  return typeof url === "string" && /^https?:\/\//i.test(url);
-}
+export { isSafeUrl };
 
 // A busca por vídeo mora em `exercise-media.ts`, junto do resto da mídia de
 // exercício. Havia duas implementações da mesma URL, com termos de busca

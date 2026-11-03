@@ -18,9 +18,12 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspace @forja/web",
     "test:domain": "npm run test --workspace @forja/domain",
-    "test:all": "npm run test:domain && npm run test",
+    "test:all": "npm run test:domain && npm run test:core && npm run test && npm run test:scripts",
     "catalog:body-map": "node scripts/build-body-map.mjs",
-    "verify": "npm run typecheck && npm run lint && npm run test:all && npm run build"
+    "tokens:mobile": "node scripts/build-mobile-tokens.mjs",
+    "verify": "npm run typecheck && npm run lint && npm run test:all && npm run build",
+    "test:scripts": "node --test \"scripts/*.test.mjs\"",
+    "test:core": "npm run test --workspace @forja/app-core"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
@@ -36,5 +39,12 @@
   },
   "engines": {
     "node": ">=22"
+  },
+  "overrides": {
+    "@op-engineering/op-sqlite": "18.2.5",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native-reanimated": "4.5.1",
+    "react-native-worklets": "0.10.1"
   }
 }

@@ -2,9 +2,15 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { assertOk, errorMessage, num } from "@/data/supabase-helpers";
-import { queryKeys } from "@/data/query-keys";
+import { errorMessage } from "@forja/app-core/data/supabase-helpers";
+import {
+  NUTRITION_TARGET_FIELDS,
+  nutritionTargetDraft,
+  parseNutritionTargets,
+  updateProfile,
+  type NutritionTargetKey,
+} from "@forja/app-core/data/profile";
+import { queryKeys } from "@forja/app-core/data/query-keys";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,36 +22,19 @@ import { Label } from "@/components/ui/label";
  * nutricionista definiu. Campo vazio = sem meta, e as telas mostram só o
  * consumido. Os limites são os mesmos do banco.
  */
-const CAMPOS = [
-  { key: "daily_kcal_target", rotulo: "Calorias", unidade: "kcal", min: 500, max: 15000 },
-  { key: "protein_g_target", rotulo: "Proteína", unidade: "g", min: 0, max: 2000 },
-  { key: "carbs_g_target", rotulo: "Carboidrato", unidade: "g", min: 0, max: 3000 },
-  { key: "fat_g_target", rotulo: "Gordura", unidade: "g", min: 0, max: 1000 },
-  { key: "fiber_g_target", rotulo: "Fibra", unidade: "g", min: 0, max: 500 },
-] as const;
-
-type Chave = (typeof CAMPOS)[number]["key"];
+const CAMPOS = NUTRITION_TARGET_FIELDS;
+type Chave = NutritionTargetKey;
 type Perfil = { id: string } & Partial<Record<Chave, number | string | null>>;
 
 export function ManualNutritionTargets({ profile }: { profile: Perfil }) {
   const qc = useQueryClient();
-  const inicial = () =>
-    Object.fromEntries(
-      CAMPOS.map((c) => [
-        c.key,
-        profile[c.key] != null ? String(Math.round(num(profile[c.key]))) : "",
-      ]),
-    ) as Record<Chave, string>;
+  const inicial = () => nutritionTargetDraft(profile);
   const [valores, setValores] = useState<Record<Chave, string>>(inicial);
   const [erros, setErros] = useState<Partial<Record<Chave, string>>>({});
 
   const salvar = useMutation({
-    mutationFn: async (patch: Record<Chave, number | null>) => {
-      assertOk(
-        "salvar metas nutricionais",
-        await supabase.from("profiles").update(patch).eq("id", profile.id),
-      );
-    },
+    mutationFn: (patch: Record<Chave, number | null>) =>
+      updateProfile(profile.id, patch, "salvar metas nutricionais"),
     onSuccess: (_, patch) => {
       toast.success(
         Object.values(patch).every((v) => v === null) ? "Metas removidas" : "Metas salvas",
@@ -57,24 +46,9 @@ export function ManualNutritionTargets({ profile }: { profile: Perfil }) {
 
   const enviar = (e: React.FormEvent) => {
     e.preventDefault();
-    const novosErros: typeof erros = {};
-    const patch = {} as Record<Chave, number | null>;
-    for (const c of CAMPOS) {
-      const bruto = valores[c.key].trim().replace(",", ".");
-      if (!bruto) {
-        patch[c.key] = null;
-        continue;
-      }
-      const n = Number(bruto);
-      if (!Number.isFinite(n) || n < c.min || n > c.max) {
-        novosErros[c.key] =
-          `Entre ${c.min.toLocaleString("pt-BR")} e ${c.max.toLocaleString("pt-BR")} ${c.unidade}`;
-      } else {
-        patch[c.key] = Math.round(n);
-      }
-    }
-    setErros(novosErros);
-    if (Object.keys(novosErros).length === 0) salvar.mutate(patch);
+    const r = parseNutritionTargets(valores);
+    setErros(r.ok ? {} : r.erros);
+    if (r.ok) salvar.mutate(r.patch);
   };
 
   const algumaMeta = CAMPOS.some((c) => profile[c.key] != null);

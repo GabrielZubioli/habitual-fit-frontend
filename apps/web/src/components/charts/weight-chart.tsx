@@ -55,10 +55,7 @@ export default function WeightChart({
 
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <ComposedChart
-        data={data as WeightPoint[]}
-        margin={{ top: 8, right: 8, bottom: 0, left: 0 }}
-      >
+      <ComposedChart data={data as WeightPoint[]} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
         <defs>
           {/*
             Preenchimento sob a tendência. Vai de 22% a zero: forte o bastante

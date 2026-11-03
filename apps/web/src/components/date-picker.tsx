@@ -3,7 +3,7 @@ import { CalendarDays, ChevronDown } from "lucide-react";
 import { ptBR } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { formatDate, fromISODate, toISODate, todayISO } from "@/lib/date";
+import { formatDate, fromISODate, toISODate, todayISO } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
 
 /**

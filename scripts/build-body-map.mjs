@@ -1,7 +1,7 @@
 /**
  * Gera a geometria do mapa muscular.
  *
- * Uso: `node scripts/catalog/build-body-map.mjs`
+ * Uso: `npm run catalog:body-map`
  *
  * ## Por que não desenhar à mão
  *
@@ -25,8 +25,9 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const ROOT = join(HERE, "..", "..");
-const OUT = join(ROOT, "src", "components", "body-map", "muscle-paths.ts");
+const ROOT = join(HERE, "..");
+// No app-core: o web e o app nativo desenham o mesmo boneco.
+const OUT = join(ROOT, "packages", "app-core", "src", "lib", "body-map", "muscle-paths.ts");
 
 const BASE = "https://raw.githubusercontent.com/HichamELBSI/react-native-body-highlighter/main";
 

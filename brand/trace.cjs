@@ -11,7 +11,12 @@ const out = {};
 const proxima = (i) => {
   if (i >= partes.length) {
     fs.writeFileSync(path.join(dir, "paths.json"), JSON.stringify(out));
-    console.log("ok", Object.keys(out).map((k) => `${k}:${out[k].d.length}`).join(" "));
+    console.log(
+      "ok",
+      Object.keys(out)
+        .map((k) => `${k}:${out[k].d.length}`)
+        .join(" "),
+    );
     return;
   }
   const nome = partes[i];

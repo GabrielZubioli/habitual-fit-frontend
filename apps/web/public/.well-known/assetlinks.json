@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.habitualfit.myapp",
+      "sha256_cert_fingerprints": [
+        "C5:4C:9A:5B:60:19:5D:D2:53:1C:44:BF:03:E2:CF:7F:F6:6F:25:76:DE:E6:00:4D:91:30:90:05:A2:14:92:EB",
+        "5D:89:F2:38:25:74:AE:A3:58:17:1C:C6:97:9F:EF:BF:62:CE:DE:B5:AE:F7:34:41:3D:17:4D:60:2D:EE:94:6B"
+      ]
+    }
+  }
+]

@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { errorMessage } from "@/data/supabase-helpers";
+import { errorMessage } from "@forja/app-core/data/supabase-helpers";
 
 type QueryLike<T> = {
   data: T | undefined;

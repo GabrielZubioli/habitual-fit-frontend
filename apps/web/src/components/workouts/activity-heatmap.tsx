@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { addDays, startOfWeek, subWeeks } from "date-fns";
-import { fetchCompletedWorkouts } from "@/data/routines";
-import { queryKeys } from "@/data/query-keys";
-import { errorMessage } from "@/data/supabase-helpers";
+import { fetchCompletedWorkouts } from "@forja/app-core/data/routines";
+import { queryKeys } from "@forja/app-core/data/query-keys";
+import { errorMessage } from "@forja/app-core/data/supabase-helpers";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/query-boundary";
-import { formatDate, toISODate } from "@/lib/date";
+import { formatDate, toISODate } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
 
 const WEEKS = 53;
@@ -38,7 +38,9 @@ export function ActivityHeatmap() {
 
   const nDia = dia ? (porDia.get(dia) ?? 0) : 0;
   const semanasAtivas = new Set(
-    treinos.data.map((t) => toISODate(startOfWeek(new Date(`${t.date}T12:00:00`), { weekStartsOn: 1 }))),
+    treinos.data.map((t) =>
+      toISODate(startOfWeek(new Date(`${t.date}T12:00:00`), { weekStartsOn: 1 })),
+    ),
   ).size;
 
   return (

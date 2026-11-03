@@ -1,8 +1,14 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { queryKeys } from "@/data/query-keys";
-import { assertOk, errorMessage, num, unwrap, unwrapList } from "@/data/supabase-helpers";
+import { queryKeys } from "@forja/app-core/data/query-keys";
+import {
+  assertOk,
+  errorMessage,
+  num,
+  unwrap,
+  unwrapList,
+} from "@forja/app-core/data/supabase-helpers";
 import { useCurrentUserId } from "@/hooks/use-current-user";
 import { PageBody, PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,7 +24,7 @@ import { ExercisePicker } from "@/components/pickers/exercise-picker";
 import { Plus, Trash2, ArrowUp, ArrowDown, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { MUSCLE_LABELS, label } from "@/lib/labels";
+import { MUSCLE_LABELS, label } from "@forja/app-core/lib/labels";
 
 export const Route = createFileRoute("/_authenticated/workouts_/templates/$id")({
   head: () => ({

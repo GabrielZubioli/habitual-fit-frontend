@@ -13,9 +13,8 @@
 import { type ReactNode, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Repeat } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { unwrapList } from "@/data/supabase-helpers";
-import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { searchSubstitutes, type SubstituteCandidate } from "@forja/app-core/data/exercise-search";
+import { useDebouncedValue } from "@forja/app-core/hooks/use-debounced-value";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import {
@@ -28,21 +27,9 @@ import {
 } from "@/components/pickers/search-dialog";
 import { PickerThumb } from "@/components/pickers/exercise-picker";
 import { ErrorState } from "@/components/query-boundary";
-import { EQUIPMENT_LABELS, MUSCLE_LABELS, label } from "@/lib/labels";
-import { searchWords } from "@/lib/utils";
+import { EQUIPMENT_LABELS, MUSCLE_LABELS, label } from "@forja/app-core/lib/labels";
 
-export type SubstituteCandidate = {
-  id: string;
-  name: string;
-  primary_muscle: string;
-  equipment: string;
-  category: string;
-  image_urls: string[] | null;
-  external_id: string | null;
-  media_id: string | null;
-  media_ref: string | null;
-  media_source: string | null;
-};
+export type { SubstituteCandidate };
 
 export function SubstituteExerciseDialog({
   currentExerciseId,
@@ -71,29 +58,13 @@ export function SubstituteExerciseDialog({
     queryKey: ["substitutes", primaryMuscle, currentExerciseId, debouncedTerm],
     enabled: open,
     staleTime: 5 * 60_000,
-    queryFn: async () => {
-      let query = supabase
-        .from("exercises")
-        .select(
-          "id, name, primary_muscle, equipment, category, image_urls, external_id, media_id, media_ref, media_source",
-        )
-        .is("deleted_at", null)
-        .eq("primary_muscle", primaryMuscle as never)
-        .neq("id", currentExerciseId)
-        .order("name")
-        .limit(50);
-      for (const w of searchWords(debouncedTerm)) query = query.ilike("name", `%${w}%`);
-
-      const rows = unwrapList("buscar alternativas", await query) as SubstituteCandidate[];
-
-      // Mesmo equipamento primeiro: é a troca com menor mudança de padrão.
-      if (!currentEquipment) return rows;
-      return [...rows].sort((a, b) => {
-        const pesoA = a.equipment === currentEquipment ? 0 : 1;
-        const pesoB = b.equipment === currentEquipment ? 0 : 1;
-        return pesoA - pesoB || a.name.localeCompare(b.name, "pt-BR");
-      });
-    },
+    queryFn: () =>
+      searchSubstitutes({
+        primaryMuscle,
+        excludeId: currentExerciseId,
+        term: debouncedTerm,
+        equipment: currentEquipment,
+      }),
   });
 
   const escolher = async (exercise: SubstituteCandidate) => {

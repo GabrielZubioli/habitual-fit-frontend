@@ -3,12 +3,15 @@ import { useMemo, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { addDays, startOfWeek } from "date-fns";
 import { CalendarDays, Dumbbell, Flame, History, Scale, Trophy } from "lucide-react";
-import { queryKeys } from "@/data/query-keys";
-import { errorMessage, unwrapList } from "@/data/supabase-helpers";
-import { supabase } from "@/integrations/supabase/client";
-import { fetchActiveRoutine, fetchCompletedWorkouts } from "@/data/routines";
-import { fetchMuscleSetEntries, fetchPersonalRecords } from "@/data/workouts";
-import { fetchWeighIns, fetchWorkoutCounts } from "@/data/body";
+import { queryKeys } from "@forja/app-core/data/query-keys";
+import { errorMessage } from "@forja/app-core/data/supabase-helpers";
+import { fetchActiveRoutine, fetchCompletedWorkouts } from "@forja/app-core/data/routines";
+import {
+  fetchMuscleSetEntries,
+  fetchPersonalRecords,
+  fetchRecentSessions,
+} from "@forja/app-core/data/workouts";
+import { fetchWeighIns, fetchWorkoutCounts } from "@forja/app-core/data/body";
 import { PageBody, PageHeader, headerIconClass } from "@/components/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/query-boundary";
@@ -16,9 +19,9 @@ import { BodyMap } from "@/components/body-map/body-map";
 import { LazyWeeklyChart } from "@/components/charts/lazy-chart";
 import { ActivityHeatmap } from "@/components/workouts/activity-heatmap";
 import { RecoveryCard } from "@/components/workouts/progress-cards";
-import { formatDate, formatDuration, toISODate, todayISO } from "@/lib/date";
+import { formatDate, formatDuration, toISODate, todayISO } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
-import { diasSeguidos } from "@/lib/streak";
+import { diasSeguidos } from "@forja/app-core/lib/streak";
 
 /**
  * Estatísticas: os números, a constância do ano e o corpo — o que foi
@@ -407,17 +410,7 @@ function MusculosCard() {
 function Historico() {
   const historico = useQuery({
     queryKey: queryKeys.workouts.history(),
-    queryFn: async () =>
-      unwrapList(
-        "carregar histórico",
-        await supabase
-          .from("workout_sessions")
-          .select("id, name, started_at, duration_seconds, total_volume_kg")
-          .is("deleted_at", null)
-          .not("ended_at", "is", null)
-          .order("started_at", { ascending: false })
-          .limit(10),
-      ),
+    queryFn: () => fetchRecentSessions(10),
   });
   const lista = historico.data ?? [];
   const maxVolume = Math.max(1, ...lista.map((s) => Number(s.total_volume_kg ?? 0)));

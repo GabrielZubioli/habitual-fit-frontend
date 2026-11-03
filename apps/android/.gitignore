@@ -1,0 +1,10 @@
+# Chave de upload e senhas: NUNCA commitar. Guarde um backup fora do repo.
+android.keystore
+keystore.env
+local.properties
+.gradle/
+build/
+app/build/
+*.aab
+*.apk
+*.idsig

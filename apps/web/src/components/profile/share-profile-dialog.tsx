@@ -10,8 +10,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Download, Lock, Share2 } from "lucide-react";
 import { toast } from "sonner";
-import { initialsFrom, resolveAvatarUrl } from "@/data/avatar";
-import { errorMessage } from "@/data/supabase-helpers";
+import { initialsFrom, resolveAvatarUrl } from "@forja/app-core/data/avatar";
+import { errorMessage } from "@forja/app-core/data/supabase-helpers";
 import {
   Dialog,
   DialogContent,
@@ -25,10 +25,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   OPCOES_PADRAO,
   conteudoCartao,
+  numerosCartao,
   type ConteudoCartao,
   type OpcoesCartao,
   type PerfilPublicavel,
-} from "@/lib/share-profile";
+} from "@forja/app-core/lib/share-profile";
 
 const ARQUIVO = "perfil-habitual-fit.png";
 
@@ -370,14 +371,7 @@ function desenhar(
   }
 
   // Números, lado a lado.
-  const numeros = [
-    c.treinos !== null && { valor: n(c.treinos), rotulo: c.treinos === 1 ? "treino" : "treinos" },
-    c.sequencia !== null && {
-      valor: n(c.sequencia),
-      rotulo: c.sequencia === 1 ? "dia seguido" : "dias seguidos",
-    },
-    c.metaPercent !== null && { valor: `${Math.round(c.metaPercent)}%`, rotulo: "da meta de peso" },
-  ].filter((v): v is { valor: string; rotulo: string } => Boolean(v));
+  const numeros = numerosCartao(c);
   if (numeros.length > 0) {
     y += 56;
     const gap = 24;

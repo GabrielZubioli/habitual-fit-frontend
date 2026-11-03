@@ -1,8 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { queryKeys } from "@/data/query-keys";
-import { assertOk, errorMessage, num, unwrapList } from "@/data/supabase-helpers";
+import { queryKeys } from "@forja/app-core/data/query-keys";
+import { assertOk, errorMessage, num, unwrapList } from "@forja/app-core/data/supabase-helpers";
+import {
+  MEASURE_FIELDS,
+  MEASURE_GROUPS,
+  WEIGHT_RANGE,
+  deleteMeasurement,
+  fetchMeasurements,
+  fetchWeighIns,
+  measureInvalid,
+  saveBodyWeight,
+  saveMeasurements,
+  type MeasureKey,
+} from "@forja/app-core/data/body";
 import { useCurrentUserId } from "@/hooks/use-current-user";
 import { PageBody, PageHeader } from "@/components/page-header";
 import { ProgressOverview } from "@/components/progress/progress-overview";
@@ -27,8 +39,12 @@ import { useMemo, useState } from "react";
 import { ema } from "@forja/domain";
 import { LazyMeasurementSparkline, LazyWeightChart } from "@/components/charts/lazy-chart";
 import { subDays } from "date-fns";
-import { formatDayMonth, formatShortDate, toISODate, todayISO } from "@/lib/date";
-import { PHOTOS_BUCKET, usePhotoSessions, useSignedPhotoUrls } from "@/data/progress-photos";
+import { formatDayMonth, formatShortDate, toISODate, todayISO } from "@forja/app-core/lib/date";
+import {
+  PHOTOS_BUCKET,
+  usePhotoSessions,
+  useSignedPhotoUrls,
+} from "@forja/app-core/data/progress-photos";
 import { NewProgressDialog } from "@/components/progress/new-progress-dialog";
 import { PhotoCompare } from "@/components/progress/photo-compare";
 import { PhotoTimeline } from "@/components/progress/photo-timeline";
@@ -52,9 +68,6 @@ const HISTORY_DAYS = 180;
  * já gravadas continuam aí — só a aba sai da tela enquanto isto for `false`.
  */
 const FOTOS_LIBERADAS = false;
-
-/** Faixa plausível de peso corporal — evita erros de digitação virarem dados. */
-const WEIGHT_RANGE = { min: 20, max: 400 };
 
 /**
  * Progresso corporal.
@@ -120,17 +133,7 @@ function WeightPanel() {
 
   const weights = useQuery({
     queryKey: queryKeys.body.weights(HISTORY_DAYS),
-    queryFn: async () => {
-      const from = toISODate(subDays(new Date(), HISTORY_DAYS));
-      return unwrapList(
-        "carregar histórico de peso",
-        await supabase
-          .from("body_weights")
-          .select("log_date, weight_kg")
-          .gte("log_date", from)
-          .order("log_date"),
-      );
-    },
+    queryFn: () => fetchWeighIns(HISTORY_DAYS),
   });
 
   const value = Number(weight);
@@ -141,19 +144,7 @@ function WeightPanel() {
     value > WEIGHT_RANGE.max;
 
   const save = useMutation({
-    mutationFn: async () => {
-      if (invalid)
-        throw new Error(`Informe um peso entre ${WEIGHT_RANGE.min} e ${WEIGHT_RANGE.max} kg.`);
-      assertOk(
-        "registrar peso",
-        await supabase
-          .from("body_weights")
-          .upsert(
-            { user_id: userId, log_date: logDate, weight_kg: value },
-            { onConflict: "user_id,log_date" },
-          ),
-      );
-    },
+    mutationFn: () => saveBodyWeight(userId, logDate, value),
     onSuccess: () => {
       toast.success("Peso registrado");
       setWeight("");
@@ -165,11 +156,11 @@ function WeightPanel() {
 
   const chart = useMemo(() => {
     const rows = weights.data ?? [];
-    const series = rows.map((w) => num(w.weight_kg));
+    const series = rows.map((w) => w.kg);
     const smoothed = ema(series, 0.2);
     return rows.map((w, i) => ({
-      date: formatDayMonth(w.log_date),
-      peso: num(w.weight_kg),
+      date: formatDayMonth(w.date),
+      peso: w.kg,
       tendencia: Number((smoothed[i] ?? 0).toFixed(2)),
     }));
   }, [weights.data]);
@@ -276,58 +267,6 @@ function WeightPanel() {
   );
 }
 
-type MeasureKey =
-  | "shoulder_cm"
-  | "chest_cm"
-  | "waist_cm"
-  | "abdomen_cm"
-  | "hip_cm"
-  | "arm_cm"
-  | "forearm_cm"
-  | "thigh_cm"
-  | "calf_cm"
-  | "neck_cm"
-  | "body_fat_pct";
-
-/**
- * As medidas acompanhadas.
- *
- * A tabela `body_measurements` sempre teve onze colunas; a tela mostrava sete.
- * Ombro e panturrilha — duas das medidas que mais mudam com hipertrofia —
- * existiam no banco e não tinham como ser preenchidas por ninguém.
- *
- * `grupo` existe para os onze campos não virarem uma coluna única de onze
- * caixas iguais: separados por região, dá para preencher só o bloco que
- * interessa. Quase ninguém mede tudo toda vez.
- *
- * As faixas não são validação teatral: são o que impede um `180` digitado no
- * campo de braço (a altura, por reflexo) de entrar como circunferência e
- * arruinar a escala do gráfico para sempre.
- */
-const MEASURE_FIELDS: {
-  key: MeasureKey;
-  label: string;
-  unit: string;
-  min: number;
-  max: number;
-  grupo: "Tronco" | "Braços" | "Pernas" | "Composição";
-}[] = [
-  { key: "shoulder_cm", label: "Ombro", unit: "cm", min: 60, max: 200, grupo: "Tronco" },
-  { key: "chest_cm", label: "Peito", unit: "cm", min: 30, max: 250, grupo: "Tronco" },
-  { key: "waist_cm", label: "Cintura", unit: "cm", min: 30, max: 250, grupo: "Tronco" },
-  { key: "abdomen_cm", label: "Abdômen", unit: "cm", min: 30, max: 250, grupo: "Tronco" },
-  { key: "hip_cm", label: "Quadril", unit: "cm", min: 30, max: 250, grupo: "Tronco" },
-  { key: "neck_cm", label: "Pescoço", unit: "cm", min: 20, max: 80, grupo: "Tronco" },
-  { key: "arm_cm", label: "Braço", unit: "cm", min: 10, max: 100, grupo: "Braços" },
-  { key: "forearm_cm", label: "Antebraço", unit: "cm", min: 10, max: 80, grupo: "Braços" },
-  { key: "thigh_cm", label: "Coxa", unit: "cm", min: 20, max: 150, grupo: "Pernas" },
-  { key: "calf_cm", label: "Panturrilha", unit: "cm", min: 15, max: 100, grupo: "Pernas" },
-  { key: "body_fat_pct", label: "% Gordura", unit: "%", min: 1, max: 70, grupo: "Composição" },
-];
-
-/** Regiões na ordem em que aparecem no formulário, de cima para baixo do corpo. */
-const MEASURE_GROUPS = ["Tronco", "Braços", "Pernas", "Composição"] as const;
-
 function MeasurementsPanel() {
   const qc = useQueryClient();
   const userId = useCurrentUserId();
@@ -336,38 +275,14 @@ function MeasurementsPanel() {
 
   const measurements = useQuery({
     queryKey: queryKeys.body.measurements(),
-    queryFn: async () => {
-      const from = toISODate(subDays(new Date(), HISTORY_DAYS));
-      return unwrapList(
-        "carregar medidas",
-        await supabase
-          .from("body_measurements")
-          .select("*")
-          .gte("log_date", from)
-          .order("log_date"),
-      );
-    },
+    queryFn: () => fetchMeasurements(HISTORY_DAYS),
   });
 
   const preenchidos = MEASURE_FIELDS.filter((f) => (values[f.key] ?? "") !== "");
-  const invalidos = preenchidos.filter((f) => {
-    const v = Number(values[f.key]);
-    return !Number.isFinite(v) || v < f.min || v > f.max;
-  });
+  const invalidos = preenchidos.filter((f) => measureInvalid(f.key, values[f.key] ?? ""));
 
   const save = useMutation({
-    mutationFn: async () => {
-      if (preenchidos.length === 0) throw new Error("Preencha ao menos uma medida.");
-      if (invalidos.length > 0) {
-        throw new Error(`${invalidos[0].label}: valor fora da faixa esperada.`);
-      }
-      const payload: Record<string, number | string> = { user_id: userId, log_date: logDate };
-      for (const f of preenchidos) payload[f.key] = Number(values[f.key]);
-      assertOk(
-        "registrar medidas",
-        await supabase.from("body_measurements").insert(payload as never),
-      );
-    },
+    mutationFn: () => saveMeasurements(userId, logDate, values),
     onSuccess: () => {
       toast.success("Medidas registradas");
       setValues({});
@@ -377,9 +292,7 @@ function MeasurementsPanel() {
   });
 
   const remove = useMutation({
-    mutationFn: async (id: string) => {
-      assertOk("excluir medida", await supabase.from("body_measurements").delete().eq("id", id));
-    },
+    mutationFn: deleteMeasurement,
     onSuccess: () => {
       toast.success("Registro excluído");
       void qc.invalidateQueries({ queryKey: queryKeys.body.measurements() });

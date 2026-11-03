@@ -1,6 +1,6 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import { MUSCLE_LABELS, label } from "@/lib/labels";
+import { MUSCLE_LABELS, label } from "@forja/app-core/lib/labels";
 import {
   BODY_OUTLINE,
   MUSCLES_BY_VIEW,
@@ -8,7 +8,17 @@ import {
   VIEW_BOX,
   resolveMuscle,
   type BodyView,
-} from "./muscle-paths";
+} from "@forja/app-core/lib/body-map/muscle-paths";
+import {
+  intensityByGroup,
+  suggestedView,
+  type MuscleIntensity,
+} from "@forja/app-core/lib/body-map/intensity";
+
+export {
+  aggregateMuscleIntensities,
+  type MuscleIntensity,
+} from "@forja/app-core/lib/body-map/intensity";
 
 /**
  * Mapa muscular — o que o treino de hoje estimula.
@@ -47,15 +57,6 @@ import {
  * tamanho mínimo para o músculo não aparecer solto, sem o corpo em volta.
  */
 
-export interface MuscleIntensity {
-  /** Valor de `muscle_t`. */
-  muscle: string;
-  /** 0 a 1. */
-  intensity: number;
-  /** Cor própria do músculo (ex.: fadiga em laranja); sem ela, o verde da marca. */
-  color?: string;
-}
-
 export function BodyMap({
   muscles,
   className,
@@ -88,25 +89,8 @@ export function BodyMap({
     }
     return mapa;
   }, [muscles]);
-  const porGrupo = useMemo(() => {
-    const mapa = new Map<string, number>();
-    for (const m of muscles) {
-      const grupo = resolveMuscle(m.muscle);
-      if (!grupo) continue;
-      // Fica com o **maior** valor, não a soma: vários músculos do banco podem
-      // apontar para o mesmo grupo desenhado (costas + dorsais), e somar
-      // saturaria justamente os que têm mais apelidos.
-      mapa.set(grupo, Math.max(mapa.get(grupo) ?? 0, m.intensity));
-    }
-    return mapa;
-  }, [muscles]);
-
-  /** Vista com mais estímulo. Empate vai para a frente, leitura mais familiar. */
-  const vistaSugerida = useMemo<BodyView>(() => {
-    const soma = (view: BodyView) =>
-      Object.keys(MUSCLES_BY_VIEW[view]).reduce((s, m) => s + (porGrupo.get(m) ?? 0), 0);
-    return soma("back") > soma("front") * 1.05 ? "back" : "front";
-  }, [porGrupo]);
+  const porGrupo = useMemo(() => intensityByGroup(muscles), [muscles]);
+  const vistaSugerida = useMemo(() => suggestedView(porGrupo), [porGrupo]);
 
   const [escolhida, setEscolhida] = useState<BodyView | null>(null);
   // Enquanto o usuário não escolher, a vista acompanha o treino selecionado.
@@ -247,27 +231,4 @@ export function BodyMap({
       )}
     </div>
   );
-}
-
-/**
- * Agrega as contribuições de uma lista de exercícios num conjunto de
- * intensidades normalizado.
- *
- * A normalização é pelo **máximo**, não pela soma: o que interessa é a
- * proporção entre os músculos daquele treino. Dividir pela soma faria um treino
- * de seis exercícios parecer inteiro mais fraco que um de dois.
- */
-export function aggregateMuscleIntensities(
-  contributions: readonly { muscle: string; contribution: number }[],
-): MuscleIntensity[] {
-  const soma = new Map<string, number>();
-  for (const c of contributions) {
-    soma.set(c.muscle, (soma.get(c.muscle) ?? 0) + c.contribution);
-  }
-
-  const maximo = Math.max(...soma.values(), 1);
-  return [...soma.entries()].map(([muscle, valor]) => ({
-    muscle,
-    intensity: valor / maximo,
-  }));
 }

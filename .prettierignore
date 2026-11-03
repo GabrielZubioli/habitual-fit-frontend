@@ -2,9 +2,19 @@ node_modules
 dist
 .output
 .vinxi
+.vercel
 pnpm-lock.yaml
 package-lock.json
 bun.lock
 routeTree.gen.ts
 
 apps/mobile/.expo
+
+# Projetos nativos gerados pelo `expo prebuild`
+apps/mobile/android
+apps/mobile/ios
+
+# Projeto Android gerado pelo Bubblewrap
+apps/android
+
+.playwright-mcp

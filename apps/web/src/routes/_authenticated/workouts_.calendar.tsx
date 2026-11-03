@@ -21,10 +21,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState, ErrorState } from "@/components/query-boundary";
 import { cn } from "@/lib/utils";
 import { RoutineIcon, routineIconOf } from "@/components/workouts/routine-icon";
-import { errorMessage } from "@/data/supabase-helpers";
-import { fetchActiveRoutine, fetchCompletedWorkouts } from "@/data/routines";
-import { queryKeys } from "@/data/query-keys";
-import { formatDate, formatDuration, toISODate, todayISO } from "@/lib/date";
+import { errorMessage } from "@forja/app-core/data/supabase-helpers";
+import { fetchActiveRoutine, fetchCompletedWorkouts } from "@forja/app-core/data/routines";
+import { queryKeys } from "@forja/app-core/data/query-keys";
+import { formatDate, formatDuration, toISODate, todayISO } from "@forja/app-core/lib/date";
 import { WEEKDAY_INITIALS, type Weekday } from "@forja/domain";
 
 export const Route = createFileRoute("/_authenticated/workouts_/calendar")({

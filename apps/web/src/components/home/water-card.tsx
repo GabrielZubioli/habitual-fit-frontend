@@ -5,9 +5,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { queryKeys } from "@/data/query-keys";
-import { errorMessage } from "@/data/supabase-helpers";
-import { addWater, fetchWaterMl, undoLastWater } from "@/data/diet-day";
+import { queryKeys } from "@forja/app-core/data/query-keys";
+import { errorMessage } from "@forja/app-core/data/supabase-helpers";
+import { addWater, fetchWaterMl, undoLastWater } from "@forja/app-core/data/diet-day";
 import { useCurrentUserId } from "@/hooks/use-current-user";
 import { WATER_QUICK_ADD_ML } from "@forja/domain";
 

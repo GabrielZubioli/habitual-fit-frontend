@@ -3,15 +3,17 @@ import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { BookOpen, Clock, Copy, Loader2, Pencil, Plus, Search, Trash2, Zap } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { queryKeys } from "@/data/query-keys";
-import { assertOk, errorMessage, unwrap } from "@/data/supabase-helpers";
+import { queryKeys } from "@forja/app-core/data/query-keys";
+import { errorMessage } from "@forja/app-core/data/supabase-helpers";
 import {
   RECIPE_CATEGORIES,
+  copyRecipe,
+  createRecipe,
+  deleteRecipe,
   fetchRecipes,
   recipeCategoryOf,
   type RecipeSummary,
-} from "@/data/recipes";
+} from "@forja/app-core/data/recipes";
 import { useCurrentUserId } from "@/hooks/use-current-user";
 import { PageBody, PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -64,15 +66,7 @@ function RecipesPage() {
   const invalidar = () => qc.invalidateQueries({ queryKey: queryKeys.recipes.all });
 
   const criar = useMutation({
-    mutationFn: async () =>
-      unwrap(
-        "criar receita",
-        await supabase
-          .from("recipes")
-          .insert({ user_id: userId, name: "Nova receita", servings: 1 })
-          .select("id")
-          .single(),
-      ).id,
+    mutationFn: () => createRecipe(userId),
     onSuccess: (id) => {
       void invalidar();
       void navigate({ to: "/recipes/$id", params: { id } });
@@ -81,30 +75,7 @@ function RecipesPage() {
   });
 
   const copiar = useMutation({
-    mutationFn: async (r: RecipeSummary) => {
-      const nova = unwrap(
-        "copiar receita",
-        await supabase
-          .from("recipes")
-          .insert({
-            user_id: userId,
-            name: r.name,
-            servings: r.servings,
-            category: r.category,
-            prep_minutes: r.prepMinutes,
-            instructions: r.instructions,
-          })
-          .select("id")
-          .single(),
-      );
-      assertOk(
-        "copiar ingredientes",
-        await supabase
-          .from("recipe_items")
-          .insert(r.items.map((i) => ({ recipe_id: nova.id, food_id: i.foodId, grams: i.grams }))),
-      );
-      return nova.id;
-    },
+    mutationFn: (r: RecipeSummary) => copyRecipe(userId, r),
     onSuccess: (id) => {
       toast.success("Copiada para suas receitas");
       void invalidar();
@@ -115,13 +86,7 @@ function RecipesPage() {
 
   const excluir = useMutation({
     mutationFn: async (id: string) => {
-      assertOk(
-        "excluir receita",
-        await supabase
-          .from("recipes")
-          .update({ deleted_at: new Date().toISOString() })
-          .eq("id", id),
-      );
+      await deleteRecipe(id);
       return id;
     },
     onSuccess: (id) => {
@@ -129,12 +94,7 @@ function RecipesPage() {
       toast.success("Receita excluída", {
         action: {
           label: "Desfazer",
-          onClick: () =>
-            void supabase
-              .from("recipes")
-              .update({ deleted_at: null })
-              .eq("id", id)
-              .then(() => invalidar()),
+          onClick: () => void deleteRecipe(id, true).then(() => invalidar()),
         },
       });
     },
@@ -502,7 +462,10 @@ function CartaoReceita({
         />
       ) : (
         <span
-          className={cn("grid w-full place-items-center", grande ? "h-28 text-6xl" : "h-24 text-5xl")}
+          className={cn(
+            "grid w-full place-items-center",
+            grande ? "h-28 text-6xl" : "h-24 text-5xl",
+          )}
           style={{ background: `color-mix(in oklch, ${tom} 18%, transparent)` }}
           aria-hidden
         >
@@ -514,7 +477,9 @@ function CartaoReceita({
           {r.name}
         </span>
         <span className="mt-2 flex flex-wrap gap-1 text-[11px] font-semibold tabular-nums">
-          <span className="rounded-full bg-elevated px-2 py-0.5">{kcal(r.perServing.kcal)} kcal</span>
+          <span className="rounded-full bg-elevated px-2 py-0.5">
+            {kcal(r.perServing.kcal)} kcal
+          </span>
           <span className="rounded-full bg-primary/12 px-2 py-0.5 text-primary">
             {Math.round(r.perServing.proteinG)} g P
           </span>

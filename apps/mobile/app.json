@@ -3,7 +3,7 @@
     "name": "Habitual Fit",
     "slug": "habitual-fit",
     "scheme": "habitualfit",
-    "version": "0.1.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -12,26 +12,67 @@
       "bundleIdentifier": "com.habitualfit.app"
     },
     "android": {
-      "package": "com.habitualfit.app",
-      "edgeToEdgeEnabled": true,
+      "package": "com.habitualfit.myapp",
+      "versionCode": 4,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#020306"
-      }
+      },
+      "permissions": ["android.permission.CAMERA"]
     },
     "plugins": [
       "expo-router",
       "expo-secure-store",
       [
-        "expo-camera",
+        "expo-image-picker",
         {
-          "cameraPermission": "O Habitual Fit usa a câmera para ler o código de barras de alimentos."
+          "cameraPermission": "O Habitual Fit usa a câmera para tirar a sua foto de perfil.",
+          "photosPermission": "O Habitual Fit usa suas fotos para você escolher a foto de perfil.",
+          "microphonePermission": false
         }
       ],
       [
         "expo-notifications",
         {
           "icon": "./assets/notification-icon.png"
+        }
+      ],
+      [
+        "expo-font",
+        {
+          "android": {
+            "fonts": [
+              {
+                "fontFamily": "Inter",
+                "fontDefinitions": [
+                  {
+                    "path": "./assets/fonts/Inter-Regular.ttf",
+                    "weight": 400
+                  },
+                  {
+                    "path": "./assets/fonts/Inter-SemiBold.ttf",
+                    "weight": 600
+                  },
+                  {
+                    "path": "./assets/fonts/Inter-Bold.ttf",
+                    "weight": 700
+                  },
+                  {
+                    "path": "./assets/fonts/Inter-Black.ttf",
+                    "weight": 900
+                  }
+                ]
+              }
+            ]
+          },
+          "ios": {
+            "fonts": [
+              "./assets/fonts/Inter-Regular.ttf",
+              "./assets/fonts/Inter-SemiBold.ttf",
+              "./assets/fonts/Inter-Bold.ttf",
+              "./assets/fonts/Inter-Black.ttf"
+            ]
+          }
         }
       ]
     ],
@@ -43,6 +84,13 @@
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#020306"
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "38569e1c-6410-4cb1-9d7e-5e96a30847a0"
+      }
+    },
+    "owner": "zubioli"
   }
 }

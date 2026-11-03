@@ -8,14 +8,14 @@ Regras seguidas: só fontes públicas, nenhuma conta do Befit usada, nenhum bund
 
 ## Sources
 
-| # | source | URL | notes |
-| --- | --- | --- | --- |
-| 1 | App Store (pt-BR) | https://apps.apple.com/br/app/befit-plano-e-treino-academia/id6504535443 | lista de features, premium, changelog ("Novidades"), avaliações |
-| 2 | Google Play | https://play.google.com/store/apps/details?id=app.befit&hl=pt | mesma descrição; dev 3APPS |
-| 3 | Site + FAQ | https://appbefit.com/pt-br | FAQ = central de ajuda: substituir, editar carga, histórico, ofensiva, sons, dias da semana, offline, assinatura |
-| 4 | Review TechTudo (30 dias) | https://www.techtudo.com.br/guia/2026/08/befit-vale-a-pena-testamos-os-recursos-do-aplicativo-de-exercicios-edapps.ghtml | onboarding, PR ao registrar, resumo pós-treino, tela bloqueada, críticas |
-| 5 | Vídeo walkthrough | https://www.youtube.com/watch?v=mw4E7UA9pjo | perguntas do onboarding na ordem |
-| 6 | Aptoide (descrição Android) | https://befit-3apps-llc.br.aptoide.com/app | itens do premium |
+| #   | source                      | URL                                                                                                                      | notes                                                                                                            |
+| --- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| 1   | App Store (pt-BR)           | https://apps.apple.com/br/app/befit-plano-e-treino-academia/id6504535443                                                 | lista de features, premium, changelog ("Novidades"), avaliações                                                  |
+| 2   | Google Play                 | https://play.google.com/store/apps/details?id=app.befit&hl=pt                                                            | mesma descrição; dev 3APPS                                                                                       |
+| 3   | Site + FAQ                  | https://appbefit.com/pt-br                                                                                               | FAQ = central de ajuda: substituir, editar carga, histórico, ofensiva, sons, dias da semana, offline, assinatura |
+| 4   | Review TechTudo (30 dias)   | https://www.techtudo.com.br/guia/2026/08/befit-vale-a-pena-testamos-os-recursos-do-aplicativo-de-exercicios-edapps.ghtml | onboarding, PR ao registrar, resumo pós-treino, tela bloqueada, críticas                                         |
+| 5   | Vídeo walkthrough           | https://www.youtube.com/watch?v=mw4E7UA9pjo                                                                              | perguntas do onboarding na ordem                                                                                 |
+| 6   | Aptoide (descrição Android) | https://befit-3apps-llc.br.aptoide.com/app                                                                               | itens do premium                                                                                                 |
 
 ## Core loop
 
@@ -23,28 +23,28 @@ Responder um quiz → receber uma ficha A/B/C gerada → abrir o app e apertar p
 
 ## Screens
 
-| ID | screen | route / how to reach | purpose | key components | states seen |
-| --- | --- | --- | --- | --- | --- |
-| S01 | Boas-vindas / login | primeira abertura | entrar (Google, Apple, e-mail) ou começar | botões OAuth, CTA | default |
-| S02 | Quiz de onboarding | "Começar" | gênero, experiência (iniciante/<1a/1-2a/>2a), frequência atual, objetivo (condicionamento/perder peso/definir/ganhar músculo), local (academia grande/pequena/casa/peso corporal), região de foco, dias/semana | option cards, progress bar, voltar | um passo por tela |
-| S03 | Gerando plano | fim do quiz | loading do plano "IA" | progress animation | loading, pronto |
-| S04 | Paywall | após plano / ao tocar recurso premium | assinatura mensal/anual, restaurar compras | plan cards, CTA, "Restaurar Compras" | default, oferta com desconto |
-| S05 | Home / Hoje | tab Início | treino do dia em destaque, dias da semana (Dia 1, Dia 2… = A/B/C), ofensiva, meta semanal, botão Editar | hero card, week strip, streak chip | treino pendente, concluído hoje, descanso |
-| S06 | Editar treino | "Editar" na home | trocar exercícios (Substituir), defaults de séries/reps/carga/descanso | exercise rows, swap sheet | default |
-| S07 | Sessão ao vivo | play no treino | registrar peso/reps por série, timer de descanso, menu ⋯ (substituir/remover), aviso de PR, tela bloqueada | set table, numeric input, rest timer, PR toast | em andamento, descanso, offline |
-| S08 | Seletor de exercício | Substituir / adicionar | escolher exercício do mesmo grupo | search, filtros músculo/equipamento | filtrado, vazio |
-| S09 | Detalhe do exercício | tocar no exercício | vídeo, passo a passo, histórico, recorde | video player, steps, mini chart | sem histórico |
-| S10 | Resumo pós-treino | finalizar sessão | volume total, duração, calorias, PRs, comparação por exercício | stat tiles, PR list | com/sem PR |
-| S11 | Treino rápido | tab Treinos → rápido | escolher grupo muscular e treinar avulso | muscle grid | default |
-| S12 | Minhas rotinas | tab Treinos | criar/salvar/editar fichas próprias | list, editor | vazio, cheio, limite free |
-| S13 | Biblioteca de programas | tab Treinos → programas | programas prontos: hipertrofia, força, emagrecimento, definição | program cards, detalhe | premium lock |
-| S14 | Biblioteca de exercícios | tab Exercícios | 500+ exercícios, busca por músculo/equipamento/palavra | search, chips, grid | vazio de busca |
-| S15 | Progresso / Análises | tab Progresso | gráficos por grupo muscular, tendência de força, PRs, ranking de exercícios favoritos, volume, calorias | charts, PR board, ranking | sem dados, premium lock |
-| S16 | Recuperação muscular | home / progresso | mapa do corpo com % recuperado por músculo | body map, legend | tudo recuperado |
-| S17 | Histórico | progresso → histórico | sessões passadas por data | calendar/list | vazio |
-| S18 | Perfil / ajustes | tab Perfil | sons, local/equipamento, editar plano, modo da agenda, assinatura, unidades | settings list, toggles | default |
-| S19 | Cardio | Treinos → cardio | registrar cardio; importar Strava/Health; "adicionar com IA" | form, import | vazio |
-| S20 | Identificar equipamento | câmera | IA reconhece o aparelho e sugere exercícios | camera, result sheet | reconhecido / não |
+| ID  | screen                   | route / how to reach                  | purpose                                                                                                                                                                                                        | key components                                 | states seen                               |
+| --- | ------------------------ | ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- | ----------------------------------------- |
+| S01 | Boas-vindas / login      | primeira abertura                     | entrar (Google, Apple, e-mail) ou começar                                                                                                                                                                      | botões OAuth, CTA                              | default                                   |
+| S02 | Quiz de onboarding       | "Começar"                             | gênero, experiência (iniciante/<1a/1-2a/>2a), frequência atual, objetivo (condicionamento/perder peso/definir/ganhar músculo), local (academia grande/pequena/casa/peso corporal), região de foco, dias/semana | option cards, progress bar, voltar             | um passo por tela                         |
+| S03 | Gerando plano            | fim do quiz                           | loading do plano "IA"                                                                                                                                                                                          | progress animation                             | loading, pronto                           |
+| S04 | Paywall                  | após plano / ao tocar recurso premium | assinatura mensal/anual, restaurar compras                                                                                                                                                                     | plan cards, CTA, "Restaurar Compras"           | default, oferta com desconto              |
+| S05 | Home / Hoje              | tab Início                            | treino do dia em destaque, dias da semana (Dia 1, Dia 2… = A/B/C), ofensiva, meta semanal, botão Editar                                                                                                        | hero card, week strip, streak chip             | treino pendente, concluído hoje, descanso |
+| S06 | Editar treino            | "Editar" na home                      | trocar exercícios (Substituir), defaults de séries/reps/carga/descanso                                                                                                                                         | exercise rows, swap sheet                      | default                                   |
+| S07 | Sessão ao vivo           | play no treino                        | registrar peso/reps por série, timer de descanso, menu ⋯ (substituir/remover), aviso de PR, tela bloqueada                                                                                                     | set table, numeric input, rest timer, PR toast | em andamento, descanso, offline           |
+| S08 | Seletor de exercício     | Substituir / adicionar                | escolher exercício do mesmo grupo                                                                                                                                                                              | search, filtros músculo/equipamento            | filtrado, vazio                           |
+| S09 | Detalhe do exercício     | tocar no exercício                    | vídeo, passo a passo, histórico, recorde                                                                                                                                                                       | video player, steps, mini chart                | sem histórico                             |
+| S10 | Resumo pós-treino        | finalizar sessão                      | volume total, duração, calorias, PRs, comparação por exercício                                                                                                                                                 | stat tiles, PR list                            | com/sem PR                                |
+| S11 | Treino rápido            | tab Treinos → rápido                  | escolher grupo muscular e treinar avulso                                                                                                                                                                       | muscle grid                                    | default                                   |
+| S12 | Minhas rotinas           | tab Treinos                           | criar/salvar/editar fichas próprias                                                                                                                                                                            | list, editor                                   | vazio, cheio, limite free                 |
+| S13 | Biblioteca de programas  | tab Treinos → programas               | programas prontos: hipertrofia, força, emagrecimento, definição                                                                                                                                                | program cards, detalhe                         | premium lock                              |
+| S14 | Biblioteca de exercícios | tab Exercícios                        | 500+ exercícios, busca por músculo/equipamento/palavra                                                                                                                                                         | search, chips, grid                            | vazio de busca                            |
+| S15 | Progresso / Análises     | tab Progresso                         | gráficos por grupo muscular, tendência de força, PRs, ranking de exercícios favoritos, volume, calorias                                                                                                        | charts, PR board, ranking                      | sem dados, premium lock                   |
+| S16 | Recuperação muscular     | home / progresso                      | mapa do corpo com % recuperado por músculo                                                                                                                                                                     | body map, legend                               | tudo recuperado                           |
+| S17 | Histórico                | progresso → histórico                 | sessões passadas por data                                                                                                                                                                                      | calendar/list                                  | vazio                                     |
+| S18 | Perfil / ajustes         | tab Perfil                            | sons, local/equipamento, editar plano, modo da agenda, assinatura, unidades                                                                                                                                    | settings list, toggles                         | default                                   |
+| S19 | Cardio                   | Treinos → cardio                      | registrar cardio; importar Strava/Health; "adicionar com IA"                                                                                                                                                   | form, import                                   | vazio                                     |
+| S20 | Identificar equipamento  | câmera                                | IA reconhece o aparelho e sugere exercícios                                                                                                                                                                    | camera, result sheet                           | reconhecido / não                         |
 
 ## Flows
 
@@ -81,22 +81,22 @@ F07 Assinar
 
 ## Components
 
-| component | variants | states | used on |
-| --- | --- | --- | --- |
-| Option card (quiz) | single, multi, com ícone | default, selected | S02 |
-| Week strip | dias 1..N | feito, hoje, pendente, descanso | S05 |
-| Streak chip | — | 0, ativo, quebrado | S05 |
-| Workout hero card | — | pendente, concluído | S05 |
-| Set row | normal, aquecimento, drop | vazio, preenchido, concluído, PR | S07 |
-| Rest timer | inline, tela cheia | contando, pausado, fim (som) | S07 |
-| Exercise row | plano, sessão | default, substituído | S06, S07, S12 |
-| Swap / picker sheet | — | busca, filtro, vazio | S08 |
-| Stat tile | número, delta | — | S10, S15 |
-| PR badge / toast | — | — | S07, S10, S09 |
-| Body map | recuperação, volume | — | S16, S15 |
-| Chart | linha (força), barra (volume) | sem dados | S09, S15 |
-| Paywall plan card | mensal, anual (destaque) | selecionado | S04 |
-| Premium lock | overlay, inline | — | S12, S13, S15 |
+| component           | variants                      | states                           | used on       |
+| ------------------- | ----------------------------- | -------------------------------- | ------------- |
+| Option card (quiz)  | single, multi, com ícone      | default, selected                | S02           |
+| Week strip          | dias 1..N                     | feito, hoje, pendente, descanso  | S05           |
+| Streak chip         | —                             | 0, ativo, quebrado               | S05           |
+| Workout hero card   | —                             | pendente, concluído              | S05           |
+| Set row             | normal, aquecimento, drop     | vazio, preenchido, concluído, PR | S07           |
+| Rest timer          | inline, tela cheia            | contando, pausado, fim (som)     | S07           |
+| Exercise row        | plano, sessão                 | default, substituído             | S06, S07, S12 |
+| Swap / picker sheet | —                             | busca, filtro, vazio             | S08           |
+| Stat tile           | número, delta                 | —                                | S10, S15      |
+| PR badge / toast    | —                             | —                                | S07, S10, S09 |
+| Body map            | recuperação, volume           | —                                | S16, S15      |
+| Chart               | linha (força), barra (volume) | sem dados                        | S09, S15      |
+| Paywall plan card   | mensal, anual (destaque)      | selecionado                      | S04           |
+| Premium lock        | overlay, inline               | —                                | S12, S13, S15 |
 
 ## Inferred data model
 

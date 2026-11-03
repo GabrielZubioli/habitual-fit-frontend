@@ -12,13 +12,25 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { queryKeys } from "@/data/query-keys";
-import { DataError, errorMessage } from "@/data/supabase-helpers";
-import { fetchActiveRoutine, type ActiveRoutine } from "@/data/routines";
-import { addTemplateItem } from "@/data/workout-week";
-import { useFavoritos } from "@/data/exercise-favorites";
-import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { queryKeys } from "@forja/app-core/data/query-keys";
+import { errorMessage } from "@forja/app-core/data/supabase-helpers";
+import {
+  EQUIPAMENTOS,
+  ESTRUTURAS,
+  GRUPOS,
+  NIVEIS,
+  PAGE_SIZE,
+  fetchEquipmentCover,
+  fetchExerciseCounts,
+  fetchExercisePage,
+  fetchFavoriteExercises,
+  miniaturaDe,
+  type ExerciseRow,
+} from "@forja/app-core/data/exercise-library";
+import { fetchActiveRoutine, type ActiveRoutine } from "@forja/app-core/data/routines";
+import { addTemplateItem } from "@forja/app-core/data/workout-week";
+import { useFavoritos } from "@forja/app-core/data/exercise-favorites";
+import { useDebouncedValue } from "@forja/app-core/hooks/use-debounced-value";
 import { PageBody, PageHeader } from "@/components/page-header";
 import { BackButton } from "@/components/back-button";
 import { BodyMap } from "@/components/body-map/body-map";
@@ -40,10 +52,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CardGridSkeleton, EmptyState, ErrorState } from "@/components/query-boundary";
-import { exerciseMedia } from "@/data/exercise-media";
 import { cn } from "@/lib/utils";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { EQUIPMENT_LABELS, MUSCLE_LABELS, label } from "@/lib/labels";
+import { EQUIPMENT_LABELS, MUSCLE_LABELS, label } from "@forja/app-core/lib/labels";
 
 type Aba = "musculos" | "equipamentos" | "favoritos";
 
@@ -64,116 +75,6 @@ export const Route = createFileRoute("/_authenticated/exercises")({
   component: ExerciseLibrary,
 });
 
-/** Grupos musculares da navegação: cada um junta os músculos do catálogo que fazem parte dele. */
-const GRUPOS = [
-  {
-    key: "peito",
-    nome: "Peito",
-    musculos: ["chest"],
-    recorte: { view: "front" as const, box: [150, 215, 424, 318] as const },
-  },
-  {
-    key: "costas",
-    nome: "Costas",
-    musculos: ["back", "lats", "lower_back"],
-    recorte: { view: "back" as const, box: [110, 190, 504, 378] as const },
-  },
-  {
-    key: "ombros",
-    nome: "Ombros",
-    musculos: ["shoulders", "front_delts", "side_delts", "rear_delts"],
-    recorte: { view: "front" as const, box: [90, 170, 544, 408] as const },
-  },
-  {
-    key: "biceps",
-    nome: "Bíceps",
-    musculos: ["biceps"],
-    recorte: { view: "front" as const, box: [30, 230, 664, 498] as const },
-  },
-  {
-    key: "triceps",
-    nome: "Tríceps",
-    musculos: ["triceps"],
-    recorte: { view: "back" as const, box: [30, 230, 664, 498] as const },
-  },
-  {
-    key: "antebraco",
-    nome: "Antebraço",
-    musculos: ["forearms"],
-    recorte: { view: "front" as const, box: [10, 430, 704, 528] as const },
-  },
-  {
-    key: "abdomen",
-    nome: "Abdômen",
-    musculos: ["abs", "core", "obliques"],
-    recorte: { view: "front" as const, box: [140, 370, 444, 333] as const },
-  },
-  {
-    key: "quadriceps",
-    nome: "Quadríceps",
-    musculos: ["quads"],
-    recorte: { view: "front" as const, box: [110, 690, 504, 378] as const },
-  },
-  {
-    key: "posterior",
-    nome: "Posterior de coxa",
-    musculos: ["hamstrings"],
-    recorte: { view: "back" as const, box: [110, 740, 504, 378] as const },
-  },
-  {
-    key: "gluteos",
-    nome: "Glúteos",
-    musculos: ["glutes", "abductors", "adductors"],
-    recorte: { view: "back" as const, box: [140, 600, 444, 333] as const },
-  },
-  {
-    key: "panturrilhas",
-    nome: "Panturrilhas",
-    musculos: ["calves"],
-    recorte: { view: "back" as const, box: [140, 1000, 444, 333] as const },
-  },
-  {
-    key: "trapezio",
-    nome: "Trapézio e pescoço",
-    musculos: ["traps", "neck"],
-    recorte: { view: "back" as const, box: [130, 110, 464, 348] as const },
-  },
-  { key: "cardio", nome: "Cardio e corpo todo", musculos: ["cardio", "full_body"] },
-] as const;
-
-const EQUIPAMENTOS = [
-  { key: "barbell", nome: "Barra" },
-  { key: "dumbbell", nome: "Halteres" },
-  { key: "machine", nome: "Máquinas" },
-  { key: "cable", nome: "Polia" },
-  { key: "bodyweight", nome: "Peso corporal" },
-  { key: "kettlebell", nome: "Kettlebell" },
-  { key: "band", nome: "Elásticos" },
-  { key: "cardio", nome: "Cardio" },
-  { key: "other", nome: "Outros acessórios" },
-] as const;
-
-/** Estrutura de treino → equipamentos que ela tem. */
-const ESTRUTURAS = [
-  { key: "completa", nome: "Academia completa", equipamentos: EQUIPAMENTOS.map((e) => e.key) },
-  {
-    key: "pequena",
-    nome: "Academia pequena",
-    equipamentos: ["barbell", "dumbbell", "bodyweight", "kettlebell", "band", "other"],
-  },
-  { key: "sem", nome: "Sem equipamento", equipamentos: ["bodyweight"] },
-] as const;
-
-const NIVEIS = [
-  { value: "beginner", label: "Iniciante" },
-  { value: "intermediate", label: "Intermediário" },
-  { value: "advanced", label: "Avançado" },
-];
-
-const PAGE_SIZE = 24;
-const CAMPOS =
-  "id, name, name_en, primary_muscle, secondary_muscles, equipment, category, owner_id, image_urls, external_id, media_id, media_ref, media_source, video_url";
-
 function ExerciseLibrary() {
   const { aba = "musculos", grupo, equipamento } = Route.useSearch();
   const navigate = useNavigate({ from: "/exercises" });
@@ -188,22 +89,7 @@ function ExerciseLibrary() {
   // Quantos exercícios há por músculo e por equipamento (uma leitura só, leve).
   const contagem = useQuery({
     queryKey: [...queryKeys.exercises.all, "contagem"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("exercises")
-        .select("primary_muscle, equipment")
-        .is("deleted_at", null)
-        .limit(5000);
-      if (error) throw error;
-      const porMusculo = new Map<string, number>();
-      const porEquip = new Map<string, number>();
-      for (const r of data ?? []) {
-        if (r.primary_muscle)
-          porMusculo.set(r.primary_muscle, (porMusculo.get(r.primary_muscle) ?? 0) + 1);
-        if (r.equipment) porEquip.set(r.equipment, (porEquip.get(r.equipment) ?? 0) + 1);
-      }
-      return { total: data?.length ?? 0, porMusculo, porEquip };
-    },
+    queryFn: fetchExerciseCounts,
   });
 
   const g = GRUPOS.find((x) => x.key === grupo);
@@ -420,20 +306,7 @@ function CartaoEquipamento({
   const capa = useQuery({
     queryKey: [...queryKeys.exercises.all, "capa", equipamento.key],
     staleTime: Infinity,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("exercises")
-        .select(CAMPOS)
-        .is("deleted_at", null)
-        .eq("equipment", equipamento.key as never)
-        .order("popularity", { ascending: false })
-        .limit(6);
-      for (const ex of data ?? []) {
-        const m = miniaturaDe(ex);
-        if (m) return m;
-      }
-      return null;
-    },
+    queryFn: () => fetchEquipmentCover(equipamento.key),
   });
   return (
     <Link
@@ -465,15 +338,7 @@ function AbaFavoritos({ rotina }: { rotina: ActiveRoutine | null }) {
   const exercicios = useQuery({
     queryKey: [...queryKeys.exercises.all, "favoritos", ordem],
     enabled: ordem.length > 0,
-    queryFn: async () => {
-      const { data, error } = await supabase.from("exercises").select(CAMPOS).in("id", ordem);
-      if (error) throw error;
-      const porId = new Map((data ?? []).map((x) => [x.id, x]));
-      return ordem.flatMap((id) => {
-        const x = porId.get(id);
-        return x ? [x as ExerciseRow] : [];
-      });
-    },
+    queryFn: () => fetchFavoriteExercises(ordem),
   });
 
   if (carregando || (ordem.length > 0 && exercicios.isPending))
@@ -582,27 +447,8 @@ function ListaExercicios({
       nivel ?? "",
     ],
     initialPageParam: 0,
-    queryFn: async ({ pageParam }) => {
-      let query = supabase
-        .from("exercises")
-        .select(CAMPOS)
-        .is("deleted_at", null)
-        // Popularidade antes do nome: o supino reto vem antes das variações exóticas.
-        .order("popularity", { ascending: false })
-        .order("name")
-        .range(pageParam * PAGE_SIZE, pageParam * PAGE_SIZE + PAGE_SIZE - 1);
-      if (termo) {
-        // Busca no nome em português e no original em inglês.
-        const escapado = termo.replace(/[%,()]/g, " ");
-        query = query.or(`name.ilike.%${escapado}%,name_en.ilike.%${escapado}%`);
-      }
-      if (musculos?.length) query = query.in("primary_muscle", musculos as never[]);
-      if (equipamentos?.length) query = query.in("equipment", equipamentos as never[]);
-      if (nivel) query = query.eq("level", nivel as "beginner");
-      const { data, error } = await query;
-      if (error) throw new DataError("carregar os exercícios", error);
-      return data ?? [];
-    },
+    queryFn: ({ pageParam }) =>
+      fetchExercisePage({ page: pageParam, termo, musculos, equipamentos, nivel }),
     getNextPageParam: (ultima, todas) => (ultima.length < PAGE_SIZE ? undefined : todas.length),
   });
   const exercicios = useMemo(() => lista.data?.pages.flat() ?? [], [lista.data]);
@@ -672,36 +518,6 @@ function CriarExercicio() {
       }
     />
   );
-}
-
-type ExerciseRow = {
-  id: string;
-  name: string;
-  name_en: string | null;
-  primary_muscle: string | null;
-  secondary_muscles: string[] | null;
-  equipment: string | null;
-  category: string | null;
-  owner_id: string | null;
-  image_urls: string[] | null;
-  external_id: string | null;
-  media_id: string | null;
-  media_ref: string | null;
-  media_source: string | null;
-  video_url: string | null;
-};
-
-function miniaturaDe(exercise: ExerciseRow): string | null {
-  const media = exerciseMedia({
-    name: exercise.name,
-    imageUrls: exercise.image_urls,
-    externalId: exercise.external_id,
-    mediaId: exercise.media_id,
-    mediaRef: exercise.media_ref,
-    mediaSource: exercise.media_source,
-    videoUrl: exercise.video_url,
-  });
-  return media.gif ?? media.images[0] ?? null;
 }
 
 /** Uma linha: miniatura, nome, "músculo · equipamento", favorito e "+ Plano". */

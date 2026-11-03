@@ -4,14 +4,14 @@ import { ArrowLeft, Camera, Check, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
-import { queryKeys } from "@/data/query-keys";
-import { assertOk, errorMessage } from "@/data/supabase-helpers";
+import { queryKeys } from "@forja/app-core/data/query-keys";
+import { assertOk, errorMessage } from "@forja/app-core/data/supabase-helpers";
 import {
   PHOTOS_BUCKET,
   photoStoragePath,
   validatePhotoFile,
   type ProgressPhoto,
-} from "@/data/progress-photos";
+} from "@forja/app-core/data/progress-photos";
 import { useCurrentUserId } from "@/hooks/use-current-user";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,8 +26,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { PhotoCapture } from "@/components/progress/photo-capture";
-import { PHOTO_ANGLE_OPTIONS, type PhotoAngleValue } from "@/lib/labels";
-import { todayISO } from "@/lib/date";
+import { PHOTO_ANGLE_OPTIONS, type PhotoAngleValue } from "@forja/app-core/lib/labels";
+import { todayISO } from "@forja/app-core/lib/date";
 import { toWebp } from "@/lib/to-webp";
 import { cn } from "@/lib/utils";
 

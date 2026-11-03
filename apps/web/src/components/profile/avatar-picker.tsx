@@ -4,9 +4,15 @@ import { Camera, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
-import { queryKeys } from "@/data/query-keys";
-import { assertOk, errorMessage } from "@/data/supabase-helpers";
-import { ACCEPTED_AVATAR_TYPES, initialsFrom, resolveAvatarUrl, uploadAvatar } from "@/data/avatar";
+import { queryKeys } from "@forja/app-core/data/query-keys";
+import { assertOk, errorMessage } from "@forja/app-core/data/supabase-helpers";
+import {
+  ACCEPTED_AVATAR_TYPES,
+  initialsFrom,
+  resolveAvatarUrl,
+  uploadAvatar,
+} from "@forja/app-core/data/avatar";
+import { toWebp } from "@/lib/to-webp";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { cn } from "@/lib/utils";
 
@@ -46,7 +52,7 @@ export function AvatarPicker({
 
   const enviar = useMutation({
     mutationFn: async (file: File) => {
-      const novoCaminho = await uploadAvatar(user.id, file);
+      const novoCaminho = await uploadAvatar(user.id, file, toWebp);
       assertOk(
         "salvar foto de perfil",
         await supabase.from("profiles").update({ avatar_url: novoCaminho }).eq("id", user.id),

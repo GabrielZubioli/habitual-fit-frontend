@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { LegalPage, Secao } from "@/components/legal-page";
-import { EMPRESA, identificacaoEmpresa } from "@/lib/legal";
+import { EMPRESA, identificacaoEmpresa } from "@forja/app-core/lib/legal";
 
 /**
  * Política de Privacidade — pública (o Google exige a URL na tela de

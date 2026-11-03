@@ -2,21 +2,21 @@
 
 ## Resultado: **não publicar ainda.** Há 5 bloqueios; nenhum é de código.
 
-| checagem | resultado |
-| --- | --- |
-| Testes | ✅ domínio 252, web 146 (em UTC, BRT e Tóquio); webhook Deno 4; e2e manual com Playwright contra Supabase local (`test-plan.md`) |
-| Build de produção | ✅ `npm run build` (cópia com o contrato compilado do backend local) |
-| Typecheck / lint | ✅ 0 erros (13 avisos pré-existentes) |
-| Paridade | ✅ 84%, 16/16 must (`parity.md`) |
-| Bugs S1/S2 abertos | ✅ nenhum (BUG-01 a 04 corrigidos, `bugs.md`) |
-| Varredura de marca | ✅ nada do Befit/openGym em código ou textos do app (`brand.md`) |
-| Listing das lojas | ✅ limites e nomes proibidos (`launch/listing.json`) — **sem a seção Pro** até existir paywall |
-| Exclusão de conta | ✅ ponta a ponta, local |
-| **Nome / marca** | ❌ apps homônimos "Forja"/"FORJA" na mesma categoria — decidir antes das lojas |
-| **Política de privacidade e termos** | ❌ não existem páginas; exigidas pela LGPD e pelas lojas (listar Supabase, RevenueCat, Stripe, provedor de IA) |
-| **CI** | ❌ falha desde 12/08: falta o secret `PACKAGES_READ_TOKEN` (PAT com `read:packages`) |
-| **Produção (Supabase `nursxzqagxmeiucsaqzm`)** | ❌ projeto **pausado** (INACTIVE) |
-| **Credenciais de deploy** | ❌ sem `SUPABASE_DB_PASSWORD` (não há `forja-backend/.env`); `db push` não roda sem ela |
+| checagem                                       | resultado                                                                                                                        |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Testes                                         | ✅ domínio 252, web 146 (em UTC, BRT e Tóquio); webhook Deno 4; e2e manual com Playwright contra Supabase local (`test-plan.md`) |
+| Build de produção                              | ✅ `npm run build` (cópia com o contrato compilado do backend local)                                                             |
+| Typecheck / lint                               | ✅ 0 erros (13 avisos pré-existentes)                                                                                            |
+| Paridade                                       | ✅ 84%, 16/16 must (`parity.md`)                                                                                                 |
+| Bugs S1/S2 abertos                             | ✅ nenhum (BUG-01 a 04 corrigidos, `bugs.md`)                                                                                    |
+| Varredura de marca                             | ✅ nada do Befit/openGym em código ou textos do app (`brand.md`)                                                                 |
+| Listing das lojas                              | ✅ limites e nomes proibidos (`launch/listing.json`) — **sem a seção Pro** até existir paywall                                   |
+| Exclusão de conta                              | ✅ ponta a ponta, local                                                                                                          |
+| **Nome / marca**                               | ❌ apps homônimos "Forja"/"FORJA" na mesma categoria — decidir antes das lojas                                                   |
+| **Política de privacidade e termos**           | ❌ não existem páginas; exigidas pela LGPD e pelas lojas (listar Supabase, RevenueCat, Stripe, provedor de IA)                   |
+| **CI**                                         | ❌ falha desde 12/08: falta o secret `PACKAGES_READ_TOKEN` (PAT com `read:packages`)                                             |
+| **Produção (Supabase `nursxzqagxmeiucsaqzm`)** | ❌ projeto **pausado** (INACTIVE)                                                                                                |
+| **Credenciais de deploy**                      | ❌ sem `SUPABASE_DB_PASSWORD` (não há `forja-backend/.env`); `db push` não roda sem ela                                          |
 
 ## O que foi feito agora
 

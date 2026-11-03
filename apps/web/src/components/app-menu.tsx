@@ -3,9 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState, type ComponentType, type SVGProps } from "react";
 import { BarChart3, BookOpen, ChevronRight, HeartPulse, List } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { queryKeys } from "@/data/query-keys";
-import { unwrapMaybe } from "@/data/supabase-helpers";
-import { initialsFrom, resolveAvatarUrl } from "@/data/avatar";
+import { queryKeys } from "@forja/app-core/data/query-keys";
+import { unwrapMaybe } from "@forja/app-core/data/supabase-helpers";
+import { initialsFrom, resolveAvatarUrl } from "@forja/app-core/data/avatar";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import {
   Drawer,

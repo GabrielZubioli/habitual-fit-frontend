@@ -21,21 +21,21 @@ import { BrandSymbol } from "@/components/brand-logo";
 import { RoutineIcon } from "@/components/workouts/routine-icon";
 import { AvisoProfissional } from "@/components/aviso-profissional";
 import { cn } from "@/lib/utils";
-import { errorMessage, num, unwrapMaybe } from "@/data/supabase-helpers";
-import { queryKeys } from "@/data/query-keys";
-import { fetchWorkoutWeek } from "@/data/workout-week";
-import { fetchActiveMealPlan } from "@/data/meal-plans";
-import { splitDisplayName, startWithoutPlan } from "@/data/routines";
+import { errorMessage, num, unwrapMaybe } from "@forja/app-core/data/supabase-helpers";
+import { queryKeys } from "@forja/app-core/data/query-keys";
+import { fetchWorkoutWeek } from "@forja/app-core/data/workout-week";
+import { fetchActiveMealPlan } from "@forja/app-core/data/meal-plans";
+import { splitDisplayName, startWithoutPlan } from "@forja/app-core/data/routines";
 import {
   GENERATION_STAGES,
   generateEverything,
   hasCompletedOnboarding,
   type GenerationStage,
-} from "@/data/onboarding";
+} from "@forja/app-core/data/onboarding";
 import { clearDraft, clearStep, loadDraft } from "@/lib/onboarding/storage";
-import { isComplete, type Answers } from "@/lib/onboarding/schema";
-import { derivedObjective } from "@/lib/onboarding/options";
-import { MEAL_LABELS, label } from "@/lib/labels";
+import { isComplete, type Answers } from "@forja/app-core/lib/onboarding/schema";
+import { derivedObjective } from "@forja/app-core/lib/onboarding/options";
+import { MEAL_LABELS, label } from "@forja/app-core/lib/labels";
 
 /**
  * A tela onde o plano é montado — e depois apresentado.

@@ -3,9 +3,9 @@ import { useNavigate } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
-import { createOwnExercise } from "@/data/workouts";
-import { queryKeys } from "@/data/query-keys";
-import { errorMessage } from "@/data/supabase-helpers";
+import { createOwnExercise } from "@forja/app-core/data/workouts";
+import { queryKeys } from "@forja/app-core/data/query-keys";
+import { errorMessage } from "@forja/app-core/data/supabase-helpers";
 import { useCurrentUserId } from "@/hooks/use-current-user";
 import { Constants, type Enums } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { EQUIPMENT_LABELS, MUSCLE_LABELS, label } from "@/lib/labels";
+import { EQUIPMENT_LABELS, MUSCLE_LABELS, label } from "@forja/app-core/lib/labels";
 
 const SELECT =
   "h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";

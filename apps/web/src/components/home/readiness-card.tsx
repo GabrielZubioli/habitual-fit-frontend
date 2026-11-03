@@ -1,11 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { BatteryCharging, ChevronRight } from "lucide-react";
-import { fetchMuscleRecovery, recoveryColor } from "@/data/recovery";
-import { queryKeys } from "@/data/query-keys";
+import { fetchMuscleRecovery, recoveryColor } from "@forja/app-core/data/recovery";
+import { queryKeys } from "@forja/app-core/data/query-keys";
 import { useCurrentUserId } from "@/hooks/use-current-user";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MUSCLE_LABELS, label } from "@/lib/labels";
+import { MUSCLE_LABELS, label } from "@forja/app-core/lib/labels";
 import { cn } from "@/lib/utils";
 
 const SEGMENTOS = 10;

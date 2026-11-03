@@ -17,8 +17,8 @@ import {
   X,
 } from "lucide-react";
 import { TRAINING_PROGRAMS, WEEKDAY_LABELS, weekdayOf, type Weekday } from "@forja/domain";
-import { queryKeys } from "@/data/query-keys";
-import { errorMessage } from "@/data/supabase-helpers";
+import { queryKeys } from "@forja/app-core/data/query-keys";
+import { errorMessage } from "@forja/app-core/data/supabase-helpers";
 import {
   createEmptyRoutine,
   createTemplate,
@@ -28,9 +28,13 @@ import {
   setTemplateIcon,
   setTemplateWeekdays,
   splitDisplayName,
-} from "@/data/routines";
-import { addTemplateItem, fetchWorkoutWeek, type WorkoutWeek } from "@/data/workout-week";
-import { openWorkoutForTemplate } from "@/data/workout-session";
+} from "@forja/app-core/data/routines";
+import {
+  addTemplateItem,
+  fetchWorkoutWeek,
+  type WorkoutWeek,
+} from "@forja/app-core/data/workout-week";
+import { openWorkoutForTemplate } from "@forja/app-core/data/workout-session";
 import { useCurrentUserId } from "@/hooks/use-current-user";
 import { PageBody, PageHeader, headerIconClass } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -58,8 +62,8 @@ import { RoutineExerciseRow, estimarDuracao } from "@/components/workouts/routin
 import { RoutineIconPicker } from "@/components/workouts/routine-icon";
 import { ExerciseDemo } from "@/components/workouts/exercise-demo-images";
 import { BodyMap, aggregateMuscleIntensities } from "@/components/body-map/body-map";
-import { exerciseImages } from "@/data/exercise-media";
-import { todayISO } from "@/lib/date";
+import { exerciseImages } from "@forja/app-core/data/exercise-media";
+import { todayISO } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
 
 /**

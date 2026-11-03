@@ -1,0 +1,49 @@
+{
+  "cli": {
+    "version": ">= 16.0.0",
+    "appVersionSource": "local"
+  },
+  "build": {
+    "base": {
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://ijeyizatjzsbgclwmtgp.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_IsVbcKA-tbc1n50aEMwl_g_IwWSBuGh",
+        "EXPO_PUBLIC_SITE_URL": "https://habitualfit.vercel.app",
+        "EXPO_PUBLIC_POWERSYNC_URL": "https://6ae8e8f5b0047aeb6df90c2b.powersync.journeyapps.com"
+      }
+    },
+    "development": {
+      "extends": "base",
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "environment": "development"
+    },
+    "preview": {
+      "extends": "base",
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "environment": "preview",
+      "credentialsSource": "local"
+    },
+    "production": {
+      "extends": "base",
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "environment": "production",
+      "credentialsSource": "local"
+    }
+  },
+  "submit": {
+    "production": {
+      "android": {
+        "track": "internal"
+      }
+    }
+  }
+}

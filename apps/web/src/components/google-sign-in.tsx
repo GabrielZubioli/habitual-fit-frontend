@@ -27,9 +27,9 @@ import { useTheme } from "@/components/theme-provider";
  * (`fallback`), que segue funcionando pelo redirecionamento.
  */
 
-/** ID do cliente OAuth web — público por natureza (vai no HTML de qualquer app com login Google). */
-export const GOOGLE_CLIENT_ID =
-  "646199416785-18c092fk6l3fjs44a7pvea3gia7bmvjn.apps.googleusercontent.com";
+import { GOOGLE_WEB_CLIENT_ID } from "@forja/app-core/lib/google";
+
+export const GOOGLE_CLIENT_ID = GOOGLE_WEB_CLIENT_ID;
 
 const SCRIPT_URL = "https://accounts.google.com/gsi/client";
 

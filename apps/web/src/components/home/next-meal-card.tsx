@@ -5,10 +5,10 @@ import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { MEAL_LABELS, label } from "@/lib/labels";
-import { queryKeys } from "@/data/query-keys";
-import { errorMessage } from "@/data/supabase-helpers";
-import { setMealConsumed, type DayEntry } from "@/data/diet-day";
+import { MEAL_LABELS, label } from "@forja/app-core/lib/labels";
+import { queryKeys } from "@forja/app-core/data/query-keys";
+import { errorMessage } from "@forja/app-core/data/supabase-helpers";
+import { setMealConsumed, type DayEntry } from "@forja/app-core/data/diet-day";
 import { nutritionTotals, type MealSlot } from "@forja/domain";
 
 /**

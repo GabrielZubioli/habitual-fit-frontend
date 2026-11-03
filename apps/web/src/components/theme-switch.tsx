@@ -9,16 +9,19 @@ import { cn } from "@/lib/utils";
  * Substitui a tela de Aparência (claro / escuro / sistema): na prática a
  * pessoa só quer alternar, e um interruptor responde no mesmo toque.
  */
-export function ThemeSwitch({ className, compacto = false }: { className?: string; compacto?: boolean }) {
+export function ThemeSwitch({
+  className,
+  compacto = false,
+}: {
+  className?: string;
+  compacto?: boolean;
+}) {
   const { resolvedTheme, setTheme } = useTheme();
   const escuro = resolvedTheme === "dark";
   const id = compacto ? "tema-compacto" : "tema";
 
   return (
-    <label
-      htmlFor={id}
-      className={cn("flex cursor-pointer items-center gap-3", className)}
-    >
+    <label htmlFor={id} className={cn("flex cursor-pointer items-center gap-3", className)}>
       {!compacto &&
         (escuro ? (
           <Moon className="size-5 shrink-0 text-muted-foreground" aria-hidden />
@@ -26,7 +29,8 @@ export function ThemeSwitch({ className, compacto = false }: { className?: strin
           <Sun className="size-5 shrink-0 text-muted-foreground" aria-hidden />
         ))}
       {!compacto && <span className="flex-1 font-medium">Modo escuro</span>}
-      {compacto && (escuro ? <Moon className="size-4" aria-hidden /> : <Sun className="size-4" aria-hidden />)}
+      {compacto &&
+        (escuro ? <Moon className="size-4" aria-hidden /> : <Sun className="size-4" aria-hidden />)}
       <Switch
         id={id}
         checked={escuro}

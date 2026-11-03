@@ -4,21 +4,21 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, ChevronRight, Loader2, Moon, Play } from "lucide-react";
 import { toast } from "sonner";
 import { todaysWorkout, weekdayOf } from "@forja/domain";
-import { queryKeys } from "@/data/query-keys";
+import { queryKeys } from "@forja/app-core/data/query-keys";
 import {
   fetchActiveRoutine,
   fetchCompletedWorkouts,
   scheduleInputOf,
   splitDisplayName,
   type ActiveRoutine,
-} from "@/data/routines";
-import { fetchOpenSessionId, openWorkoutForTemplate } from "@/data/workout-session";
-import { errorMessage } from "@/data/supabase-helpers";
+} from "@forja/app-core/data/routines";
+import { fetchOpenSessionId, openWorkoutForTemplate } from "@forja/app-core/data/workout-session";
+import { errorMessage } from "@forja/app-core/data/supabase-helpers";
 import { useCurrentUserId } from "@/hooks/use-current-user";
 import { ErrorState } from "@/components/query-boundary";
 import { NoRoutineCard } from "@/components/home/today-workout-card";
 import { RoutineIcon } from "@/components/workouts/routine-icon";
-import { formatLongDate, todayISO } from "@/lib/date";
+import { formatLongDate, todayISO } from "@forja/app-core/lib/date";
 
 /**
  * Treinar: o que falta fazer hoje e, abaixo, todos os treinos do plano.
@@ -186,7 +186,11 @@ function TrainPage() {
           aria-label="Hoje"
         >
           {treinouHoje ? (
-            <CheckCircle2 className="size-14 shrink-0 text-[#01D798]" strokeWidth={2.25} aria-hidden />
+            <CheckCircle2
+              className="size-14 shrink-0 text-[#01D798]"
+              strokeWidth={2.25}
+              aria-hidden
+            />
           ) : (
             <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-[#01D798] text-[#020306]">
               <Moon className="size-7" aria-hidden />

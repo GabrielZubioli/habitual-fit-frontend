@@ -97,8 +97,8 @@ dados é o RLS do Postgres, não o segredo da chave. **Nunca** coloque uma
 `service_role` em variável com prefixo `VITE_` ou `EXPO_PUBLIC_` — esse prefixo
 é exatamente o que injeta o valor no bundle que vai para o navegador.
 
-## Lovable
+## Deploy
 
-O app web é editável pelo [Lovable](https://lovable.dev) (ver `AGENTS.md`).
-Arquivos marcados como _"automatically generated. Do not edit it directly"_ são
-reescritos por ele — não os edite à mão.
+O app web é publicado na Vercel (projeto `habitual-fit`). O Nitro detecta a
+Vercel no build e gera `.vercel/output`; fora dela, gera um servidor Node em
+`.output`. O projeto não usa mais o Lovable.

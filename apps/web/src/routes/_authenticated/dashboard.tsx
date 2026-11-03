@@ -28,16 +28,24 @@ import {
   type Weekday,
 } from "@forja/domain";
 import { supabase } from "@/integrations/supabase/client";
-import { queryKeys } from "@/data/query-keys";
-import { errorMessage, num, unwrapMaybe } from "@/data/supabase-helpers";
-import { hasCompletedOnboarding } from "@/data/onboarding";
-import { isComplete } from "@/lib/onboarding/schema";
+import { queryKeys } from "@forja/app-core/data/query-keys";
+import { errorMessage, num, unwrapMaybe } from "@forja/app-core/data/supabase-helpers";
+import { hasCompletedOnboarding } from "@forja/app-core/data/onboarding";
+import { isComplete } from "@forja/app-core/lib/onboarding/schema";
 import { loadDraft } from "@/lib/onboarding/storage";
-import { fetchActiveRoutine, fetchCompletedWorkouts, scheduleInputOf } from "@/data/routines";
-import { openWorkoutForTemplate } from "@/data/workout-session";
-import { ensureDayMaterialized, fetchDayEntries, type DayEntry } from "@/data/diet-day";
-import { ensureActiveMealPlan } from "@/data/meal-plans";
-import { fetchGoalWeight, fetchWeighIns } from "@/data/body";
+import {
+  fetchActiveRoutine,
+  fetchCompletedWorkouts,
+  scheduleInputOf,
+} from "@forja/app-core/data/routines";
+import { openWorkoutForTemplate } from "@forja/app-core/data/workout-session";
+import {
+  ensureDayMaterialized,
+  entryPortion,
+  fetchDayEntries,
+} from "@forja/app-core/data/diet-day";
+import { ensureActiveMealPlan } from "@forja/app-core/data/meal-plans";
+import { fetchGoalWeight, fetchWeighIns } from "@forja/app-core/data/body";
 import { useCurrentUserId } from "@/hooks/use-current-user";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NoRoutineCard } from "@/components/home/today-workout-card";
@@ -45,10 +53,16 @@ import { WaterCard } from "@/components/home/water-card";
 import { ReadinessCard } from "@/components/home/readiness-card";
 import { CalorieRing, MACRO_COLORS } from "@/components/home/macro-rings";
 import { LazyWeightChart } from "@/components/charts/lazy-chart";
-import { formatDate, formatLongDate, fromISODate, toISODate, todayISO } from "@/lib/date";
+import {
+  formatDate,
+  formatLongDate,
+  fromISODate,
+  toISODate,
+  todayISO,
+} from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
 import { BrandLogo } from "@/components/brand-logo";
-import { useStreak } from "@/hooks/use-streak";
+import { useStreak } from "@forja/app-core/hooks/use-streak";
 
 /**
  * Início: a semana, o treino de hoje e o resto do dia.
@@ -383,21 +397,9 @@ function DietaCard({
   });
 
   const consumidos = (diario.data ?? []).filter((e) => e.consumed);
-  const porcao = (e: DayEntry) => ({
-    food: {
-      servingSizeG: e.food.servingSizeG,
-      kcal: e.food.kcal,
-      proteinG: e.food.proteinG,
-      carbsG: e.food.carbsG,
-      fatG: e.food.fatG,
-      fiberG: e.food.fiberG,
-    },
-    grams: e.grams,
-    servings: 1,
-  });
-  const totais = nutritionTotals(consumidos.map(porcao));
+  const totais = nutritionTotals(consumidos.map(entryPortion));
   // O planejado do dia é a referência do anel quando não há meta.
-  const planejado = nutritionTotals((diario.data ?? []).map(porcao)).kcal;
+  const planejado = nutritionTotals((diario.data ?? []).map(entryPortion)).kcal;
   const pendentes = (diario.data ?? []).filter((e) => !e.consumed).length;
   const pct = kcalTarget > 0 ? Math.min(100, (totais.kcal / kcalTarget) * 100) : 0;
 

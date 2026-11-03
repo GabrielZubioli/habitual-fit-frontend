@@ -2,12 +2,12 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ArrowUp, Loader2, Lock, User, Zap } from "lucide-react";
-import { COACH_FAQ, answerFaq, type FaqKey } from "@/data/coach-faq";
-import { errorMessage } from "@/data/supabase-helpers";
+import { COACH_FAQ, answerFaq, type FaqKey } from "@forja/app-core/data/coach-faq";
+import { errorMessage } from "@forja/app-core/data/supabase-helpers";
 import { CoachIcon } from "@/components/coach/coach-icon";
 import { PageBody, PageHeader } from "@/components/page-header";
 import { cn } from "@/lib/utils";
-import type { ChatMessage } from "@/data/coach-chat";
+import type { ChatMessage } from "@forja/app-core/data/coach-chat";
 
 /**
  * Treinador: perguntas prontas respondidas com os dados da pessoa (ver

@@ -27,8 +27,8 @@ import {
   X,
 } from "lucide-react";
 import { nextDoubleProgression, platesFor, type ExerciseComparison } from "@forja/domain";
-import { queryKeys } from "@/data/query-keys";
-import { errorMessage } from "@/data/supabase-helpers";
+import { queryKeys } from "@forja/app-core/data/query-keys";
+import { errorMessage } from "@forja/app-core/data/supabase-helpers";
 import {
   addSet,
   discardWorkout,
@@ -42,8 +42,8 @@ import {
   type BoardExercise,
   type BoardSet,
   type WorkoutBoard,
-} from "@/data/workout-session";
-import { videoSearchUrl } from "@/data/exercise-media";
+} from "@forja/app-core/data/workout-session";
+import { videoSearchUrl } from "@forja/app-core/data/exercise-media";
 import { SubstituteExerciseDialog } from "@/components/pickers/substitute-exercise-dialog";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/date-picker";
@@ -74,8 +74,8 @@ import { ExerciseDetailSheet } from "@/components/workouts/exercise-detail-sheet
 import { RestTimerBar, playRestFinishedSound } from "@/components/workouts/rest-timer";
 import { useRestTimer } from "@/hooks/use-rest-timer";
 import { useWakeLock } from "@/hooks/use-wake-lock";
-import { EQUIPMENT_LABELS, MUSCLE_LABELS, label } from "@/lib/labels";
-import { formatDate, formatDuration, toISODate, todayISO } from "@/lib/date";
+import { EQUIPMENT_LABELS, MUSCLE_LABELS, label } from "@forja/app-core/lib/labels";
+import { formatDate, formatDuration, toISODate, todayISO } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
 
 /**
@@ -381,8 +381,8 @@ function SessionPage() {
             <AlertDialogHeader>
               <AlertDialogTitle>Marque ao menos uma série</AlertDialogTitle>
               <AlertDialogDescription>
-                Para terminar o treino, toque no círculo ao lado de cada série que você fez. Se
-                não treinou, descarte o treino na lixeira do topo.
+                Para terminar o treino, toque no círculo ao lado de cada série que você fez. Se não
+                treinou, descarte o treino na lixeira do topo.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { LegalPage, Secao } from "@/components/legal-page";
-import { EMPRESA, identificacaoEmpresa } from "@/lib/legal";
+import { EMPRESA, identificacaoEmpresa } from "@forja/app-core/lib/legal";
 
 /**
  * Termos de Uso — públicos, como a Política de Privacidade. O ponto central é

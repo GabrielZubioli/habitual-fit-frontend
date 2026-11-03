@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Copy, GripVertical, Info, MoreVertical, Repeat, Timer, Trash2 } from "lucide-react";
-import { errorMessage } from "@/data/supabase-helpers";
+import { errorMessage } from "@forja/app-core/data/supabase-helpers";
 import {
   duplicateTemplateItem,
   removeTemplateItem,
@@ -10,8 +10,8 @@ import {
   updateTemplateItem,
   type WeekExercise,
   type WeekSplit,
-} from "@/data/workout-week";
-import { exerciseImages } from "@/data/exercise-media";
+} from "@forja/app-core/data/workout-week";
+import { exerciseImages } from "@forja/app-core/data/exercise-media";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,7 +27,7 @@ import { ConfirmButton } from "@/components/confirm-button";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { ExerciseDemo } from "@/components/workouts/exercise-demo-images";
 import { ExercisePicker } from "@/components/pickers/exercise-picker";
-import { EQUIPMENT_LABELS, label } from "@/lib/labels";
+import { EQUIPMENT_LABELS, label } from "@forja/app-core/lib/labels";
 
 /**
  * Uma linha de exercício.

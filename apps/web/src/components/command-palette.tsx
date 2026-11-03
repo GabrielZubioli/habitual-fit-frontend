@@ -27,11 +27,11 @@ import {
   Utensils,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { queryKeys } from "@/data/query-keys";
-import { errorMessage, unwrapList } from "@/data/supabase-helpers";
-import { startBlankSession } from "@/data/workouts";
+import { queryKeys } from "@forja/app-core/data/query-keys";
+import { errorMessage, unwrapList } from "@forja/app-core/data/supabase-helpers";
+import { startBlankSession } from "@forja/app-core/data/workouts";
 import { useCurrentUserId } from "@/hooks/use-current-user";
-import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { useDebouncedValue } from "@forja/app-core/hooks/use-debounced-value";
 import {
   CommandDialog,
   CommandEmpty,
@@ -42,8 +42,8 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from "@/components/ui/command";
-import { MUSCLE_LABELS, label } from "@/lib/labels";
-import { formatShortDate } from "@/lib/date";
+import { MUSCLE_LABELS, label } from "@forja/app-core/lib/labels";
+import { formatShortDate } from "@forja/app-core/lib/date";
 import { toast } from "sonner";
 
 const NAV_ITEMS = [

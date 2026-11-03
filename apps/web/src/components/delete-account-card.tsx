@@ -9,8 +9,8 @@ import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { errorMessage } from "@/data/supabase-helpers";
+import { deleteAccount } from "@forja/app-core/data/profile";
+import { errorMessage } from "@forja/app-core/data/supabase-helpers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,10 +35,7 @@ export function DeleteAccountCard() {
   const excluir = async () => {
     setExcluindo(true);
     try {
-      const { error } = await supabase.functions.invoke("delete-account", { method: "POST" });
-      if (error) throw error;
-      // O usuário já não existe no servidor: só falta limpar a sessão local.
-      await supabase.auth.signOut({ scope: "local" });
+      await deleteAccount();
       toast.success("Conta excluída", { description: "Seus dados foram apagados." });
       void navigate({ to: "/" });
     } catch (e) {

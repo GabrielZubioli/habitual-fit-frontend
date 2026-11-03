@@ -1,5 +1,5 @@
 import { Heart } from "lucide-react";
-import { useFavoritos } from "@/data/exercise-favorites";
+import { useFavoritos } from "@forja/app-core/data/exercise-favorites";
 import { cn } from "@/lib/utils";
 
 /** Coração de favoritar: cheio em vermelho quando favorito. */

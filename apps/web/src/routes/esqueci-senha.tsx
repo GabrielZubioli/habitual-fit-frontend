@@ -4,7 +4,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2, MailCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { errorMessage } from "@/data/supabase-helpers";
+import { errorMessage } from "@forja/app-core/data/supabase-helpers";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

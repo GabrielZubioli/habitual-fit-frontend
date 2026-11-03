@@ -19,7 +19,11 @@ export function KeyboardInset() {
     };
     const focou = (e: FocusEvent) => {
       const el = e.target as HTMLElement | null;
-      if (!el?.matches("input, textarea, select") || !el.closest("[role=dialog], [role=alertdialog]")) return;
+      if (
+        !el?.matches("input, textarea, select") ||
+        !el.closest("[role=dialog], [role=alertdialog]")
+      )
+        return;
       // Espera o teclado terminar de abrir antes de centralizar o campo.
       window.setTimeout(() => el.scrollIntoView({ block: "center", behavior: "smooth" }), 300);
     };

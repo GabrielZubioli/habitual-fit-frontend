@@ -1,8 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { queryKeys } from "@/data/query-keys";
-import { assertOk, errorMessage, num, unwrapMaybe } from "@/data/supabase-helpers";
+import { queryKeys } from "@forja/app-core/data/query-keys";
+import { errorMessage, num, unwrapMaybe } from "@forja/app-core/data/supabase-helpers";
+import {
+  fetchProfile,
+  preferencesOf,
+  savePreferences as gravarPreferencias,
+  type PreferencesForm,
+} from "@forja/app-core/data/profile";
 import { PageBody, PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -49,8 +55,8 @@ import {
   INJURY_OPTIONS,
   MEALS_PER_DAY_OPTIONS,
   PLACE_OPTIONS,
-} from "@/lib/onboarding/options";
-import { todayISO } from "@/lib/date";
+} from "@forja/app-core/lib/onboarding/options";
+import { todayISO } from "@forja/app-core/lib/date";
 
 /**
  * Configurações: dados, metas e preferências.
@@ -118,36 +124,7 @@ const EMPTY_FORM: ProfileForm = {
   goal: "maintain",
 };
 
-/**
- * Preferências que não entram no cálculo de metas.
- *
- * Ficam num estado separado do formulário de dados corporais porque salvam
- * separado: mudar "treino 4× por semana" não deveria exigir que a altura esteja
- * preenchida e válida, que é o que aconteceria num formulário único.
- */
-type PreferencesForm = {
-  experience_level: string | null;
-  days_per_week: number | null;
-  session_duration: string | null;
-  training_place: string | null;
-  focus_area: string | null;
-  equipment_available: string[];
-  meals_per_day: number | null;
-  water_ml_target: number | null;
-  injuries: string[];
-};
-
-const EMPTY_PREFERENCES: PreferencesForm = {
-  experience_level: null,
-  days_per_week: null,
-  session_duration: null,
-  training_place: null,
-  focus_area: null,
-  equipment_available: [],
-  meals_per_day: null,
-  water_ml_target: null,
-  injuries: [],
-};
+const EMPTY_PREFERENCES: PreferencesForm = preferencesOf({});
 
 const DAYS_PER_WEEK_OPTIONS = [2, 3, 4, 5, 6] as const;
 
@@ -162,8 +139,7 @@ function SettingsPage() {
 
   const profile = useQuery({
     queryKey: queryKeys.profile(),
-    queryFn: async () =>
-      unwrapMaybe("carregar perfil", await supabase.from("profiles").select("*").maybeSingle()),
+    queryFn: fetchProfile,
   });
 
   const latestWeight = useQuery({
@@ -195,17 +171,7 @@ function SettingsPage() {
       activity_level: (p.activity_level ?? "moderate") as ProfileForm["activity_level"],
       goal: (p.goal ?? "maintain") as ProfileForm["goal"],
     });
-    setPrefs({
-      experience_level: p.experience_level ?? null,
-      days_per_week: p.days_per_week ?? null,
-      session_duration: p.session_duration ?? null,
-      training_place: p.training_place ?? null,
-      focus_area: p.focus_area ?? null,
-      equipment_available: p.equipment_available ?? [],
-      meals_per_day: p.meals_per_day ?? null,
-      water_ml_target: p.water_ml_target ?? null,
-      injuries: p.injuries ?? [],
-    });
+    setPrefs(preferencesOf(p));
     setPrefsTouched(false);
     // Só reidrata quando muda o registro carregado, não a cada refetch — senão
     // uma revalidação em background descartaria o que o usuário está digitando.
@@ -218,23 +184,7 @@ function SettingsPage() {
   const savePreferences = useMutation({
     mutationFn: async () => {
       if (!profileId) throw new Error("Perfil ainda não carregado.");
-      assertOk(
-        "salvar preferências",
-        await supabase
-          .from("profiles")
-          .update({
-            experience_level: prefs.experience_level,
-            days_per_week: prefs.days_per_week,
-            session_duration: prefs.session_duration,
-            training_place: prefs.training_place,
-            focus_area: prefs.focus_area,
-            equipment_available: prefs.equipment_available,
-            meals_per_day: prefs.meals_per_day,
-            water_ml_target: prefs.water_ml_target,
-            injuries: prefs.injuries,
-          })
-          .eq("id", profileId),
-      );
+      await gravarPreferencias(profileId, prefs);
     },
     onSuccess: () => {
       toast.success("Preferências salvas", {

@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, ListChecks, PlayCircle, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { unwrapMaybe } from "@/data/supabase-helpers";
+import { unwrapMaybe } from "@forja/app-core/data/supabase-helpers";
 import {
   Sheet,
   SheetContent,
@@ -13,7 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ExerciseMediaView } from "./exercise-media-view";
-import { exerciseMedia, videoSearchUrl } from "@/data/exercise-media";
+import { exerciseMedia, videoSearchUrl } from "@forja/app-core/data/exercise-media";
 import { BodyMap, aggregateMuscleIntensities } from "@/components/body-map/body-map";
 import {
   EQUIPMENT_LABELS,
@@ -22,7 +22,7 @@ import {
   MOVEMENT_PATTERN_LABELS,
   MUSCLE_LABELS,
   label,
-} from "@/lib/labels";
+} from "@forja/app-core/lib/labels";
 
 /**
  * Ficha completa do exercício.

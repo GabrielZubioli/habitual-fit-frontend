@@ -1,16 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { Activity, Flame, Ruler, Scale, Target, TrendingDown, TrendingUp } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { num, unwrapList, unwrapMaybe } from "@/data/supabase-helpers";
-import { queryKeys } from "@/data/query-keys";
+import { num } from "@forja/app-core/data/supabase-helpers";
+import { fetchProfile } from "@forja/app-core/data/profile";
+import { fetchActiveGoals, fetchLatestMeasurement, fetchWeighIns } from "@forja/app-core/data/body";
+import { queryKeys } from "@forja/app-core/data/query-keys";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { toISODate } from "@/lib/date";
-import { differenceInCalendarDays, subDays } from "date-fns";
+import { differenceInCalendarDays } from "date-fns";
 import { bmi, goalProgress, navyBodyFat, weeklyRate } from "@forja/domain";
 
 /**
@@ -45,48 +45,22 @@ const WINDOW_DAYS = 30;
 export function ProgressOverview() {
   const profile = useQuery({
     queryKey: queryKeys.profile(),
-    queryFn: async () =>
-      unwrapMaybe("carregar perfil", await supabase.from("profiles").select("*").maybeSingle()),
+    queryFn: fetchProfile,
   });
 
   const weights = useQuery({
     queryKey: queryKeys.body.weights(WINDOW_DAYS),
-    queryFn: async () =>
-      unwrapList(
-        "carregar peso",
-        await supabase
-          .from("body_weights")
-          .select("log_date, weight_kg")
-          .gte("log_date", toISODate(subDays(new Date(), WINDOW_DAYS)))
-          .order("log_date"),
-      ),
+    queryFn: () => fetchWeighIns(WINDOW_DAYS),
   });
 
   const measurement = useQuery({
     queryKey: [...queryKeys.body.measurements(), "latest"],
-    queryFn: async () =>
-      unwrapMaybe(
-        "carregar última medida",
-        await supabase
-          .from("body_measurements")
-          .select("log_date, waist_cm, neck_cm, hip_cm, body_fat_pct")
-          .order("log_date", { ascending: false })
-          .limit(1)
-          .maybeSingle(),
-      ),
+    queryFn: fetchLatestMeasurement,
   });
 
   const goals = useQuery({
     queryKey: queryKeys.goals.list(),
-    queryFn: async () =>
-      unwrapList(
-        "carregar metas",
-        await supabase
-          .from("goals")
-          .select("id, kind, label, metric_key, start_value, target_value, unit, achieved_at")
-          .eq("is_active", true)
-          .order("created_at"),
-      ),
+    queryFn: fetchActiveGoals,
   });
 
   const carregando = profile.isPending || weights.isPending;
@@ -104,10 +78,7 @@ export function ProgressOverview() {
     );
   }
 
-  const serie = (weights.data ?? []).map((w) => ({
-    date: w.log_date,
-    weightKg: num(w.weight_kg),
-  }));
+  const serie = (weights.data ?? []).map((w) => ({ date: w.date, weightKg: w.kg }));
 
   const pesoAtual = serie.at(-1)?.weightKg;
   const alturaCm = num(profile.data?.height_cm);
@@ -289,9 +260,7 @@ function StatCard({
     <div
       className={cn(
         "rounded-[1.25rem] p-3.5 animate-in fade-in slide-in-from-bottom-2 fill-mode-backwards duration-500",
-        destaque
-          ? "bg-[#01D798] text-[#020306]"
-          : "border border-primary/20 bg-card",
+        destaque ? "bg-[#01D798] text-[#020306]" : "border border-primary/20 bg-card",
       )}
     >
       <div className={cn("flex items-center gap-2", suave)}>

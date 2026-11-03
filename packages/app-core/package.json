@@ -1,0 +1,31 @@
+{
+  "name": "@forja/app-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Acesso a dados (Supabase + TanStack Query) e utilitários do Habitual Fit, compartilhados entre o web e o app nativo. Sem DOM: cada app injeta o cliente Supabase com configureSupabase().",
+  "exports": {
+    "./supabase": "./src/supabase.ts",
+    "./data/exercise-media": "./src/data/exercise-media/index.ts",
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@forja/domain": "*",
+    "@gabrielzubioli/db": "^0.2.0",
+    "@supabase/supabase-js": "^2.110.8",
+    "@tanstack/react-query": "^5.101.1",
+    "date-fns": "^4.1.0",
+    "zod": "^3.24.2"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vitest": "^4.1.10"
+  }
+}

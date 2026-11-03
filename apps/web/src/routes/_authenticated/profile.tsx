@@ -24,13 +24,22 @@ import {
 } from "lucide-react";
 import { yearsBetween } from "@forja/domain";
 import { supabase } from "@/integrations/supabase/client";
-import type { Tables, TablesUpdate } from "@/integrations/supabase/types";
-import { queryKeys } from "@/data/query-keys";
-import { assertOk, errorMessage, num, unwrapMaybe } from "@/data/supabase-helpers";
-import { fetchWeightEnds, fetchWorkoutCounts } from "@/data/body";
-import { fetchPersonalRecords } from "@/data/workouts";
+import type { Tables } from "@/integrations/supabase/types";
+import { queryKeys } from "@forja/app-core/data/query-keys";
+import { errorMessage, num } from "@forja/app-core/data/supabase-helpers";
+import {
+  PROFILE_FIELD_TITLES,
+  bmiBand,
+  convertProfileField,
+  fetchProfile,
+  updateProfile,
+  validateProfileField,
+  type ProfileField,
+} from "@forja/app-core/data/profile";
+import { fetchWeightEnds, fetchWorkoutCounts } from "@forja/app-core/data/body";
+import { fetchPersonalRecords } from "@forja/app-core/data/workouts";
 import { useCurrentUser } from "@/hooks/use-current-user";
-import { useStreak } from "@/hooks/use-streak";
+import { useStreak } from "@forja/app-core/hooks/use-streak";
 import { AvatarPicker } from "@/components/profile/avatar-picker";
 import { ShareProfileDialog } from "@/components/profile/share-profile-dialog";
 import { ActivityHeatmap } from "@/components/workouts/activity-heatmap";
@@ -47,10 +56,20 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ErrorState } from "@/components/query-boundary";
-import { ACTIVITY_HINTS, ACTIVITY_LABELS, GOAL_LABELS, SEX_LABELS, label } from "@/lib/labels";
-import { EXPERIENCE_OPTIONS, FOCUS_OPTIONS, PLACE_OPTIONS } from "@/lib/onboarding/options";
-import { weightJourney } from "@/lib/weight-journey";
-import { formatDate, todayISO } from "@/lib/date";
+import {
+  ACTIVITY_HINTS,
+  ACTIVITY_LABELS,
+  GOAL_LABELS,
+  SEX_LABELS,
+  label,
+} from "@forja/app-core/lib/labels";
+import {
+  EXPERIENCE_OPTIONS,
+  FOCUS_OPTIONS,
+  PLACE_OPTIONS,
+} from "@forja/app-core/lib/onboarding/options";
+import { weightJourney } from "@forja/app-core/lib/weight-journey";
+import { formatDate, todayISO } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
 
 /**
@@ -73,14 +92,7 @@ const fmt = (n: number) => n.toLocaleString("pt-BR", { maximumFractionDigits: 1 
 const opcao = (opcoes: { value: string; label: string }[], v: string | null | undefined) =>
   opcoes.find((o) => o.value === v)?.label ?? null;
 
-type Campo =
-  | "display_name"
-  | "sex"
-  | "birth_date"
-  | "height_cm"
-  | "goal_weight_kg"
-  | "goal"
-  | "activity_level";
+type Campo = ProfileField;
 
 function ProfilePage() {
   const user = useCurrentUser();
@@ -92,8 +104,7 @@ function ProfilePage() {
 
   const profile = useQuery({
     queryKey: queryKeys.profile(),
-    queryFn: async () =>
-      unwrapMaybe("carregar perfil", await supabase.from("profiles").select("*").maybeSingle()),
+    queryFn: fetchProfile,
   });
   const pesos = useQuery({
     queryKey: [...queryKeys.body.all, "weight-ends"],
@@ -423,7 +434,7 @@ function ProfilePage() {
                 icon={<Activity />}
                 rotulo="IMC"
                 valor={imc && fmt(imc)}
-                nota={imc ? faixaImc(imc) : "Precisa de peso e altura"}
+                nota={imc ? bmiBand(imc) : "Precisa de peso e altura"}
               />
             </Bloco>
           </div>
@@ -558,15 +569,7 @@ function Bloco({ children }: { children: ReactNode }) {
 
 type Perfil = Tables<"profiles">;
 
-const TITULOS: Record<Campo, { titulo: string; dica?: string }> = {
-  display_name: { titulo: "Seu nome" },
-  sex: { titulo: "Sexo", dica: "Entra no cálculo do gasto calórico." },
-  birth_date: { titulo: "Data de nascimento", dica: "A idade entra no cálculo do gasto calórico." },
-  height_cm: { titulo: "Altura", dica: "Em centímetros." },
-  goal_weight_kg: { titulo: "Meta de peso", dica: "Deixe em branco se não tiver uma meta." },
-  goal: { titulo: "Objetivo", dica: "Ajusta as calorias: déficit, manutenção ou superávit." },
-  activity_level: { titulo: "Nível de atividade", dica: "Quanto você se movimenta na semana." },
-};
+const TITULOS = PROFILE_FIELD_TITLES;
 
 function EditarCampo({
   campo,
@@ -581,15 +584,12 @@ function EditarCampo({
   const inicial = perfil[campo];
   const [valor, setValor] = useState<string>(inicial == null ? "" : String(inicial));
 
-  const erro = validar(campo, valor);
+  const erro = validateProfileField(campo, valor);
 
   const salvar = useMutation({
     mutationFn: async () => {
       if (erro) throw new Error(erro);
-      const novo = converter(campo, valor);
-      const patch: TablesUpdate<"profiles"> = { [campo]: novo };
-
-      assertOk("salvar perfil", await supabase.from("profiles").update(patch).eq("id", perfil.id));
+      await updateProfile(perfil.id, { [campo]: convertProfileField(campo, valor) });
     },
     onSuccess: () => {
       toast.success("Salvo");
@@ -719,36 +719,6 @@ function Opcoes({
   );
 }
 
-function validar(campo: Campo, v: string): string | null {
-  switch (campo) {
-    case "display_name":
-      return v.trim().length > 80 ? "Nome muito longo." : null;
-    case "height_cm": {
-      const n = Number(v);
-      return !v || n < 100 || n > 250 ? "Altura esperada entre 100 e 250 cm." : null;
-    }
-    case "goal_weight_kg": {
-      if (!v) return null;
-      const n = Number(v);
-      return n < 30 || n > 300 ? "Peso-alvo esperado entre 30 e 300 kg." : null;
-    }
-    case "birth_date": {
-      if (!v) return "Escolha a data.";
-      const idade = yearsBetween(v);
-      return idade < 10 || idade > 120 ? "Informe uma data entre 10 e 120 anos atrás." : null;
-    }
-    default:
-      return v ? null : "Escolha uma opção.";
-  }
-}
-
-function converter(campo: Campo, v: string): string | number | null {
-  if (campo === "height_cm") return Number(v);
-  if (campo === "goal_weight_kg") return v ? Number(v) : null;
-  if (campo === "display_name") return v.trim() || null;
-  return v;
-}
-
 // ─── Blocos ──────────────────────────────────────────────────────────────────
 
 /** Um bloco de dado editável. */
@@ -824,12 +794,4 @@ function ConteudoDado({
       {nota && <p className="text-xs text-muted-foreground">{nota}</p>}
     </>
   );
-}
-
-/** Faixa do IMC pela tabela da OMS. */
-function faixaImc(imc: number): string {
-  if (imc < 18.5) return "Abaixo do peso";
-  if (imc < 25) return "Peso normal";
-  if (imc < 30) return "Sobrepeso";
-  return "Obesidade";
 }

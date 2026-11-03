@@ -20,8 +20,8 @@ import {
   Utensils,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { queryKeys } from "@/data/query-keys";
-import { fetchOpenSession } from "@/data/workout-session";
+import { queryKeys } from "@forja/app-core/data/query-keys";
+import { fetchOpenSession } from "@forja/app-core/data/workout-session";
 import { BrandSymbol } from "@/components/brand-logo";
 import {
   TERMINAR_TREINO_EVENT,

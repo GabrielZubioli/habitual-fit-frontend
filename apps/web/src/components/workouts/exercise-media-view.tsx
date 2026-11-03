@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { ImageOff, Play } from "lucide-react";
 
 import { ExerciseDemo } from "@/components/workouts/exercise-demo-images";
-import type { ExerciseMedia } from "@/data/exercise-media";
+import type { ExerciseMedia } from "@forja/app-core/data/exercise-media";
 import { cn } from "@/lib/utils";
 
 /**

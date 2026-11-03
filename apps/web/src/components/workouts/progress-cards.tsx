@@ -1,20 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
-import { queryKeys } from "@/data/query-keys";
-import { errorMessage } from "@/data/supabase-helpers";
+import { queryKeys } from "@forja/app-core/data/query-keys";
+import { errorMessage } from "@forja/app-core/data/supabase-helpers";
 import {
   RECOVERY_STATUS_LABELS,
   describeRemaining,
   fetchMuscleRecovery,
   recoveryColor,
-} from "@/data/recovery";
-import { fetchMuscleSetEntries } from "@/data/workouts";
+} from "@forja/app-core/data/recovery";
+import { fetchMuscleSetEntries } from "@forja/app-core/data/workouts";
 import { useCurrentUserId } from "@/hooks/use-current-user";
 import { BodyMap } from "@/components/body-map/body-map";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/query-boundary";
-import { MUSCLE_LABELS, label } from "@/lib/labels";
-import { todayISO } from "@/lib/date";
+import { MUSCLE_LABELS, label } from "@forja/app-core/lib/labels";
+import { todayISO } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
 import { weeklySetsByBodyPart, type BodyPart } from "@forja/domain";
 
@@ -47,48 +47,48 @@ export function RecoveryCard() {
 
   return (
     <div className="grid gap-4 sm:grid-cols-[auto_1fr]">
-        <div>
-          <BodyMap
-            muscles={musculos.map((m) => ({
-              muscle: m.muscle,
-              // Fadigado aparece forte; pronto, suave — cada um na sua cor.
-              intensity: m.status === "recovered" ? 0.35 : 1 - m.ratio,
-              color: recoveryColor(m.status),
-            }))}
-            size="sm"
-            showToggle={false}
-            showLegend={false}
-            className="mx-auto"
-          />
-          <p className="mt-1 text-center text-xs text-muted-foreground">
-            Laranja: fadigado · verde: pronto
-          </p>
-        </div>
-        <ul className="space-y-2.5">
-          {musculos.slice(0, 8).map((m) => (
-            <li key={m.muscle}>
-              <div className="flex items-baseline justify-between gap-2 text-sm">
-                <span className="font-medium">{label(MUSCLE_LABELS, m.muscle)}</span>
-                <span className="text-xs text-muted-foreground">
-                  {RECOVERY_STATUS_LABELS[m.status]} · {describeRemaining(m)}
-                </span>
-              </div>
+      <div>
+        <BodyMap
+          muscles={musculos.map((m) => ({
+            muscle: m.muscle,
+            // Fadigado aparece forte; pronto, suave — cada um na sua cor.
+            intensity: m.status === "recovered" ? 0.35 : 1 - m.ratio,
+            color: recoveryColor(m.status),
+          }))}
+          size="sm"
+          showToggle={false}
+          showLegend={false}
+          className="mx-auto"
+        />
+        <p className="mt-1 text-center text-xs text-muted-foreground">
+          Laranja: fadigado · verde: pronto
+        </p>
+      </div>
+      <ul className="space-y-2.5">
+        {musculos.slice(0, 8).map((m) => (
+          <li key={m.muscle}>
+            <div className="flex items-baseline justify-between gap-2 text-sm">
+              <span className="font-medium">{label(MUSCLE_LABELS, m.muscle)}</span>
+              <span className="text-xs text-muted-foreground">
+                {RECOVERY_STATUS_LABELS[m.status]} · {describeRemaining(m)}
+              </span>
+            </div>
+            <div
+              className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted"
+              role="meter"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={m.percent}
+              aria-label={`${label(MUSCLE_LABELS, m.muscle)}: ${m.percent}% recuperado`}
+            >
               <div
-                className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted"
-                role="meter"
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-valuenow={m.percent}
-                aria-label={`${label(MUSCLE_LABELS, m.muscle)}: ${m.percent}% recuperado`}
-              >
-                <div
-                  className="h-full rounded-full"
-                  style={{ width: `${m.percent}%`, background: recoveryColor(m.status) }}
-                />
-              </div>
-            </li>
-          ))}
-        </ul>
+                className="h-full rounded-full"
+                style={{ width: `${m.percent}%`, background: recoveryColor(m.status) }}
+              />
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

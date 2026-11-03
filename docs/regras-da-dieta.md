@@ -91,14 +91,14 @@ seco…), **marcadores** (`meat`, `fish`, `seafood`, `dairy`, `egg`, `honey`,
 
 Exclusão por **marcadores**, nunca por trecho de nome:
 
-| Restrição | Exclui marcadores |
-|---|---|
-| Vegetariana | meat, fish, seafood |
-| Vegana | meat, fish, seafood, dairy, egg, honey |
-| Sem lactose / alergia a leite | dairy |
-| Sem glúten / alergia a glúten | gluten (aveia incluída, por contaminação cruzada) |
-| Baixo carboidrato | starch |
-| Ovo · Amendoim · Castanhas · Frutos do mar · Peixe · Soja | egg · peanut · nuts · seafood · fish · soy |
+| Restrição                                                 | Exclui marcadores                                 |
+| --------------------------------------------------------- | ------------------------------------------------- |
+| Vegetariana                                               | meat, fish, seafood                               |
+| Vegana                                                    | meat, fish, seafood, dairy, egg, honey            |
+| Sem lactose / alergia a leite                             | dairy                                             |
+| Sem glúten / alergia a glúten                             | gluten (aveia incluída, por contaminação cruzada) |
+| Baixo carboidrato                                         | starch                                            |
+| Ovo · Amendoim · Castanhas · Frutos do mar · Peixe · Soja | egg · peanut · nuts · seafood · fish · soy        |
 
 - Restrição desconhecida lança erro (não é ignorada).
 - "Não gosto de X" (≥ 3 letras, sem acento) tira da geração por nome ou conceito.

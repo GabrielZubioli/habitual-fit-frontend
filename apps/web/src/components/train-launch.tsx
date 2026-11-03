@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BrandSymbol } from "@/components/brand-logo";
-import { formatClock } from "@/lib/date";
+import { formatClock } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
 
 /**

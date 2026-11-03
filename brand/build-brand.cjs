@@ -40,7 +40,11 @@ const grava = (nome, conteudo) => fs.writeFileSync(path.join(outDir, nome), cont
 
 // ── Símbolo isolado ─────────────────────────────────────────────────────────
 const S = POS.simbolo;
-for (const [sufixo, cor] of [["", VERDE], ["-branco", BRANCO], ["-preto", ESCURO]]) {
+for (const [sufixo, cor] of [
+  ["", VERDE],
+  ["-branco", BRANCO],
+  ["-preto", ESCURO],
+]) {
   grava(`habitual-fit-simbolo${sufixo}.svg`, svg(S.w, S.h, parte("simbolo", cor, -S.x, -S.y)));
 }
 
@@ -57,15 +61,21 @@ grava("habitual-fit-icone-verde.svg", icone(VERDE, BRANCO));
 
 // ── Logo vertical (como a arte original) ────────────────────────────────────
 const vertical = (corTexto, bg) => {
-  const minX = POS.fit.x, maxX = POS.fit.x + POS.fit.w;
-  const minY = S.y, maxY = POS.fit.y + POS.fit.h;
+  const minX = POS.fit.x,
+    maxX = POS.fit.x + POS.fit.w;
+  const minY = S.y,
+    maxY = POS.fit.y + POS.fit.h;
   const m = 40;
-  const w = maxX - minX + 2 * m, h = maxY - minY + 2 * m;
-  const ox = -minX + m, oy = -minY + m;
+  const w = maxX - minX + 2 * m,
+    h = maxY - minY + 2 * m;
+  const ox = -minX + m,
+    oy = -minY + m;
   return svg(
     w,
     h,
-    parte("simbolo", VERDE, ox, oy) + parte("habitual", corTexto, ox, oy) + parte("fit", VERDE, ox, oy),
+    parte("simbolo", VERDE, ox, oy) +
+      parte("habitual", corTexto, ox, oy) +
+      parte("fit", VERDE, ox, oy),
     bg,
   );
 };
@@ -83,7 +93,8 @@ const horizontal = (corTexto, bg, m = 40) => {
   const w = m + S.w + gap + textoW + m;
   const h = S.h + 2 * m;
   const simb = parte("simbolo", VERDE, m - S.x, m - S.y);
-  const tx = m + S.w + gap, ty = m + (S.h - textoH * s) / 2;
+  const tx = m + S.w + gap,
+    ty = m + (S.h - textoH * s) / 2;
   const nome = (n, cor) => parte(n, cor, tx - s * POS.fit.x, ty - s * POS.habitual.y, s);
   return svg(w, h, simb + nome("habitual", corTexto) + nome("fit", VERDE), bg);
 };

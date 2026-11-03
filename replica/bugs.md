@@ -8,7 +8,6 @@
 - **Atual:** `<button>` "Ver execução" contém o `<button>` "Reproduzir demonstração" de `ExerciseDemo`. Console: "In HTML, <button> cannot be a descendant of <button>. This will cause a hydration error." Leitor de tela anuncia dois controles aninhados.
 - **Fix:** `ExerciseDemo` ganhou `interactive={false}`, que renderiza `<span>`; usado nos dois thumbnails. Teste: `exercise-demo-images.test.ts` (falhou antes, passa depois). Console limpo após o fix.
 
-
 ## BUG-02 — treino de domingo à noite some da semana (S2, pré-existente) — corrigido
 
 - **Onde:** home (ofensiva, "X de N treinos"), Treinos (semana/mês), calendário — tudo via `fetchCompletedWorkouts`.

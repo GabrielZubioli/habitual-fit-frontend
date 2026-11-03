@@ -11,21 +11,19 @@ Fonte: [package.json](../../package.json). Versões são as declaradas (semver `
 
 ## Framework de aplicação
 
-| Lib                                 | Versão     | Papel                                                                           |
-| ----------------------------------- | ---------- | ------------------------------------------------------------------------------- |
-| `@tanstack/react-start`             | ^1.168     | Framework full-stack (SSR + server functions)                                   |
-| `@tanstack/react-router`            | ^1.170     | Roteamento file-based e type-safe                                               |
-| `@tanstack/router-plugin`           | ^1.168     | Gera `routeTree.gen.ts`                                                         |
-| `react` / `react-dom`               | ^19.2      | UI                                                                              |
-| `nitro`                             | 3.0.x beta | Servidor/bundling de produção (via config Lovable)                              |
-| `vite`                              | ^8.0       | Dev server e build                                                              |
-| `@lovable.dev/vite-tanstack-config` | ^2.7       | Config Vite pré-montada do Lovable (ver [vite.config.ts](../../vite.config.ts)) |
+| Lib                       | Versão     | Papel                                                            |
+| ------------------------- | ---------- | ---------------------------------------------------------------- |
+| `@tanstack/react-start`   | ^1.168     | Framework full-stack (SSR + server functions)                    |
+| `@tanstack/react-router`  | ^1.170     | Roteamento file-based e type-safe                                |
+| `@tanstack/router-plugin` | ^1.168     | Gera `routeTree.gen.ts`                                          |
+| `react` / `react-dom`     | ^19.2      | UI                                                               |
+| `nitro`                   | 3.0.x beta | Servidor/bundling de produção (preset detectado: Vercel ou Node) |
+| `vite`                    | ^8.0       | Dev server e build                                               |
 
 ## Dados e estado
 
 - `@tanstack/react-query` ^5.101 — cache/estado de servidor (todo fetch passa por aqui).
 - `@supabase/supabase-js` ^2.110 — client do banco/Auth/Storage.
-- `@lovable.dev/cloud-auth-js` ^1.1 — OAuth (Google) via Lovable Cloud.
 - `zod` ^3.24 — validação (ex.: schemas de email/senha no login).
 - `react-hook-form` ^7.71 + `@hookform/resolvers` ^5.2 — instalados; uso pontual
   (a maioria dos forms usa `useState` controlado direto).

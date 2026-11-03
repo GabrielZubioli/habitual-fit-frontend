@@ -14,9 +14,9 @@ import {
   Repeat,
   Trash2,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { queryKeys } from "@/data/query-keys";
-import { assertOk, errorMessage, num, unwrapMaybe } from "@/data/supabase-helpers";
+import { queryKeys } from "@forja/app-core/data/query-keys";
+import { errorMessage, num } from "@forja/app-core/data/supabase-helpers";
+import { fetchProfile } from "@forja/app-core/data/profile";
 import {
   ensureDayMaterialized,
   fetchDayEntries,
@@ -27,9 +27,14 @@ import {
   setEntryGrams,
   setMealConsumed,
   substituteEntry,
+  copyPreviousDay as copiarDiaAnterior,
+  entryCandidate,
+  entryPortion,
+  removeEntry,
+  visibleSlots,
   type DayEntry,
-} from "@/data/diet-day";
-import { ensureActiveMealPlan, setMealLabel } from "@/data/meal-plans";
+} from "@forja/app-core/data/diet-day";
+import { ensureActiveMealPlan, setMealLabel } from "@forja/app-core/data/meal-plans";
 import {
   Dialog,
   DialogContent,
@@ -56,12 +61,12 @@ import {
 import { ErrorState } from "@/components/query-boundary";
 import { SubstituteFoodDialog } from "@/components/diet/substitute-food-dialog";
 import { CalorieRing, MACRO_COLORS, MacroRing } from "@/components/home/macro-rings";
-import { MEALS, MEAL_LABELS, label, type MealValue } from "@/lib/labels";
-import { formatDate, fromISODate, toISODate, todayISO } from "@/lib/date";
+import { MEALS, MEAL_LABELS, label, type MealValue } from "@forja/app-core/lib/labels";
+import { formatDate, fromISODate, toISODate, todayISO } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
 import { addDays, startOfWeek } from "date-fns";
 import { nutritionTotals, portionMacros, type FoodCandidate } from "@forja/domain";
-import { CATEGORY_EMOJI } from "@/lib/food-emoji";
+import { CATEGORY_EMOJI } from "@forja/app-core/lib/food-emoji";
 import { WeeklyMenu } from "@/components/diet/weekly-menu";
 import { AvisoProfissional } from "@/components/aviso-profissional";
 
@@ -96,18 +101,6 @@ export const Route = createFileRoute("/_authenticated/diet")({
   component: DietPage,
 });
 
-/** Ordem em que refeições extras aparecem quando a pessoa aumenta as do dia. */
-const PRIORIDADE_REFEICOES: MealValue[] = [
-  "breakfast",
-  "lunch",
-  "dinner",
-  "afternoon_snack",
-  "morning_snack",
-  "supper",
-  "pre_workout",
-  "post_workout",
-];
-
 function DietPage() {
   const qc = useQueryClient();
   const userId = useCurrentUserId();
@@ -117,8 +110,7 @@ function DietPage() {
 
   const profile = useQuery({
     queryKey: queryKeys.profile(),
-    queryFn: async () =>
-      unwrapMaybe("carregar perfil", await supabase.from("profiles").select("*").maybeSingle()),
+    queryFn: fetchProfile,
   });
 
   /**
@@ -146,26 +138,11 @@ function DietPage() {
   const rows = entries.data ?? [];
   const consumidos = rows.filter((e) => e.consumed);
 
-  const toPortion = (e: DayEntry) => ({
-    food: {
-      servingSizeG: e.food.servingSizeG,
-      kcal: e.food.kcal,
-      proteinG: e.food.proteinG,
-      carbsG: e.food.carbsG,
-      fatG: e.food.fatG,
-      fiberG: e.food.fiberG,
-    },
-    grams: e.grams,
-    servings: 1,
-  });
-
-  const totaisConsumidos = nutritionTotals(consumidos.map(toPortion));
-  const totaisPlanejados = nutritionTotals(rows.map(toPortion));
+  const totaisConsumidos = nutritionTotals(consumidos.map(entryPortion));
+  const totaisPlanejados = nutritionTotals(rows.map(entryPortion));
 
   const remove = useMutation({
-    mutationFn: async (id: string) => {
-      assertOk("remover item", await supabase.from("food_log_entries").delete().eq("id", id));
-    },
+    mutationFn: removeEntry,
     onSuccess: () => {
       toast.success("Item removido");
       void invalidate();
@@ -174,28 +151,7 @@ function DietPage() {
   });
 
   const copyPreviousDay = useMutation({
-    mutationFn: async () => {
-      const anterior = toISODate(addDays(fromISODate(date), -1));
-      const itens = await fetchDayEntries(anterior);
-      if (itens.length === 0) throw new Error("Não há nada registrado no dia anterior.");
-
-      assertOk(
-        "copiar dia anterior",
-        await supabase.from("food_log_entries").insert(
-          itens.map((e) => ({
-            user_id: userId,
-            food_id: e.foodId,
-            meal_slot: e.slot,
-            log_date: date,
-            grams: e.grams,
-            servings: 1,
-            consumed: false,
-            source: "copy",
-          })),
-        ),
-      );
-      return itens.length;
-    },
+    mutationFn: () => copiarDiaAnterior(userId, date),
     onSuccess: (n) => {
       toast.success(`${n} ${n === 1 ? "item copiado" : "itens copiados"}`);
       void invalidate();
@@ -205,24 +161,12 @@ function DietPage() {
 
   // Refeições exibidas: as do plano, mais qualquer uma que tenha item lançado à
   // mão. A ordem é sempre a cronológica do dia, não a de chegada dos dados.
-  const doPlano = new Set(plan.data?.meals.map((m) => m.slot as MealValue) ?? []);
-  const comItem = new Set(rows.map((r) => r.slot as MealValue));
-  const selecionados = MEALS.map((m) => m.key).filter((k) => doPlano.has(k) || comItem.has(k));
-  // Nem plano nem itens: mostra o dia inteiro em vez de tela em branco. As
-  // caixas ficam prontas para receber o que a pessoa comer.
-  // Quem aumentou as refeições do dia (Configurações → Alimentação) ganha as
-  // que faltam, vazias, prontas para receber alimentos — na ordem em que as
-  // pessoas costumam acrescentar refeições.
-  const quantas = Math.min(MEALS.length, num(profile.data?.meals_per_day));
-  const escolhidos = new Set<MealValue>(selecionados);
-  for (const k of PRIORIDADE_REFEICOES) {
-    if (escolhidos.size >= quantas) break;
-    escolhidos.add(k);
-  }
-  const slotsExibidos =
-    escolhidos.size > 0
-      ? MEALS.map((m) => m.key).filter((k) => escolhidos.has(k))
-      : MEALS.map((m) => m.key);
+  const slotsExibidos = visibleSlots(
+    MEALS.map((m) => m.key),
+    plan.data?.meals.map((m) => m.slot as MealValue) ?? [],
+    rows.map((r) => r.slot as MealValue),
+    num(profile.data?.meals_per_day),
+  ) as MealValue[];
 
   const nomesDoDia = useQuery({
     queryKey: [...queryKeys.diet.log(date), "nomes"],
@@ -352,7 +296,7 @@ function DietPage() {
                   <div className="mt-7 grid grid-cols-4 gap-2">
                     <MacroRing
                       nome="Proteína"
-                      icone="🥤"
+                      icone="🥩"
                       valor={totaisConsumidos.proteinG}
                       meta={num(profile.data?.protein_g_target)}
                       planejado={totaisPlanejados.proteinG}
@@ -360,7 +304,7 @@ function DietPage() {
                     />
                     <MacroRing
                       nome="Carbo"
-                      icone="🍚"
+                      icone="🫘"
                       valor={totaisConsumidos.carbsG}
                       meta={num(profile.data?.carbs_g_target)}
                       planejado={totaisPlanejados.carbsG}
@@ -487,20 +431,7 @@ function MealCard({
 }) {
   const qc = useQueryClient();
 
-  const totals = nutritionTotals(
-    items.map((e) => ({
-      food: {
-        servingSizeG: e.food.servingSizeG,
-        kcal: e.food.kcal,
-        proteinG: e.food.proteinG,
-        carbsG: e.food.carbsG,
-        fatG: e.food.fatG,
-        fiberG: e.food.fiberG,
-      },
-      grams: e.grams,
-      servings: 1,
-    })),
-  );
+  const totals = nutritionTotals(items.map(entryPortion));
 
   const todosConsumidos = items.length > 0 && items.every((i) => i.consumed);
   // Refeição concluída se fecha: some a lista, fica o resumo. A seta abre e
@@ -714,32 +645,9 @@ function FoodRow({
   onChangeGrams: (grams: number) => void;
 }) {
   const [editando, setEditando] = useState(false);
-  const macros = portionMacros({
-    food: {
-      servingSizeG: item.food.servingSizeG,
-      kcal: item.food.kcal,
-      proteinG: item.food.proteinG,
-      carbsG: item.food.carbsG,
-      fatG: item.food.fatG,
-      fiberG: item.food.fiberG,
-    },
-    grams: item.grams,
-    servings: 1,
-  });
+  const macros = portionMacros(entryPortion(item));
 
-  const porcao = item.food.servingSizeG || 100;
-  const candidate: FoodCandidate = {
-    id: item.foodId,
-    name: item.name,
-    category: (item.food.category ?? "other") as FoodCandidate["category"],
-    // O domínio trabalha por 100 g; a porção de referência do banco pode ser outra.
-    kcal: (item.food.kcal / porcao) * 100,
-    proteinG: (item.food.proteinG / porcao) * 100,
-    carbsG: (item.food.carbsG / porcao) * 100,
-    fatG: (item.food.fatG / porcao) * 100,
-    fiberG: (item.food.fiberG / porcao) * 100,
-    popularity: 50,
-  };
+  const candidate = entryCandidate(item);
 
   const medida =
     item.food.measure && item.food.measureG

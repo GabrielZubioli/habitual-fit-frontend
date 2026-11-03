@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { fetchCuratedFoods, fetchDietaryRestrictions } from "@/data/meal-plans";
+import { fetchCuratedFoods, fetchDietaryRestrictions } from "@forja/app-core/data/meal-plans";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import {
   ResultList,
@@ -10,7 +10,7 @@ import {
   ResultsLoading,
   SearchDialogContent,
 } from "@/components/pickers/search-dialog";
-import { queryKeys } from "@/data/query-keys";
+import { queryKeys } from "@forja/app-core/data/query-keys";
 import {
   describeSubstitution,
   findSubstitutions,

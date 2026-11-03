@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { BrandLogo } from "@/components/brand-logo";
-import { EMPRESA, VIGENCIA } from "@/lib/legal";
+import { EMPRESA, VIGENCIA } from "@forja/app-core/lib/legal";
 
 /**
  * Casca das páginas legais (Privacidade e Termos): públicas, sem login, legíveis

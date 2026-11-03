@@ -8,11 +8,14 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { queryKeys } from "@/data/query-keys";
-import { unwrapList } from "@/data/supabase-helpers";
-import { useDebouncedValue } from "@/hooks/use-debounced-value";
-import { MUSCLE_LABELS, EQUIPMENT_LABELS, type MuscleValue } from "@/lib/labels";
+import { queryKeys } from "@forja/app-core/data/query-keys";
+import {
+  FILTERABLE_MUSCLES,
+  searchExercises,
+  type PickedExercise,
+} from "@forja/app-core/data/exercise-search";
+import { useDebouncedValue } from "@forja/app-core/hooks/use-debounced-value";
+import { MUSCLE_LABELS, EQUIPMENT_LABELS, type MuscleValue } from "@forja/app-core/lib/labels";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import {
   ResultList,
@@ -22,7 +25,7 @@ import {
   SearchDialogContent,
   SearchField,
 } from "@/components/pickers/search-dialog";
-import { cn, searchWords } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -31,31 +34,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ErrorState } from "@/components/query-boundary";
-import { exerciseMedia } from "@/data/exercise-media";
+import { exerciseMedia } from "@forja/app-core/data/exercise-media";
 
-export type PickedExercise = {
-  id: string;
-  name: string;
-  category: string;
-  primaryMuscle: string;
-};
-
-/** Músculos oferecidos como filtro — os que de fato têm exercícios no seed. */
-const FILTERABLE_MUSCLES: MuscleValue[] = [
-  "chest",
-  "back",
-  "lats",
-  "shoulders",
-  "biceps",
-  "triceps",
-  "quads",
-  "hamstrings",
-  "glutes",
-  "calves",
-  "core",
-  "abs",
-  "cardio",
-];
+export type { PickedExercise };
 
 export function ExercisePicker({
   trigger,
@@ -93,28 +74,7 @@ export function ExercisePicker({
   const exercises = useQuery({
     queryKey: queryKeys.exercises.search(debouncedTerm, muscle),
     enabled: open,
-    queryFn: async () => {
-      let query = supabase
-        .from("exercises")
-        .select(
-          "id, name, name_en, primary_muscle, equipment, category, image_urls, external_id, media_id, media_ref, media_source, video_url, popularity",
-        )
-        .is("deleted_at", null)
-        // Popularidade antes do nome: com 880 exercícios, a ordem alfabética
-        // coloca variações obscuras acima dos movimentos que todo mundo faz.
-        .order("popularity", { ascending: false })
-        .order("name")
-        .limit(60);
-      if (debouncedTerm) {
-        // Busca também pelo nome original: quem treina há anos procura por
-        // "romanian deadlift", não por "terra romeno".
-        const ws = searchWords(debouncedTerm);
-        const todas = (col: string) => ws.map((w) => `${col}.ilike.%${w}%`).join(",");
-        if (ws.length) query = query.or(`and(${todas("name")}),and(${todas("name_en")})`);
-      }
-      if (muscle !== "all") query = query.eq("primary_muscle", muscle as never);
-      return unwrapList("buscar exercícios", await query);
-    },
+    queryFn: () => searchExercises(debouncedTerm, muscle),
   });
 
   const pick = async (ex: {

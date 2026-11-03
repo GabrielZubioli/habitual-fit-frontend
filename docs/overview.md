@@ -15,7 +15,7 @@
 │  Supabase (Postgres gerenciado)                             │
 │  - PostgREST expõe as tabelas                                │
 │  - RLS (Row Level Security) isola os dados por usuário       │
-│  - Auth (email/senha + OAuth Google via Lovable)            │
+│  - Auth (email/senha + Google via ID token)                 │
 │  - Storage (bucket "progress-photos", privado)              │
 │  - Triggers/funções (updated_at, has_role, handle_new_user) │
 └─────────────────────────────────────────────────────────────┘
@@ -93,4 +93,4 @@ que valida o Bearer token em server functions — ver [autenticacao.md](autentic
 - [start.ts](../../src/start.ts) registra middlewares globais: `attachSupabaseAuth`
   (client) e um `errorMiddleware` (server).
 - [__root.tsx](../../src/routes/__root.tsx) define `notFoundComponent` (404) e
-  `errorComponent` (erro de renderização), ambos reportando ao Lovable.
+  `errorComponent` (erro de renderização), que registra o erro no console.

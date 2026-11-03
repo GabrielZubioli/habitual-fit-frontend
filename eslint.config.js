@@ -14,6 +14,14 @@ export default tseslint.config(
       "**/.output/**",
       "**/.vinxi/**",
       "**/.expo/**",
+      "**/.vercel/**",
+      // Rascunhos da ferramenta de navegador (Playwright MCP), fora do git.
+      ".playwright-mcp/**",
+      // Projetos nativos: gerados pelo `expo prebuild` (e o TWA do Bubblewrap),
+      // com milhares de arquivos de build depois de compilar.
+      "apps/mobile/android/**",
+      "apps/mobile/ios/**",
+      "apps/android/**",
       // Gerado pelo TanStack Router a cada build.
       "**/routeTree.gen.ts",
     ],

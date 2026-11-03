@@ -6,9 +6,9 @@ Supabase Auth, com dois caminhos de login (tela [auth.tsx](../../src/routes/auth
 
 1. **Email + senha** — `supabase.auth.signInWithPassword` / `signUp`. Validação com
    Zod: email válido (máx 255), senha 6–72 chars.
-2. **Google OAuth** — via wrapper Lovable ([integrations/lovable/index.ts](../../src/integrations/lovable/index.ts)):
-   `lovable.auth.signInWithOAuth("google", { redirect_uri })`. Ele obtém os tokens
-   e chama `supabase.auth.setSession(...)`.
+2. **Google** — botão do Google Identity Services
+   ([google-sign-in.tsx](../apps/web/src/components/google-sign-in.tsx)), que devolve
+   um ID token; a sessão abre com `supabase.auth.signInWithIdToken`.
 
 No cadastro, `options.data.name` vira o `display_name` inicial do perfil (ver trigger abaixo).
 

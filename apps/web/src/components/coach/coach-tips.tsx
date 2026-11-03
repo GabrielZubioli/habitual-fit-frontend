@@ -4,8 +4,8 @@ import { AlertTriangle, ChevronRight, Info, Lightbulb } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { queryKeys } from "@/data/query-keys";
-import { fetchCoachInsights, type CoachInsight } from "@/data/coach";
+import { queryKeys } from "@forja/app-core/data/query-keys";
+import { fetchCoachInsights, type CoachInsight } from "@forja/app-core/data/coach";
 
 /**
  * As recomendações do treinador na tela inicial.

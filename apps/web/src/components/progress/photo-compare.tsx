@@ -2,10 +2,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Columns2, MoveHorizontal } from "lucide-react";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { PHOTO_ANGLE_LABELS, label } from "@/lib/labels";
-import { formatShortDate } from "@/lib/date";
+import { PHOTO_ANGLE_LABELS, label } from "@forja/app-core/lib/labels";
+import { formatShortDate } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
-import type { PhotoSession } from "@/data/progress-photos";
+import type { PhotoSession } from "@forja/app-core/data/progress-photos";
 
 /**
  * Comparação antes / depois.

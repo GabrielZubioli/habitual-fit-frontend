@@ -16,6 +16,9 @@ import {
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { guessRoutineIcon } from "@forja/app-core/lib/routine-icons";
+
+export { guessRoutineIcon };
 
 /**
  * O ícone de cada rotina, no lugar da letra A/B/C.
@@ -77,17 +80,6 @@ export const ROUTINE_ICONS: { key: string; label: string; Icon: Icone }[] = [
   { key: "desafio", label: "Desafio", Icon: Mountain },
   { key: "meta", label: "Meta", Icon: Trophy },
 ];
-
-/** Sem ícone escolhido: um palpite pelo nome da rotina. */
-export function guessRoutineIcon(name: string): string {
-  const n = name.toLowerCase();
-  if (/infer|perna|gl[uú]te|quadr|posterior|panturr|coxa/.test(n)) return "perna";
-  if (/peito|costas|dorsal|tronco|push|pull|empurr|pux/.test(n)) return "tronco";
-  if (/bra[cç]|b[ií]ceps|tr[ií]ceps|ombro|superior/.test(n)) return "braco";
-  if (/cardio|aer[oó]b|hiit/.test(n)) return "cardio";
-  if (/corpo|full|total|geral/.test(n)) return "corpo";
-  return "halter";
-}
 
 /** O componente do ícone de uma rotina (escolhido ou pelo nome). */
 export function routineIconOf(icon: string | null | undefined, name: string): Icone {

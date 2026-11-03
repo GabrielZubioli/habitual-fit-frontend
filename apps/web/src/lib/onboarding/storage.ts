@@ -1,4 +1,4 @@
-import { answersSchema, EMPTY_ANSWERS, type Answers } from "./schema";
+import { answersSchema, EMPTY_ANSWERS, type Answers } from "@forja/app-core/lib/onboarding/schema";
 
 /**
  * Persistência do rascunho do questionário.
