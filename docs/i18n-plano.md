@@ -1,6 +1,6 @@
 # Plano: tradução para inglês e espanhol + lançamento em todas as regiões
 
-> Status: **em andamento** (branch `feat/i18n-en-es`). Fases 0 a 3 prontas (1.589 frases em en e es; páginas legais com versão completa por idioma, aguardando revisão jurídica). Próximo: fase 4 (banco) e fase 5 (loja).
+> Status: **em andamento**. Fases 0 a 3 prontas (branch `feat/i18n-en-es`). Fase 4 preparada, nada aplicado: backend na branch `feat/i18n-en-es` do forja-backend (migration, `@gabrielzubioli/db` 0.3.0, coach com `locale`, script `translate-es`); frontend dos exercícios na branch `feat/i18n-exercicios-es`, que depende da migration e do pacote publicados. Fase 5 (loja) pendente.
 > Repos: `forja-frontend` (web + mobile + app-core) e `forja-backend` (banco, edge functions).
 
 ## Objetivo
