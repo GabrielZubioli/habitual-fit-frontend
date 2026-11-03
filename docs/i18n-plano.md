@@ -1,6 +1,6 @@
 # Plano: tradução para inglês e espanhol + lançamento em todas as regiões
 
-> Status: **em andamento**. Fases 0 a 3 prontas (branch `feat/i18n-en-es`). Fase 4 preparada, nada aplicado: backend na branch `feat/i18n-en-es` do forja-backend (migration, `@gabrielzubioli/db` 0.3.0, coach com `locale`, script `translate-es`); frontend dos exercícios na branch `feat/i18n-exercicios-es`, que depende da migration e do pacote publicados. Fase 5 (loja) pendente.
+> Status: **em andamento**. Fases 0 a 4 concluídas e no ar (main + produção do Supabase: 880 exercícios com nome e passo a passo em es, 808 que estavam sem passo a passo em pt agora têm, `@gabrielzubioli/db` 0.3.0 publicado, coach com `locale`; os 1.324 exercícios ocultos da fonte gymvisual foram apagados). Fase 5: parte de código pronta; falta o build EAS e a Play Console.
 > Repos: `forja-frontend` (web + mobile + app-core) e `forja-backend` (banco, edge functions).
 
 ## Objetivo
@@ -115,17 +115,17 @@ Web e mobile da mesma área no mesmo passo — as frases se repetem e as chaves 
 
 ## Fase 4 — Conteúdo do banco (forja-backend)
 
-- [ ] Migration: `exercises.name_es` e `exercises.execution_es` (nullable).
-- [ ] Preencher a partir de `name_en`/`execution_en` (script de tradução em lote, revisão por amostragem).
-- [ ] Atualizar `packages/db` (`schema.ts`/`types.ts`), publicar nova versão de `@gabrielzubioli/db` e atualizar no frontend.
-- [ ] Incluir as colunas nas regras de sync do PowerSync (`docs/powersync.md`) e na publication.
-- [ ] Frontend: helper único `exerciseName(ex)` / `exerciseExecution(ex)` em `packages/app-core/src/data/exercise-library.ts` que escolhe a coluna pelo idioma, com fallback pt → en. Substituir os usos em `exercise-detail.ts`, `exercise-search.ts`, `exercise-how-to.tsx` (web e mobile), `exercise-detail-sheet.tsx`. A busca deve procurar no idioma atual também.
-- [ ] Coach (`supabase/functions/coach/index.ts`): aceitar `locale` no corpo da requisição; o prompt da linha ~283 passa a dizer "Responda em {idioma}". `packages/app-core/src/data/coach-chat.ts` envia `language`.
+- [x] Migration: `exercises.name_es` e `exercises.execution_es` (nullable).
+- [x] Preencher a partir de `name_en`/`execution_en` (script de tradução em lote, revisão por amostragem).
+- [x] Atualizar `packages/db` (`schema.ts`/`types.ts`), publicar nova versão de `@gabrielzubioli/db` e atualizar no frontend.
+- [x] Incluir as colunas nas regras de sync do PowerSync (`docs/powersync.md`) e na publication.
+- [x] Frontend: helper único `exerciseName(ex)` / `exerciseExecution(ex)` em `packages/app-core/src/data/exercise-library.ts` que escolhe a coluna pelo idioma, com fallback pt → en. Substituir os usos em `exercise-detail.ts`, `exercise-search.ts`, `exercise-how-to.tsx` (web e mobile), `exercise-detail-sheet.tsx`. A busca deve procurar no idioma atual também.
+- [x] Coach (`supabase/functions/coach/index.ts`): aceitar `locale` no corpo da requisição; o prompt da linha ~283 passa a dizer "Responda em {idioma}". `packages/app-core/src/data/coach-chat.ts` envia `language`.
 
 ## Fase 5 — Sistema e loja
 
-- [ ] `apps/mobile/app.json`: textos de permissão (câmera/fotos) e nome do app via `expo.locales` (`locales/en.json`, `locales/es.json`).
-- [ ] Notificações locais/push: textos passam pelo `t()`.
+- [x] `apps/mobile/app.json`: textos de permissão (câmera/fotos) e nome do app via `expo.locales` (`locales/en.json`, `locales/es.json`).
+- [x] Notificações locais/push: textos passam pelo `t()`.
 - [ ] Build novo (`versionCode` +1) e teste no emulador em en e es.
 - [ ] Play Console → Página principal da loja: adicionar **en-US, es-419, es-ES** (título, descrição curta, descrição completa, capturas de tela em cada idioma).
 - [ ] Play Console → Política de privacidade em inglês publicada (GDPR: dados de saúde — peso, medidas, fotos — são categoria sensível; revisar texto antes de liberar a UE).
@@ -142,7 +142,7 @@ Web e mobile da mesma área no mesmo passo — as frases se repetem e as chaves 
 
 ## Checklist final
 
-- [ ] `npm run verify` verde nos dois repos.
+- [x] `npm run verify` verde nos dois repos.
 - [ ] Web e mobile percorridos inteiros em pt-BR, en e es sem texto em português sobrando (fora nomes de alimentos).
 - [ ] Datas, números e dias da semana no idioma certo.
 - [ ] Coach responde no idioma do usuário.
