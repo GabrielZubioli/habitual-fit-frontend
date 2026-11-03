@@ -6,6 +6,7 @@ import { PHOTO_ANGLE_LABELS, label } from "@forja/app-core/lib/labels";
 import { formatShortDate } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
 import type { PhotoSession } from "@forja/app-core/data/progress-photos";
+import { LOCALE } from "@forja/app-core/i18n";
 
 /**
  * Comparação antes / depois.
@@ -136,7 +137,7 @@ export function PhotoCompare({
         <p className="text-center text-sm text-muted-foreground">
           <span className="font-semibold tabular-nums text-foreground">
             {deltaPeso > 0 ? "+" : ""}
-            {deltaPeso.toLocaleString("pt-BR", { maximumFractionDigits: 1 })} kg
+            {deltaPeso.toLocaleString(LOCALE, { maximumFractionDigits: 1 })} kg
           </span>{" "}
           entre as duas datas
         </p>
@@ -172,7 +173,7 @@ function PhotoPane({
           <>
             {" · "}
             <span className="tabular-nums">
-              {weight.toLocaleString("pt-BR", { maximumFractionDigits: 1 })} kg
+              {weight.toLocaleString(LOCALE, { maximumFractionDigits: 1 })} kg
             </span>
           </>
         )}

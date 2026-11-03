@@ -5,6 +5,7 @@ import { num, unwrapMaybe } from "./supabase-helpers";
 import type { Tables } from "@gabrielzubioli/db/types";
 import { bool, jsonList, localDb } from "../local";
 import { updateById } from "./rows";
+import { LOCALE } from "../i18n";
 
 /** O perfil de quem está logado (`null` antes do questionário). */
 export async function fetchProfile() {
@@ -146,7 +147,7 @@ export function parseNutritionTargets(
     const n = Number(bruto);
     if (!Number.isFinite(n) || n < c.min || n > c.max) {
       erros[c.key] =
-        `Entre ${c.min.toLocaleString("pt-BR")} e ${c.max.toLocaleString("pt-BR")} ${c.unidade}`;
+        `Entre ${c.min.toLocaleString(LOCALE)} e ${c.max.toLocaleString(LOCALE)} ${c.unidade}`;
     } else {
       patch[c.key] = Math.round(n);
     }

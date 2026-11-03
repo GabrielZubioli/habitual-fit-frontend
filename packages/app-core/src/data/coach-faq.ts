@@ -14,6 +14,7 @@ import { fetchCompletedWorkouts } from "./routines";
 import { fetchWeighIns } from "./body";
 import { fetchPersonalRecords } from "./workouts";
 import { toISODate, todayISO } from "../lib/date";
+import { LOCALE } from "../i18n";
 
 export type FaqKey =
   "calorias" | "proteina" | "treino-hoje" | "semana" | "peso" | "agua" | "recordes" | "carga";
@@ -35,7 +36,7 @@ const OBJETIVO: Record<string, string> = {
   gain: "ganhar massa",
 };
 
-const n = (v: number, casas = 0) => v.toLocaleString("pt-BR", { maximumFractionDigits: casas });
+const n = (v: number, casas = 0) => v.toLocaleString(LOCALE, { maximumFractionDigits: casas });
 
 async function perfil() {
   return unwrapMaybe("carregar perfil", await supabase.from("profiles").select("*").maybeSingle());

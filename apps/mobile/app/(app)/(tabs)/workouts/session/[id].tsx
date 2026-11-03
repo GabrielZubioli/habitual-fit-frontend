@@ -61,6 +61,7 @@ import { ExerciseDemo } from "@/ui/exercise-demo";
 import { Icon, type IconNode } from "@/ui/icon";
 import { RestTimerBar } from "@/ui/rest-timer-bar";
 import { Text } from "@/ui/text";
+import { LOCALE } from "@forja/app-core/i18n";
 
 /**
  * A execução do treino, um exercício por vez — o `workouts_.session.$id.tsx`
@@ -662,7 +663,7 @@ function ExercicioAtual({
   const cargaAtual =
     exercicio.sets.find((s) => !s.completed)?.weightKg ?? exercicio.suggestedWeightKg;
   const ultima = exercicio.lastTime;
-  const pt = (n: number) => n.toLocaleString("pt-BR");
+  const pt = (n: number) => n.toLocaleString(LOCALE);
   const feitas = exercicio.sets.filter((s) => s.completed).length;
 
   // Dica de progressão (dupla progressão sobre a última vez).
@@ -1144,7 +1145,7 @@ function CompletionOverlay({
   const entra = (i: number) => FadeInDown.delay(150 + i * 110).duration(500);
   const numeros = [
     { rotulo: "Tempo", valor: formatDuration(durationSeconds) },
-    { rotulo: "Volume", valor: `${Math.round(volumeKg).toLocaleString("pt-BR")} kg` },
+    { rotulo: "Volume", valor: `${Math.round(volumeKg).toLocaleString(LOCALE)} kg` },
     ...(kcal !== null ? [{ rotulo: "Gasto", valor: `~${kcal} kcal` }] : []),
   ];
   return (
@@ -1261,7 +1262,7 @@ function ComparisonList({
   const serie = (s: ExerciseComparison["best"]) =>
     s
       ? s.weightKg
-        ? `${s.weightKg.toLocaleString("pt-BR")} kg × ${s.reps}`
+        ? `${s.weightKg.toLocaleString(LOCALE)} kg × ${s.reps}`
         : `${s.reps} reps`
       : "—";
   return (

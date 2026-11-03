@@ -61,6 +61,7 @@ import { Icon } from "@/ui/icon";
 import { PageScroll } from "@/ui/page-header";
 import { CalorieRing } from "@/ui/macro-rings";
 import { Text } from "@/ui/text";
+import { LOCALE } from "@forja/app-core/i18n";
 
 /**
  * Início — o `dashboard.tsx` do web: a sequência, a semana com o treino de
@@ -412,9 +413,9 @@ function DietaCard({
           </Text>
         </View>
         <Text className="mt-1 text-lg font-extrabold">
-          {Math.round(totais.kcal).toLocaleString("pt-BR")}
+          {Math.round(totais.kcal).toLocaleString(LOCALE)}
           <Text className="text-sm font-medium text-muted-foreground">
-            {semMeta ? " kcal hoje" : ` / ${Math.round(kcalTarget).toLocaleString("pt-BR")} kcal`}
+            {semMeta ? " kcal hoje" : ` / ${Math.round(kcalTarget).toLocaleString(LOCALE)} kcal`}
           </Text>
         </Text>
         {vazio ? (
@@ -443,7 +444,7 @@ function DietaCard({
         )}
         {!diario.isPending && pendentes > 0 ? (
           <Text className="mt-1.5 text-xs text-muted-foreground">
-            {!semMeta && restante > 0 ? `Faltam ${restante.toLocaleString("pt-BR")} kcal · ` : ""}
+            {!semMeta && restante > 0 ? `Faltam ${restante.toLocaleString(LOCALE)} kcal · ` : ""}
             {pendentes} {pendentes === 1 ? "item" : "itens"} a marcar
           </Text>
         ) : null}
@@ -475,7 +476,7 @@ function PesoCard() {
   const anterior = lista.at(-2);
   const delta = atual && anterior ? atual.kg - anterior.kg : null;
   const falta = atual && meta.data ? atual.kg - meta.data : null;
-  const fmt = (n: number) => n.toLocaleString("pt-BR", { maximumFractionDigits: 1 });
+  const fmt = (n: number) => n.toLocaleString(LOCALE, { maximumFractionDigits: 1 });
 
   return (
     <View className="rounded-3xl bg-card p-5">

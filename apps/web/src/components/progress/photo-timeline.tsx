@@ -7,6 +7,7 @@ import { PHOTO_ANGLE_LABELS, label } from "@forja/app-core/lib/labels";
 import { formatShortDate } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
 import type { PhotoSession, ProgressPhoto } from "@forja/app-core/data/progress-photos";
+import { LOCALE } from "@forja/app-core/i18n";
 
 /**
  * Linha do tempo da evolução.
@@ -74,14 +75,14 @@ export function PhotoTimeline({
 
               {sessao.weightKg !== null && (
                 <span className="text-sm tabular-nums text-muted-foreground">
-                  {sessao.weightKg.toLocaleString("pt-BR", { maximumFractionDigits: 1 })} kg
+                  {sessao.weightKg.toLocaleString(LOCALE, { maximumFractionDigits: 1 })} kg
                 </span>
               )}
 
               {delta !== null && delta !== 0 && (
                 <Badge variant={delta > 0 ? "soft" : "outline"} className="tabular-nums">
                   {delta > 0 ? "+" : ""}
-                  {delta.toLocaleString("pt-BR", { maximumFractionDigits: 1 })} kg
+                  {delta.toLocaleString(LOCALE, { maximumFractionDigits: 1 })} kg
                 </Badge>
               )}
 

@@ -41,6 +41,7 @@ import { FavoriteButton } from "@/ui/favorite-button";
 import { Icon } from "@/ui/icon";
 import { BackButton, PageScroll } from "@/ui/page-header";
 import { Text } from "@/ui/text";
+import { LOCALE } from "@forja/app-core/i18n";
 
 /** A ficha do exercício — o `exercises_.$id.tsx` do web: como fazer e o seu histórico. */
 export default function Tela() {
@@ -411,7 +412,7 @@ function Historico({
                   </View>
                   <Text className="text-xs text-muted-foreground">
                     {s.workingSets} {s.workingSets === 1 ? "série" : "séries"} ·{" "}
-                    {Math.round(s.volume).toLocaleString("pt-BR")} kg de volume
+                    {Math.round(s.volume).toLocaleString(LOCALE)} kg de volume
                   </Text>
                 </View>
                 <View className="items-end">

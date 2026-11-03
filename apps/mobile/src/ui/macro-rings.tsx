@@ -4,6 +4,7 @@ import Svg, { Circle, Defs, LinearGradient, Stop } from "react-native-svg";
 import { cn } from "@/lib/cn";
 import { useColor } from "@/theme/theme";
 import { Text } from "./text";
+import { LOCALE } from "@forja/app-core/i18n";
 
 /**
  * Os anéis de calorias e macros — o `home/macro-rings.tsx` do web. Contam o
@@ -93,7 +94,7 @@ export function CalorieRing({
             excedeu && "text-destructive",
           )}
         >
-          {(usaMeta ? Math.abs(restante) : Math.round(consumed)).toLocaleString("pt-BR")}
+          {(usaMeta ? Math.abs(restante) : Math.round(consumed)).toLocaleString(LOCALE)}
         </Text>
         <Text className={cn("mt-1 text-muted-foreground", compacto ? "text-[9px]" : "text-xs")}>
           {!usaMeta
@@ -107,8 +108,8 @@ export function CalorieRing({
         {!compacto && referencia > 0 ? (
           <Text className="mt-1.5 text-[11px] text-muted-foreground">
             {usaMeta
-              ? `${Math.round(consumed).toLocaleString("pt-BR")} / ${Math.round(target).toLocaleString("pt-BR")}`
-              : `de ${Math.round(planejado).toLocaleString("pt-BR")} planejadas`}
+              ? `${Math.round(consumed).toLocaleString(LOCALE)} / ${Math.round(target).toLocaleString(LOCALE)}`
+              : `de ${Math.round(planejado).toLocaleString(LOCALE)} planejadas`}
           </Text>
         ) : null}
       </View>

@@ -8,11 +8,12 @@
  *    `new Date().toISOString().slice(0, 10)` quebra isso: no Brasil (UTC−3),
  *    das 21h à meia-noite o valor já é o dia seguinte, e um jantar registrado
  *    às 22h cairia no diário de amanhã.
- * 2. **Todo texto de data é pt-BR.** `date-fns` sem `locale` produz
- *    "Tuesday, 29 de July".
+ * 2. **Todo texto de data sai no idioma do app** (`dateFnsLocale`). `date-fns`
+ *    sem `locale` produz "Tuesday, 29 de July". Os padrões com texto fixo
+ *    (`"d 'de' MMMM"`) passam por `t()` para virar `"MMMM d"` em inglês.
  */
 import { format, parseISO } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { dateFnsLocale } from "../i18n";
 
 /** Formato das colunas `DATE` do Postgres. */
 export const ISO_DATE = "yyyy-MM-dd";
@@ -50,10 +51,10 @@ export function localDayRange(
   return { start: fromISODate(fromDate).toISOString(), endExclusive: fim.toISOString() };
 }
 
-/** Formata uma data (ou chave ISO) em pt-BR. */
+/** Formata uma data (ou chave ISO) no idioma do app. */
 export function formatDate(value: string | Date, pattern: string): string {
   const date = typeof value === "string" ? asDate(value) : value;
-  return format(date, pattern, { locale: ptBR });
+  return format(date, pattern, { locale: dateFnsLocale });
 }
 
 /**

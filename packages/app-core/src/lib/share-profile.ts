@@ -1,3 +1,4 @@
+import { LOCALE } from "../i18n";
 /**
  * O que pode sair do app quando a pessoa compartilha o perfil.
  *
@@ -64,7 +65,7 @@ export function conteudoCartao(p: PerfilPublicavel, o: OpcoesCartao): ConteudoCa
   };
 }
 
-const n = (v: number) => v.toLocaleString("pt-BR", { maximumFractionDigits: 1 });
+const n = (v: number) => v.toLocaleString(LOCALE, { maximumFractionDigits: 1 });
 
 /** Os números do cartão, lado a lado: treinos, sequência e meta (só os presentes). */
 export function numerosCartao(c: ConteudoCartao): { valor: string; rotulo: string }[] {

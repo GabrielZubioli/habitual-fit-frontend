@@ -6,7 +6,8 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
+import { LOCALE } from "@forja/app-core/i18n";
 
 import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
@@ -122,6 +123,10 @@ const TOASTS_LIGADOS = import.meta.env.VITE_TOASTS === "on";
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  // O servidor sempre gera pt-BR; no navegador vale o idioma detectado.
+  useEffect(() => {
+    document.documentElement.lang = LOCALE;
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

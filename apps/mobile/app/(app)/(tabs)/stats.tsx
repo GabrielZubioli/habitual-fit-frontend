@@ -37,6 +37,7 @@ import { useCorRecuperacao } from "@/ui/home-cards";
 import { Icon, type IconNode } from "@/ui/icon";
 import { HeaderIconButton, PageHeader, PageScroll } from "@/ui/page-header";
 import { Text } from "@/ui/text";
+import { LOCALE } from "@forja/app-core/i18n";
 
 /**
  * Estatísticas — o `stats.tsx` do web: a semana contra a meta, os números, a
@@ -190,7 +191,7 @@ export default function StatsPage() {
                 ? undefined
                 : variacao === null
                   ? "—"
-                  : `${variacao > 0 ? "+" : ""}${variacao.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}`
+                  : `${variacao > 0 ? "+" : ""}${variacao.toLocaleString(LOCALE, { maximumFractionDigits: 1 })}`
             }
             unidade={variacao === null ? undefined : "kg"}
           />
@@ -365,7 +366,7 @@ function MusculosCard() {
                       {r.exerciseName}
                     </Text>
                     <Text className="text-xs text-muted-foreground">
-                      {formatDate(r.date, "d 'de' MMM")} · {r.weightKg.toLocaleString("pt-BR")} kg ×{" "}
+                      {formatDate(r.date, "d 'de' MMM")} · {r.weightKg.toLocaleString(LOCALE)} kg ×{" "}
                       {r.reps}
                     </Text>
                   </View>
@@ -509,7 +510,7 @@ function Historico() {
                     {s.name}
                   </Text>
                   <Text className="text-sm font-bold">
-                    {Math.round(volume).toLocaleString("pt-BR")} kg
+                    {Math.round(volume).toLocaleString(LOCALE)} kg
                   </Text>
                 </View>
                 <Text className="mt-0.5 text-xs capitalize text-muted-foreground">

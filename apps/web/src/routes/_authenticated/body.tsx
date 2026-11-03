@@ -48,6 +48,7 @@ import {
 import { NewProgressDialog } from "@/components/progress/new-progress-dialog";
 import { PhotoCompare } from "@/components/progress/photo-compare";
 import { PhotoTimeline } from "@/components/progress/photo-timeline";
+import { LOCALE } from "@forja/app-core/i18n";
 
 export const Route = createFileRoute("/_authenticated/body")({
   head: () => ({
@@ -194,7 +195,7 @@ function WeightPanel() {
               </p>
               <p className="relative mt-0.5 flex items-baseline gap-1.5">
                 <span className="text-4xl font-extrabold tabular-nums tracking-tight">
-                  {ultimo.peso.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}
+                  {ultimo.peso.toLocaleString(LOCALE, { maximumFractionDigits: 1 })}
                 </span>
                 <span className="text-sm font-semibold text-[#020306]/70">kg · {ultimo.date}</span>
               </p>

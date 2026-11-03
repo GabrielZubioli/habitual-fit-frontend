@@ -50,6 +50,7 @@ import { PageHeader, PageScroll } from "@/ui/page-header";
 import { SubstituteFoodDialog } from "@/ui/substitute-food-dialog";
 import { Text } from "@/ui/text";
 import { WeeklyMenu } from "@/ui/weekly-menu";
+import { LOCALE } from "@forja/app-core/i18n";
 
 /**
  * A dieta — o `diet.tsx` do web: o Diário (o plano executável do dia: marcar o
@@ -276,7 +277,7 @@ export default function DietPage() {
                     <Text className="mt-5 text-center text-xs text-muted-foreground">
                       Planejado para o dia:{" "}
                       <Text className="text-xs font-semibold">
-                        {Math.round(totaisPlanejados.kcal).toLocaleString("pt-BR")} kcal
+                        {Math.round(totaisPlanejados.kcal).toLocaleString(LOCALE)} kcal
                       </Text>{" "}
                       · P {Math.round(totaisPlanejados.proteinG)} g
                     </Text>

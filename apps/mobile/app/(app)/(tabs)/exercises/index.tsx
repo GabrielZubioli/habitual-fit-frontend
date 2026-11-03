@@ -44,6 +44,7 @@ import { FavoriteButton } from "@/ui/favorite-button";
 import { Icon } from "@/ui/icon";
 import { HeaderFrame, HeaderSpacer, PageHeader, PageScroll } from "@/ui/page-header";
 import { Text } from "@/ui/text";
+import { LOCALE } from "@forja/app-core/i18n";
 
 /**
  * Exercícios — o `exercises.tsx` do web: busca, as abas Músculos /
@@ -89,7 +90,7 @@ export default function ExerciseLibrary() {
       title="Exercícios"
       description={
         contagem.data
-          ? `${contagem.data.total.toLocaleString("pt-BR")} exercícios com demonstração`
+          ? `${contagem.data.total.toLocaleString(LOCALE)} exercícios com demonstração`
           : undefined
       }
     />

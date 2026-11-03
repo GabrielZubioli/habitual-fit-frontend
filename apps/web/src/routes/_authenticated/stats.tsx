@@ -22,6 +22,7 @@ import { RecoveryCard } from "@/components/workouts/progress-cards";
 import { formatDate, formatDuration, toISODate, todayISO } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
 import { diasSeguidos } from "@forja/app-core/lib/streak";
+import { LOCALE } from "@forja/app-core/i18n";
 
 /**
  * Estatísticas: os números, a constância do ano e o corpo — o que foi
@@ -193,7 +194,7 @@ function StatsPage() {
                 ? undefined
                 : variacao === null
                   ? "—"
-                  : `${variacao > 0 ? "+" : ""}${variacao.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}`
+                  : `${variacao > 0 ? "+" : ""}${variacao.toLocaleString(LOCALE, { maximumFractionDigits: 1 })}`
             }
             unidade={variacao === null ? undefined : "kg"}
             indice={2}
@@ -373,7 +374,7 @@ function MusculosCard() {
                       <span className="min-w-0 flex-1">
                         <span className="block truncate font-semibold">{r.exerciseName}</span>
                         <span className="block text-xs text-muted-foreground">
-                          {formatDate(r.date, "d 'de' MMM")} · {r.weightKg.toLocaleString("pt-BR")}{" "}
+                          {formatDate(r.date, "d 'de' MMM")} · {r.weightKg.toLocaleString(LOCALE)}{" "}
                           kg × {r.reps}
                         </span>
                       </span>
@@ -449,7 +450,7 @@ function Historico() {
                     <span className="flex items-baseline justify-between gap-2">
                       <span className="truncate font-semibold">{s.name}</span>
                       <span className="shrink-0 text-sm font-bold tabular-nums">
-                        {Math.round(volume).toLocaleString("pt-BR")} kg
+                        {Math.round(volume).toLocaleString(LOCALE)} kg
                       </span>
                     </span>
                     <span className="mt-0.5 block text-xs capitalize text-muted-foreground">

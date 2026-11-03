@@ -26,6 +26,7 @@ import { fetchActiveRoutine, fetchCompletedWorkouts } from "@forja/app-core/data
 import { queryKeys } from "@forja/app-core/data/query-keys";
 import { formatDate, formatDuration, toISODate, todayISO } from "@forja/app-core/lib/date";
 import { WEEKDAY_INITIALS, type Weekday } from "@forja/domain";
+import { LOCALE } from "@forja/app-core/i18n";
 
 export const Route = createFileRoute("/_authenticated/workouts_/calendar")({
   head: () => ({
@@ -210,7 +211,7 @@ function WorkoutCalendar() {
                   </span>
                   {volumeMes > 0 && (
                     <span className="text-muted-foreground">
-                      {Math.round(volumeMes).toLocaleString("pt-BR")} kg de volume
+                      {Math.round(volumeMes).toLocaleString(LOCALE)} kg de volume
                     </span>
                   )}
                 </div>
@@ -240,7 +241,7 @@ function WorkoutCalendar() {
                         <p className="text-xs text-muted-foreground">
                           {formatDuration(treino.durationSeconds)}
                           {treino.volumeKg > 0 &&
-                            ` · ${Math.round(treino.volumeKg).toLocaleString("pt-BR")} kg`}
+                            ` · ${Math.round(treino.volumeKg).toLocaleString(LOCALE)} kg`}
                         </p>
                       </div>
                       {treino.splitIndex !== undefined && templates[treino.splitIndex] && (

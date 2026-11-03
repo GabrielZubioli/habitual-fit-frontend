@@ -22,6 +22,7 @@ import { Button } from "./button";
 import { Icon } from "./icon";
 import { Switch } from "./switch";
 import { Text } from "./text";
+import { LOCALE } from "@forja/app-core/i18n";
 
 /**
  * Compartilhar o perfil — o `profile/share-profile-dialog.tsx` do web: as
@@ -239,7 +240,7 @@ function Cartao({ c }: { c: ConteudoCartao }) {
                   {r.exerciseName}
                 </Text>
                 <Text className="text-[10px] font-bold" style={{ color: APAGADO }}>
-                  {r.weightKg.toLocaleString("pt-BR")} kg × {r.reps}
+                  {r.weightKg.toLocaleString(LOCALE)} kg × {r.reps}
                 </Text>
               </View>
             ))}

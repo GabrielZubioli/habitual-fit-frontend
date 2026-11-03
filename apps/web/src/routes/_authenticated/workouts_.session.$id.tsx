@@ -77,6 +77,7 @@ import { useWakeLock } from "@/hooks/use-wake-lock";
 import { EQUIPMENT_LABELS, MUSCLE_LABELS, label } from "@forja/app-core/lib/labels";
 import { formatDate, formatDuration, toISODate, todayISO } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
+import { LOCALE } from "@forja/app-core/i18n";
 
 /**
  * A execução do treino — um exercício por vez.
@@ -623,7 +624,7 @@ function ExercicioAtual({
   const cargaAtual =
     exercicio.sets.find((s) => !s.completed)?.weightKg ?? exercicio.suggestedWeightKg;
   const ultima = exercicio.lastTime;
-  const pt = (n: number) => n.toLocaleString("pt-BR");
+  const pt = (n: number) => n.toLocaleString(LOCALE);
   const feitas = exercicio.sets.filter((s) => s.completed).length;
 
   // Dica de progressão (dupla progressão sobre a última vez).
@@ -1077,7 +1078,7 @@ function CompletionOverlay({
   });
   const numeros = [
     { rotulo: "Tempo", valor: formatDuration(durationSeconds) },
-    { rotulo: "Volume", valor: `${Math.round(volumeKg).toLocaleString("pt-BR")} kg` },
+    { rotulo: "Volume", valor: `${Math.round(volumeKg).toLocaleString(LOCALE)} kg` },
     ...(kcal !== null ? [{ rotulo: "Gasto", valor: `~${kcal} kcal` }] : []),
   ];
   return (
@@ -1169,7 +1170,7 @@ function ComparisonList({ comparisons }: { comparisons: ExerciseComparison[] }) 
   const serie = (s: ExerciseComparison["best"]) =>
     s
       ? s.weightKg
-        ? `${s.weightKg.toLocaleString("pt-BR")} kg × ${s.reps}`
+        ? `${s.weightKg.toLocaleString(LOCALE)} kg × ${s.reps}`
         : `${s.reps} reps`
       : "—";
   return (

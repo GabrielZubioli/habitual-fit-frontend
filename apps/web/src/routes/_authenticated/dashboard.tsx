@@ -63,6 +63,7 @@ import {
 import { cn } from "@/lib/utils";
 import { BrandLogo } from "@/components/brand-logo";
 import { useStreak } from "@forja/app-core/hooks/use-streak";
+import { LOCALE } from "@forja/app-core/i18n";
 
 /**
  * Início: a semana, o treino de hoje e o resto do dia.
@@ -434,9 +435,9 @@ function DietaCard({
           Dieta de hoje
         </p>
         <p className="mt-1 text-lg font-extrabold tabular-nums">
-          {Math.round(totais.kcal).toLocaleString("pt-BR")}
+          {Math.round(totais.kcal).toLocaleString(LOCALE)}
           <span className="text-sm font-medium text-muted-foreground">
-            {semMeta ? " kcal hoje" : ` / ${Math.round(kcalTarget).toLocaleString("pt-BR")} kcal`}
+            {semMeta ? " kcal hoje" : ` / ${Math.round(kcalTarget).toLocaleString(LOCALE)} kcal`}
           </span>
         </p>
         {vazio ? (
@@ -465,7 +466,7 @@ function DietaCard({
         )}
         {!diario.isPending && pendentes > 0 && (
           <p className="mt-1.5 text-xs text-muted-foreground">
-            {!semMeta && restante > 0 ? `Faltam ${restante.toLocaleString("pt-BR")} kcal · ` : ""}
+            {!semMeta && restante > 0 ? `Faltam ${restante.toLocaleString(LOCALE)} kcal · ` : ""}
             {pendentes} {pendentes === 1 ? "item" : "itens"} a marcar
           </p>
         )}
@@ -495,7 +496,7 @@ function PesoCard() {
   const anterior = lista.at(-2);
   const delta = atual && anterior ? atual.kg - anterior.kg : null;
   const falta = atual && meta.data ? atual.kg - meta.data : null;
-  const fmt = (n: number) => n.toLocaleString("pt-BR", { maximumFractionDigits: 1 });
+  const fmt = (n: number) => n.toLocaleString(LOCALE, { maximumFractionDigits: 1 });
 
   return (
     <section className="rounded-[1.5rem] bg-card p-5" aria-label="Peso corporal">

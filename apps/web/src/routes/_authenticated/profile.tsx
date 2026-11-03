@@ -71,6 +71,7 @@ import {
 import { weightJourney } from "@forja/app-core/lib/weight-journey";
 import { formatDate, todayISO } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
+import { LOCALE } from "@forja/app-core/i18n";
 
 /**
  * Perfil: a vitrine da pessoa no Habitual Fit — e onde ela muda os dados.
@@ -88,7 +89,7 @@ export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfilePage,
 });
 
-const fmt = (n: number) => n.toLocaleString("pt-BR", { maximumFractionDigits: 1 });
+const fmt = (n: number) => n.toLocaleString(LOCALE, { maximumFractionDigits: 1 });
 const opcao = (opcoes: { value: string; label: string }[], v: string | null | undefined) =>
   opcoes.find((o) => o.value === v)?.label ?? null;
 
@@ -452,7 +453,7 @@ function ProfilePage() {
             </span>
             <span className="min-w-0 flex-1">
               <span className="block font-semibold tabular-nums">
-                {Math.round(num(p.daily_kcal_target)).toLocaleString("pt-BR")} kcal por dia
+                {Math.round(num(p.daily_kcal_target)).toLocaleString(LOCALE)} kcal por dia
               </span>
               <span className="block text-sm text-muted-foreground tabular-nums">
                 P {Math.round(num(p.protein_g_target))} g · C {Math.round(num(p.carbs_g_target))} g

@@ -21,7 +21,8 @@
     "test:all": "npm run test:domain && npm run test:core && npm run test && npm run test:scripts",
     "catalog:body-map": "node scripts/build-body-map.mjs",
     "tokens:mobile": "node scripts/build-mobile-tokens.mjs",
-    "verify": "npm run typecheck && npm run lint && npm run test:all && npm run build",
+    "verify": "npm run typecheck && npm run lint && npm run i18n:check && npm run test:all && npm run build",
+    "i18n:check": "node scripts/i18n-check.mjs",
     "test:scripts": "node --test \"scripts/*.test.mjs\"",
     "test:core": "npm run test --workspace @forja/app-core"
   },

@@ -36,6 +36,7 @@ import { FoodPicker } from "./food-picker";
 import { Icon } from "./icon";
 import { MACRO_COLORS, MacroRing } from "./macro-rings";
 import { Text } from "./text";
+import { LOCALE } from "@forja/app-core/i18n";
 
 /**
  * O cardápio da semana — o `diet/weekly-menu.tsx` do web: um dia de cada vez.
@@ -169,10 +170,10 @@ export function WeeklyMenu({ onError }: { onError: (mensagem: string) => void })
             </Text>
             <View className="mt-1 flex-row items-baseline gap-1.5">
               <Text className="text-4xl font-extrabold leading-none">
-                {Math.round(t.kcal).toLocaleString("pt-BR")}
+                {Math.round(t.kcal).toLocaleString(LOCALE)}
               </Text>
               <Text className="text-sm text-muted-foreground">
-                {semMeta ? "kcal" : `/ ${Math.round(metaKcal).toLocaleString("pt-BR")} kcal`}
+                {semMeta ? "kcal" : `/ ${Math.round(metaKcal).toLocaleString(LOCALE)} kcal`}
               </Text>
             </View>
             {status ? (

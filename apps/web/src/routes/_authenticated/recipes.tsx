@@ -30,6 +30,7 @@ import {
 import { ConfirmButton } from "@/components/confirm-button";
 import { ErrorState } from "@/components/query-boundary";
 import { cn } from "@/lib/utils";
+import { LOCALE } from "@forja/app-core/i18n";
 
 /**
  * Receitas: as prontas do app, por categoria, e as da pessoa.
@@ -49,7 +50,7 @@ export const Route = createFileRoute("/_authenticated/recipes")({
   component: RecipesPage,
 });
 
-const kcal = (n: number) => Math.round(n).toLocaleString("pt-BR");
+const kcal = (n: number) => Math.round(n).toLocaleString(LOCALE);
 
 function RecipesPage() {
   const qc = useQueryClient();

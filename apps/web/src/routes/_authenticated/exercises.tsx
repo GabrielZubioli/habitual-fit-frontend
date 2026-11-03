@@ -55,6 +55,7 @@ import { CardGridSkeleton, EmptyState, ErrorState } from "@/components/query-bou
 import { cn } from "@/lib/utils";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { EQUIPMENT_LABELS, MUSCLE_LABELS, label } from "@forja/app-core/lib/labels";
+import { LOCALE } from "@forja/app-core/i18n";
 
 type Aba = "musculos" | "equipamentos" | "favoritos";
 
@@ -113,7 +114,7 @@ function ExerciseLibrary() {
         title="Exercícios"
         description={
           contagem.data
-            ? `${contagem.data.total.toLocaleString("pt-BR")} exercícios com demonstração`
+            ? `${contagem.data.total.toLocaleString(LOCALE)} exercícios com demonstração`
             : undefined
         }
       />

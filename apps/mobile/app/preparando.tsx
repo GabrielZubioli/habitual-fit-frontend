@@ -46,6 +46,7 @@ import { Button } from "@/ui/button";
 import { Icon, type IconNode } from "@/ui/icon";
 import { RoutineIcon } from "@/ui/routine-icon";
 import { Text } from "@/ui/text";
+import { LOCALE } from "@forja/app-core/i18n";
 
 /**
  * Onde o plano é montado — e depois apresentado. O `routes/preparando.tsx` do
@@ -271,7 +272,7 @@ function Building({ stage }: { stage: GenerationStage }) {
 
 /** Segunda primeiro. */
 const ORDEM_SEMANA: Weekday[] = [1, 2, 3, 4, 5, 6, 0];
-const kg = (n: number) => n.toLocaleString("pt-BR", { maximumFractionDigits: 1 });
+const kg = (n: number) => n.toLocaleString(LOCALE, { maximumFractionDigits: 1 });
 
 /** Entrada em sequência: cada seção chega um pouco depois da anterior. */
 const entra = (i: number) => FadeInDown.delay(120 + i * 110).duration(700);

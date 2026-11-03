@@ -46,6 +46,7 @@ import { MACRO_COLORS, MacroRing } from "@/components/home/macro-rings";
 import { MEAL_LABELS, label } from "@forja/app-core/lib/labels";
 import { todayISO } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
+import { LOCALE } from "@forja/app-core/i18n";
 
 /** Segunda primeiro, como no Plano. */
 const ORDEM: Weekday[] = [1, 2, 3, 4, 5, 6, 0];
@@ -170,10 +171,10 @@ export function WeeklyMenu() {
             </p>
             <p className="mt-1 flex items-baseline gap-1.5">
               <span className="text-4xl font-extrabold leading-none tabular-nums">
-                {Math.round(t.kcal).toLocaleString("pt-BR")}
+                {Math.round(t.kcal).toLocaleString(LOCALE)}
               </span>
               <span className="text-sm text-muted-foreground tabular-nums">
-                {semMeta ? "kcal" : `/ ${Math.round(metaKcal).toLocaleString("pt-BR")} kcal`}
+                {semMeta ? "kcal" : `/ ${Math.round(metaKcal).toLocaleString(LOCALE)} kcal`}
               </span>
             </p>
             {status && (

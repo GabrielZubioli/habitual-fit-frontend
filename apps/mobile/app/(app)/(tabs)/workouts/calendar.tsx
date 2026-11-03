@@ -29,6 +29,7 @@ import { Icon } from "@/ui/icon";
 import { BackButton, PageHeader, PageScroll } from "@/ui/page-header";
 import { RoutineIcon, routineIconOf } from "@/ui/routine-icon";
 import { Text } from "@/ui/text";
+import { LOCALE } from "@forja/app-core/i18n";
 
 /**
  * Calendário mensal de treinos — o `workouts_.calendar.tsx` do web. Mostra só o
@@ -212,7 +213,7 @@ export default function WorkoutCalendar() {
                   </Text>
                   {volumeMes > 0 ? (
                     <Text className="text-sm text-muted-foreground">
-                      {Math.round(volumeMes).toLocaleString("pt-BR")} kg de volume
+                      {Math.round(volumeMes).toLocaleString(LOCALE)} kg de volume
                     </Text>
                   ) : null}
                 </View>
@@ -249,7 +250,7 @@ export default function WorkoutCalendar() {
                     <Text className="text-xs text-muted-foreground">
                       {formatDuration(treino.durationSeconds)}
                       {treino.volumeKg > 0
-                        ? ` · ${Math.round(treino.volumeKg).toLocaleString("pt-BR")} kg`
+                        ? ` · ${Math.round(treino.volumeKg).toLocaleString(LOCALE)} kg`
                         : ""}
                     </Text>
                   </View>

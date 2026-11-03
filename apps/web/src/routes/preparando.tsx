@@ -36,6 +36,7 @@ import { clearDraft, clearStep, loadDraft } from "@/lib/onboarding/storage";
 import { isComplete, type Answers } from "@forja/app-core/lib/onboarding/schema";
 import { derivedObjective } from "@forja/app-core/lib/onboarding/options";
 import { MEAL_LABELS, label } from "@forja/app-core/lib/labels";
+import { LOCALE } from "@forja/app-core/i18n";
 
 /**
  * A tela onde o plano é montado — e depois apresentado.
@@ -296,8 +297,8 @@ function Building({ stage }: { stage: GenerationStage }) {
 
 /** Segunda primeiro. */
 const ORDEM_SEMANA: Weekday[] = [1, 2, 3, 4, 5, 6, 0];
-const fmt = (n: number) => Math.round(n).toLocaleString("pt-BR");
-const kg = (n: number) => n.toLocaleString("pt-BR", { maximumFractionDigits: 1 });
+const fmt = (n: number) => Math.round(n).toLocaleString(LOCALE);
+const kg = (n: number) => n.toLocaleString(LOCALE, { maximumFractionDigits: 1 });
 
 /** Entrada em sequência: cada seção chega um pouco depois da anterior. */
 const entra = (i: number): { className: string; style: CSSProperties } => ({

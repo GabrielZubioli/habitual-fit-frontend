@@ -12,6 +12,7 @@ import Svg, {
   Text as SvgText,
 } from "react-native-svg";
 import { useColor } from "@/theme/theme";
+import { LOCALE } from "@forja/app-core/i18n";
 
 /**
  * Gráficos simples em SVG — o lugar dos gráficos do recharts no web: grade,
@@ -80,7 +81,7 @@ function Grade({
       />
       {g.eixoY > 0 ? (
         <SvgText x={g.eixoY - 6} y={g.y(t) + 4} fontSize={11} fill={texto} textAnchor="end">
-          {`${Number(t.toPrecision(6)).toLocaleString("pt-BR")}${unidade}`}
+          {`${Number(t.toPrecision(6)).toLocaleString(LOCALE)}${unidade}`}
         </SvgText>
       ) : null}
     </G>

@@ -62,12 +62,13 @@ import { ConfirmDialog, Dialog } from "@/ui/dialog";
 import { Icon, type IconNode } from "@/ui/icon";
 import { ShareProfileDialog } from "@/ui/share-profile-dialog";
 import { Text } from "@/ui/text";
+import { LOCALE } from "@forja/app-core/i18n";
 
 /**
  * Perfil — o `profile.tsx` do web: a identidade, a evolução e os destaques
  * (só o que foi registrado de verdade) e os dados pessoais, editáveis ali.
  */
-const fmt = (n: number) => n.toLocaleString("pt-BR", { maximumFractionDigits: 1 });
+const fmt = (n: number) => n.toLocaleString(LOCALE, { maximumFractionDigits: 1 });
 const opcao = (opcoes: { value: string; label: string }[], v: string | null | undefined) =>
   opcoes.find((o) => o.value === v)?.label ?? null;
 
@@ -446,7 +447,7 @@ export default function ProfilePage() {
               </View>
               <View className="min-w-0 flex-1">
                 <Text className="font-semibold">
-                  {Math.round(num(p.daily_kcal_target)).toLocaleString("pt-BR")} kcal por dia
+                  {Math.round(num(p.daily_kcal_target)).toLocaleString(LOCALE)} kcal por dia
                 </Text>
                 <Text className="text-sm text-muted-foreground">
                   P {Math.round(num(p.protein_g_target))} g · C {Math.round(num(p.carbs_g_target))}{" "}

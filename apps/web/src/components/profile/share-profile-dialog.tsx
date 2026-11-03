@@ -30,6 +30,7 @@ import {
   type OpcoesCartao,
   type PerfilPublicavel,
 } from "@forja/app-core/lib/share-profile";
+import { LOCALE } from "@forja/app-core/i18n";
 
 const ARQUIVO = "perfil-habitual-fit.png";
 
@@ -284,7 +285,7 @@ function desenhar(
   familia: string,
 ) {
   const fonte = (peso: number, px: number) => `${peso} ${px}px ${familia}`;
-  const n = (v: number) => v.toLocaleString("pt-BR", { maximumFractionDigits: 1 });
+  const n = (v: number) => v.toLocaleString(LOCALE, { maximumFractionDigits: 1 });
 
   ctx.clearRect(0, 0, W, H);
   ctx.fillStyle = FUNDO;

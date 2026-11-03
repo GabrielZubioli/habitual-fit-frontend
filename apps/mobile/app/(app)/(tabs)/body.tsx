@@ -43,6 +43,7 @@ import { ConfirmDialog } from "@/ui/dialog";
 import { Icon, type IconNode } from "@/ui/icon";
 import { PageHeader, PageScroll } from "@/ui/page-header";
 import { Text } from "@/ui/text";
+import { LOCALE } from "@forja/app-core/i18n";
 
 /**
  * Progresso corporal — o `body.tsx` do web: o Resumo (a leitura: "estou indo
@@ -225,7 +226,7 @@ function WeightPanel({ avisar }: { avisar: (t: string, erro?: boolean) => void }
               </Text>
               <View className="mt-0.5 flex-row items-baseline gap-1.5">
                 <Text className="text-4xl font-extrabold tracking-tight" style={{ color: TINTA }}>
-                  {ultimo.peso.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}
+                  {ultimo.peso.toLocaleString(LOCALE, { maximumFractionDigits: 1 })}
                 </Text>
                 <Text className="text-sm font-semibold" style={{ color: `${TINTA}B3` }}>
                   kg · {ultimo.label}

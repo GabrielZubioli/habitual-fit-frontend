@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { CalendarDays, ChevronDown } from "lucide-react";
-import { ptBR } from "date-fns/locale";
+import { dateFnsLocale } from "@forja/app-core/i18n";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { formatDate, fromISODate, toISODate, todayISO } from "@forja/app-core/lib/date";
@@ -82,7 +82,7 @@ export function DatePicker({
       >
         <Calendar
           mode="single"
-          locale={ptBR}
+          locale={dateFnsLocale}
           selected={selecionada}
           defaultMonth={selecionada}
           onSelect={(d) => d && escolher(toISODate(d))}

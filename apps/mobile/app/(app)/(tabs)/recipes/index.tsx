@@ -42,13 +42,14 @@ import { Icon } from "@/ui/icon";
 import { MacroTiles } from "@/ui/macro-rings";
 import { PageHeader, PageScroll } from "@/ui/page-header";
 import { Text } from "@/ui/text";
+import { LOCALE } from "@forja/app-core/i18n";
 
 /**
  * Receitas — o `recipes.tsx` do web: as prontas, por categoria, e as da
  * pessoa. As prontas abrem num detalhe e podem ser copiadas; as da pessoa se
  * editam.
  */
-const kcal = (n: number) => Math.round(n).toLocaleString("pt-BR");
+const kcal = (n: number) => Math.round(n).toLocaleString(LOCALE);
 
 /** Tom de fundo de cada categoria: identifica a fileira sem depender de foto. */
 const TOM: Record<string, "chart-1" | "chart-2" | "chart-4" | "chart-5"> = {

@@ -50,6 +50,7 @@ import {
 } from "@forja/app-core/lib/labels";
 import { formatDate, formatDayMonth } from "@forja/app-core/lib/date";
 import { cn } from "@/lib/utils";
+import { LOCALE } from "@forja/app-core/i18n";
 
 export const Route = createFileRoute("/_authenticated/exercises_/$id")({
   head: () => ({
@@ -401,7 +402,7 @@ function Historico({
                     cursor={{ fill: "var(--muted)" }}
                     contentStyle={CHART_TOOLTIP_STYLE}
                     labelStyle={CHART_TOOLTIP_LABEL_STYLE}
-                    formatter={(value: number) => [`${value.toLocaleString("pt-BR")} kg`, "Volume"]}
+                    formatter={(value: number) => [`${value.toLocaleString(LOCALE)} kg`, "Volume"]}
                   />
                   <Bar dataKey="volume" fill="var(--chart-1)" radius={[6, 6, 2, 2]} />
                 </BarChart>
@@ -437,7 +438,7 @@ function Historico({
                       </span>
                       <span className="block text-xs text-muted-foreground">
                         {s.workingSets} {s.workingSets === 1 ? "série" : "séries"} ·{" "}
-                        {Math.round(s.volume).toLocaleString("pt-BR")} kg de volume
+                        {Math.round(s.volume).toLocaleString(LOCALE)} kg de volume
                       </span>
                     </span>
                     <span className="shrink-0 text-right">

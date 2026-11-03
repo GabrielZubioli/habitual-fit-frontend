@@ -57,6 +57,7 @@ import {
   PLACE_OPTIONS,
 } from "@forja/app-core/lib/onboarding/options";
 import { todayISO } from "@forja/app-core/lib/date";
+import { LOCALE } from "@forja/app-core/i18n";
 
 /**
  * Configurações: dados, metas e preferências.
@@ -528,7 +529,7 @@ function AguaStepper({
         </button>
         <p className="text-center">
           <span className="block text-4xl font-extrabold tabular-nums">
-            {value === null ? "Auto" : `${(value / 1000).toLocaleString("pt-BR")} L`}
+            {value === null ? "Auto" : `${(value / 1000).toLocaleString(LOCALE)} L`}
           </span>
           <span className="text-xs text-muted-foreground">
             {value === null

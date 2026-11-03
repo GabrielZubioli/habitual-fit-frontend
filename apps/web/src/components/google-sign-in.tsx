@@ -28,6 +28,7 @@ import { useTheme } from "@/components/theme-provider";
  */
 
 import { GOOGLE_WEB_CLIENT_ID } from "@forja/app-core/lib/google";
+import { LOCALE } from "@forja/app-core/i18n";
 
 export const GOOGLE_CLIENT_ID = GOOGLE_WEB_CLIENT_ID;
 
@@ -139,7 +140,7 @@ export function GoogleSignIn({
           shape: "pill",
           text: texto,
           logo_alignment: "center",
-          locale: "pt-BR",
+          locale: LOCALE,
         });
       } catch {
         if (ativo) setFalhou(true);

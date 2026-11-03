@@ -37,6 +37,7 @@ import {
   SearchField,
 } from "./search-dialog";
 import { Text } from "./text";
+import { LOCALE } from "@forja/app-core/i18n";
 
 /**
  * Seletor de alimento com quantidade — o `pickers/food-picker.tsx` do web.
@@ -47,9 +48,9 @@ import { Text } from "./text";
 const QUICK_GRAMS = [50, 100, 150, 200, 300];
 const PORCOES = [0.5, 1, 1.5, 2, 3];
 
-const kcalFmt = (n: number) => Math.round(n).toLocaleString("pt-BR");
-const gFmt = (n: number) => n.toLocaleString("pt-BR", { maximumFractionDigits: n < 10 ? 1 : 0 });
-const porcaoFmt = (n: number) => (n === 0.5 ? "½" : n.toLocaleString("pt-BR"));
+const kcalFmt = (n: number) => Math.round(n).toLocaleString(LOCALE);
+const gFmt = (n: number) => n.toLocaleString(LOCALE, { maximumFractionDigits: n < 10 ? 1 : 0 });
+const porcaoFmt = (n: number) => (n === 0.5 ? "½" : n.toLocaleString(LOCALE));
 
 export function FoodPicker({
   open,

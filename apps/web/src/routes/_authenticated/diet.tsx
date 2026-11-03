@@ -69,6 +69,7 @@ import { nutritionTotals, portionMacros, type FoodCandidate } from "@forja/domai
 import { CATEGORY_EMOJI } from "@forja/app-core/lib/food-emoji";
 import { WeeklyMenu } from "@/components/diet/weekly-menu";
 import { AvisoProfissional } from "@/components/aviso-profissional";
+import { LOCALE } from "@forja/app-core/i18n";
 
 /**
  * O diário alimentar — agora um **plano executável**, não um registro.
@@ -331,7 +332,7 @@ function DietPage() {
                     <p className="mt-5 text-center text-xs text-muted-foreground">
                       Planejado para o dia:{" "}
                       <span className="font-semibold tabular-nums text-foreground">
-                        {Math.round(totaisPlanejados.kcal).toLocaleString("pt-BR")} kcal
+                        {Math.round(totaisPlanejados.kcal).toLocaleString(LOCALE)} kcal
                       </span>{" "}
                       · P {Math.round(totaisPlanejados.proteinG)} g
                     </p>

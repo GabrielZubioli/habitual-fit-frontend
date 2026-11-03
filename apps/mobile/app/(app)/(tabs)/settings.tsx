@@ -61,6 +61,7 @@ import { Dialog } from "@/ui/dialog";
 import { Icon, type IconNode } from "@/ui/icon";
 import { PageHeader, PageScroll } from "@/ui/page-header";
 import { Text } from "@/ui/text";
+import { LOCALE } from "@forja/app-core/i18n";
 
 /**
  * Configurações — o `settings.tsx` do web. Cada seção é uma opção do Menu e
@@ -488,7 +489,7 @@ function AguaStepper({
         </Pressable>
         <View className="items-center">
           <Text className="text-4xl font-extrabold">
-            {value === null ? "Auto" : `${(value / 1000).toLocaleString("pt-BR")} L`}
+            {value === null ? "Auto" : `${(value / 1000).toLocaleString(LOCALE)} L`}
           </Text>
           <Text className="text-xs text-muted-foreground">
             {value === null

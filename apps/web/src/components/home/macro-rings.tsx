@@ -1,5 +1,6 @@
 import { useId } from "react";
 import { cn } from "@/lib/utils";
+import { LOCALE } from "@forja/app-core/i18n";
 
 /**
  * Anéis de macronutrientes.
@@ -121,7 +122,7 @@ export function CalorieRing({
             excedeu && "text-destructive",
           )}
         >
-          {(semMeta ? Math.round(consumed) : Math.abs(restante)).toLocaleString("pt-BR")}
+          {(semMeta ? Math.round(consumed) : Math.abs(restante)).toLocaleString(LOCALE)}
         </p>
         <p className={cn("mt-1 text-muted-foreground", compacto ? "text-[9px]" : "text-xs")}>
           {semMeta
@@ -142,11 +143,11 @@ export function CalorieRing({
         >
           {usaMeta ? (
             <>
-              {Math.round(consumed).toLocaleString("pt-BR")} /{" "}
-              {Math.round(target).toLocaleString("pt-BR")}
+              {Math.round(consumed).toLocaleString(LOCALE)} /{" "}
+              {Math.round(target).toLocaleString(LOCALE)}
             </>
           ) : (
-            `de ${Math.round(planejado).toLocaleString("pt-BR")} planejadas`
+            `de ${Math.round(planejado).toLocaleString(LOCALE)} planejadas`
           )}
         </p>
       </div>
