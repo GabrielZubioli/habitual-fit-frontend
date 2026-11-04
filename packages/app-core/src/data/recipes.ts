@@ -5,7 +5,7 @@ import { localDb, marcadores } from "../local";
 import { deleteById, insertRow, insertRows, updateById } from "./rows";
 import type { MealValue } from "../lib/labels";
 import { recipeNutrition, type Portion } from "@forja/domain";
-import { t } from "../i18n";
+import { language, t } from "../i18n";
 
 /**
  * Receitas: as prontas (do sistema, `user_id` nulo — todos leem, ninguém
@@ -28,6 +28,15 @@ export type RecipeCategory = (typeof RECIPE_CATEGORIES)[number]["key"];
 
 export function recipeCategoryOf(key: string | null) {
   return RECIPE_CATEGORIES.find((c) => c.key === key) ?? null;
+}
+
+/**
+ * As receitas prontas (e os nomes dos alimentos da TACO) só existem em
+ * português no banco. Fora do pt, a tela avisa com este selo em vez de
+ * misturar idiomas calada. As da pessoa estão no idioma em que ela escreveu.
+ */
+export function recipeLanguageBadge(r: { isSystem: boolean }): string | null {
+  return r.isSystem && language !== "pt-BR" ? t("em português") : null;
 }
 
 export interface RecipeSummary {

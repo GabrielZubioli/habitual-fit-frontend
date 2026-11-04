@@ -44,6 +44,10 @@ import { BackButton, PageScroll } from "@/ui/page-header";
 import { Text } from "@/ui/text";
 import { LOCALE } from "@forja/app-core/i18n";
 import { t } from "@forja/app-core/i18n";
+import { Skeleton } from "@/ui/skeleton";
+
+/** Erro ao montar a tela: tela de erro com "Tentar novamente", nunca em branco. */
+export { RouteError as ErrorBoundary } from "@/ui/route-error";
 
 /** A ficha do exercício — o `exercises_.$id.tsx` do web: como fazer e o seu histórico. */
 export default function Tela() {
@@ -106,8 +110,8 @@ function ExerciseDetail({ id }: { id: string }) {
         />
       ) : !ex ? (
         <>
-          <View className="aspect-square w-full rounded-[28px] bg-muted" />
-          <View className="mt-4 h-8 w-2/3 rounded-md bg-muted" />
+          <Skeleton className="aspect-square w-full rounded-[28px]" />
+          <Skeleton className="mt-4 h-8 w-2/3 rounded-md" />
         </>
       ) : (
         <>
@@ -185,7 +189,7 @@ function ExerciseDetail({ id }: { id: string }) {
           <View className="mt-4">
             {aba === "como" ? (
               !ex ? (
-                <View className="h-48 w-full rounded-[20px] bg-muted" />
+                <Skeleton className="h-48 w-full rounded-[20px]" />
               ) : (
                 <>
                   {/* Músculos trabalhados: o mapa diz onde, a lista diz qual. */}
@@ -329,8 +333,8 @@ function Historico({
 
       {history.isPending ? (
         <View className="gap-3">
-          <View className="h-24 w-full rounded-[20px] bg-muted" />
-          <View className="h-56 w-full rounded-[20px] bg-muted" />
+          <Skeleton className="h-24 w-full rounded-[20px]" />
+          <Skeleton className="h-56 w-full rounded-[20px]" />
         </View>
       ) : history.isError ? (
         <ErrorState message={errorMessage(history.error)} onRetry={() => void history.refetch()} />

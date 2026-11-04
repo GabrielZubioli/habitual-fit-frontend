@@ -1,7 +1,7 @@
 import type { Enums } from "@gabrielzubioli/db/types";
 import type { Weekday } from "@forja/domain";
 import { formatDate } from "./date";
-import { t } from "../i18n";
+import { language, t, type Language } from "../i18n";
 /**
  * Rótulos (no idioma do app) para os enums do banco.
  *
@@ -275,12 +275,19 @@ export const WEEKDAY_INITIALS = Object.fromEntries(
   ]),
 ) as Record<Weekday, string>;
 
-/** Sigla em maiúsculas (DOM, SEG… / SUN, MON…), no idioma do app. */
-export const WEEKDAY_SHORT = Object.fromEntries(
-  [0, 1, 2, 3, 4, 5, 6].map((d) => [
-    d,
-    formatDate(new Date(2024, 0, 7 + d), "EEE")
-      .replace(".", "")
-      .toUpperCase(),
-  ]),
-) as Record<Weekday, string>;
+/**
+ * Sigla de três letras em maiúsculas, no idioma do app, para as faixas de dias
+ * (tela inicial, cardápio da semana). Fixa e não do `date-fns`: no pt-BR o
+ * `EEE` dele devolve o nome inteiro ("segunda"), que estoura os botões.
+ * Domingo primeiro, como `Weekday`.
+ */
+const SIGLAS: Record<Language, readonly string[]> = {
+  "pt-BR": ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"],
+  en: ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"],
+  es: ["DOM", "LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB"],
+};
+
+export const WEEKDAY_SHORT = Object.fromEntries(SIGLAS[language].map((s, d) => [d, s])) as Record<
+  Weekday,
+  string
+>;

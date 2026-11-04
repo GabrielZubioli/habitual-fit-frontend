@@ -18,6 +18,7 @@ import { Card } from "./card";
 import { Icon } from "./icon";
 import { Text } from "./text";
 import { t } from "@forja/app-core/i18n";
+import { Skeleton } from "./skeleton";
 
 /** Mistura duas cores `#rrggbb` (o `color-mix` do web). */
 function misturar(a: string, b: string, pesoA: number): string {
@@ -59,7 +60,7 @@ export function ReadinessCard() {
     enabled: Boolean(userId),
   });
 
-  if (recovery.isPending) return <View className="h-36 w-full rounded-3xl bg-muted" />;
+  if (recovery.isPending) return <Skeleton className="h-36 w-full rounded-3xl" />;
   if (recovery.isError) return null;
 
   const musculos = recovery.data;
@@ -153,7 +154,8 @@ export function WaterCard({
   onError,
 }: {
   date: string;
-  targetMl: number;
+  /** `undefined` enquanto o perfil carrega: sem isso a meta padrão pisca antes da real. */
+  targetMl: number | undefined;
   onError: (e: unknown) => void;
 }) {
   const qc = useQueryClient();
@@ -202,8 +204,8 @@ export function WaterCard({
             </View>
             <View>
               <Text className="text-sm font-semibold leading-tight">{t("Água")}</Text>
-              {water.isPending ? (
-                <View className="mt-1 h-3 w-20 rounded bg-muted" />
+              {water.isPending || targetMl === undefined ? (
+                <Skeleton className="mt-1 h-3 w-20 rounded" />
               ) : (
                 <Text className="text-xs text-muted-foreground">
                   {t("{{v0}} L de {{v1}} L", {

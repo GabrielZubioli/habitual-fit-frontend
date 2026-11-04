@@ -62,8 +62,10 @@ import { ConfirmDialog, Dialog } from "@/ui/dialog";
 import { Icon, type IconNode } from "@/ui/icon";
 import { ShareProfileDialog } from "@/ui/share-profile-dialog";
 import { Text } from "@/ui/text";
+import { useTopoAoSair } from "@/ui/page-header";
 import { LOCALE } from "@forja/app-core/i18n";
 import { t } from "@forja/app-core/i18n";
+import { Skeleton } from "@/ui/skeleton";
 
 /**
  * Perfil — o `profile.tsx` do web: a identidade, a evolução e os destaques
@@ -82,6 +84,7 @@ export default function ProfilePage() {
   const [compartilhando, setCompartilhando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const rolagem = useRef<ScrollView>(null);
+  useTopoAoSair(rolagem);
   const [yDados, setYDados] = useState(0);
   const [yConteudo, setYConteudo] = useState(0);
   const branco = useColor("primary-foreground");
@@ -181,7 +184,7 @@ export default function ProfilePage() {
           {/* Identidade: foto sobre a faixa, nome, objetivo e o jeito de treinar. */}
           <View className="-mt-20 items-center">
             {!p ? (
-              <View className="h-32 w-32 rounded-full border-4 border-background bg-muted" />
+              <Skeleton className="h-32 w-32 rounded-full border-4 border-background" />
             ) : (
               <AvatarPicker
                 path={p.avatar_url ?? null}
@@ -192,7 +195,7 @@ export default function ProfilePage() {
               />
             )}
             {!p ? (
-              <View className="mt-4 h-8 w-48 rounded-md bg-muted" />
+              <Skeleton className="mt-4 h-8 w-48 rounded-md" />
             ) : (
               <Pressable
                 onPress={() => setEditando("display_name")}
@@ -262,7 +265,7 @@ export default function ProfilePage() {
           {/* Evolução: só números que existem. */}
           <Titulo>{t("Evolução")}</Titulo>
           {treinos.isPending ? (
-            <View className="h-28 rounded-[20px] bg-muted" />
+            <Skeleton className="h-28 rounded-[20px]" />
           ) : totalTreinos === 0 ? (
             <View className="items-center rounded-3xl border border-dashed border-primary/40 bg-primary/5 p-5">
               <Icon node={dumbbell} color={primaria} size={32} />
@@ -384,7 +387,7 @@ export default function ProfilePage() {
           {!p ? (
             <View className="flex-row flex-wrap gap-3">
               {Array.from({ length: 8 }, (_, i) => (
-                <View key={i} className="h-24 w-[48%] rounded-[20px] bg-muted" />
+                <Skeleton key={i} className="h-24 w-[48%] rounded-[20px]" />
               ))}
             </View>
           ) : (
@@ -580,7 +583,7 @@ function Numero({
     <View className="min-w-0 flex-1 rounded-[20px] bg-card p-4">
       <Icon node={icon} color={primaria} size={20} />
       {valor == null ? (
-        <View className="mt-2 h-8 w-10 rounded-md bg-muted" />
+        <Skeleton className="mt-2 h-8 w-10 rounded-md" />
       ) : (
         <Text className="mt-2 text-2xl font-extrabold">{valor}</Text>
       )}

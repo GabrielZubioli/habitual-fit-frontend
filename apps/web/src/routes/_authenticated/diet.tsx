@@ -68,7 +68,6 @@ import { addDays, startOfWeek } from "date-fns";
 import { nutritionTotals, portionMacros, type FoodCandidate } from "@forja/domain";
 import { CATEGORY_EMOJI } from "@forja/app-core/lib/food-emoji";
 import { WeeklyMenu } from "@/components/diet/weekly-menu";
-import { AvisoProfissional } from "@/components/aviso-profissional";
 import { LOCALE } from "@forja/app-core/i18n";
 import { t } from "@forja/app-core/i18n";
 
@@ -347,16 +346,12 @@ function DietPage() {
             </section>
 
             {rows.length === 0 && !entries.isPending && !entries.isError && (
-              <section className="mb-4 rounded-[1.25rem] border border-dashed border-primary/40 bg-primary/5 p-5">
-                <h2 className="text-lg font-bold">{t("Monte suas refeições")}</h2>
-                <p className="mt-1 text-pretty text-sm text-muted-foreground">
-                  Suas refeições estão vazias. Os alimentos de cada refeição são montados no{" "}
-                  <b className="text-foreground">{t("Cardápio da semana")}</b> e aparecem aqui, no
-                  dia, para você marcar o que comeu. Monte por conta própria ou siga a orientação do
-                  seu nutricionista.
+              <section className="mb-4 flex items-center gap-3 rounded-2xl border border-dashed border-primary/40 bg-primary/5 py-2.5 pl-4 pr-2.5">
+                <p className="flex-1 text-sm text-muted-foreground">
+                  {t("Suas refeições estão vazias.")}
                 </p>
-                <Button className="mt-4 h-11 rounded-xl" onClick={() => setAba("cardapio")}>
-                  {t("Abrir o Cardápio da semana")}
+                <Button size="sm" className="rounded-xl" onClick={() => setAba("cardapio")}>
+                  {t("Montar cardápio")}
                 </Button>
               </section>
             )}
@@ -394,8 +389,6 @@ function DietPage() {
                 {t("Copiar o dia anterior")}
               </Button>
             )}
-
-            <AvisoProfissional tipos={["dieta"]} className="mt-6" />
           </>
         )}
       </PageBody>

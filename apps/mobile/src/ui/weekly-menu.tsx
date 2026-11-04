@@ -37,6 +37,7 @@ import { MACRO_COLORS, MacroRing } from "./macro-rings";
 import { Text } from "./text";
 import { LOCALE } from "@forja/app-core/i18n";
 import { t } from "@forja/app-core/i18n";
+import { Skeleton } from "./skeleton";
 
 /**
  * O cardápio da semana — o `diet/weekly-menu.tsx` do web: um dia de cada vez.
@@ -105,7 +106,7 @@ export function WeeklyMenu({ onError }: { onError: (mensagem: string) => void })
     onError: (e) => onError(errorMessage(e)),
   });
 
-  if (plan.isPending) return <View className="h-96 w-full rounded-3xl bg-muted" />;
+  if (plan.isPending) return <Skeleton className="h-96 w-full rounded-3xl" />;
   if (plan.isError)
     return <ErrorState message={errorMessage(plan.error)} onRetry={() => void plan.refetch()} />;
   const p = plan.data;
@@ -140,6 +141,7 @@ export function WeeklyMenu({ onError }: { onError: (mensagem: string) => void })
               )}
             >
               <Text
+                numberOfLines={1}
                 className={cn(
                   "text-xs font-extrabold tracking-wide",
                   ativo
@@ -231,11 +233,6 @@ export function WeeklyMenu({ onError }: { onError: (mensagem: string) => void })
             ))}
           </View>
         ) : null}
-        <Text className="mt-3 text-[11px] text-muted-foreground">
-          {t(
-            "O app não prescreve dietas: monte o cardápio por conta própria ou com a orientação de um nutricionista.",
-          )}
-        </Text>
       </View>
 
       <View className="mt-3 gap-3">

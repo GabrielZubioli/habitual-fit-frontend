@@ -28,6 +28,7 @@ import {
   deleteRecipe,
   fetchRecipes,
   recipeCategoryOf,
+  recipeLanguageBadge,
   type RecipeSummary,
 } from "@forja/app-core/data/recipes";
 import { cn } from "@/lib/cn";
@@ -43,7 +44,9 @@ import { MacroTiles } from "@/ui/macro-rings";
 import { PageHeader, PageScroll } from "@/ui/page-header";
 import { Text } from "@/ui/text";
 import { LOCALE } from "@forja/app-core/i18n";
-import { t } from "@forja/app-core/i18n";
+import { t, tRich } from "@forja/app-core/i18n";
+import { OutroIdioma } from "@/ui/exercise-how-to";
+import { Skeleton } from "@/ui/skeleton";
 
 /**
  * Receitas — o `recipes.tsx` do web: as prontas, por categoria, e as da
@@ -141,7 +144,7 @@ export default function RecipesPage() {
                 className="rounded-full"
               >
                 <Icon node={plus} color={branco} size={16} />
-                <Text className="text-sm font-medium text-primary-foreground">Nova</Text>
+                <Text className="text-sm font-medium text-primary-foreground">{t("Nova")}</Text>
               </Button>
             }
           />
@@ -211,7 +214,7 @@ export default function RecipesPage() {
         {receitas.isPending ? (
           <View className="mt-6 gap-3 px-4">
             {[0, 1, 2, 3].map((i) => (
-              <View key={i} className="h-20 rounded-[20px] bg-muted" />
+              <Skeleton key={i} className="h-20 rounded-[20px]" />
             ))}
           </View>
         ) : receitas.isError ? (
@@ -512,8 +515,15 @@ function DetalheReceita({
                 <Text className="text-sm text-muted-foreground">
                   {t("Rende {{servings}}", { servings: receita.servings })}{" "}
                   {receita.servings === 1 ? t("porção") : t("porções")}
-                  {receita.prepMinutes ? ` · ${receita.prepMinutes} min` : ""}
+                  {receita.prepMinutes
+                    ? ` · ${t("{{prepMinutes}} min", { prepMinutes: receita.prepMinutes })}`
+                    : ""}
                 </Text>
+                {recipeLanguageBadge(receita) ? (
+                  <View className="mt-1 flex-row">
+                    <OutroIdioma texto={recipeLanguageBadge(receita)!} />
+                  </View>
+                ) : null}
               </View>
 
               <View className="px-5">
@@ -565,10 +575,17 @@ function DetalheReceita({
               ) : null}
 
               <View className="gap-3 px-5">
+                {recipeLanguageBadge(receita) ? (
+                  <Text className="text-xs text-muted-foreground">
+                    {t(
+                      "Esta receita ainda não tem versão neste idioma e aparece no original, em português. Ingredientes, quantidades e macros não mudam.",
+                    )}
+                  </Text>
+                ) : null}
                 <Text className="text-sm text-muted-foreground">
-                  Para comer, use{" "}
-                  <Text className="text-sm font-bold">{t("Dieta → Adicionar → Receitas")}</Text> na
-                  refeição.
+                  {tRich("Para comer, use <0>Dieta → Adicionar → Receitas</0> na refeição.", [
+                    (s) => <Text className="text-sm font-bold">{s}</Text>,
+                  ])}
                 </Text>
                 <Button
                   variant="outline"

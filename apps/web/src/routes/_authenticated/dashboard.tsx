@@ -123,7 +123,10 @@ function Home() {
           proteinTarget={num(profile.data?.protein_g_target)}
           loadingProfile={profile.isPending}
         />
-        <WaterCard date={today} targetMl={num(profile.data?.water_ml_target, 2500)} />
+        <WaterCard
+          date={today}
+          targetMl={profile.isPending ? undefined : num(profile.data?.water_ml_target, 2500)}
+        />
       </div>
     </div>
   );
@@ -568,7 +571,7 @@ function PesoCard() {
 /** Semanas seguidas na meta, a semana atual e o total. */
 function SequenciaCard() {
   const today = todayISO();
-  const { dias, treinou } = useStreak();
+  const { dias, treinou, isPending } = useStreak();
   const aceso = dias > 0;
   const semana = Array.from({ length: 7 }, (_, i) =>
     toISODate(addDays(fromISODate(weekStart(today)), i)),
@@ -595,7 +598,11 @@ function SequenciaCard() {
           aria-hidden
         />
         <div className="min-w-0 text-left">
-          <p className="text-6xl font-extrabold leading-none tabular-nums">{dias}</p>
+          {isPending ? (
+            <Skeleton className="h-[60px] w-16" />
+          ) : (
+            <p className="text-6xl font-extrabold leading-none tabular-nums">{dias}</p>
+          )}
           <p className="text-lg font-semibold">
             {dias === 1 ? t("dia seguido") : t("dias seguidos")}
           </p>

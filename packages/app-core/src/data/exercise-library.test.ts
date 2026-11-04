@@ -12,21 +12,38 @@ describe("nome e passo a passo no idioma do app", () => {
   it("em pt, prefere o passo a passo em português e cai no inglês com selo", () => {
     expect(exerciseSteps({ execution: ["Deite"], execution_en: ["Lie"] })).toEqual({
       passos: ["Deite"],
-      texto: null,
       idioma: "pt",
     });
     const reserva = exerciseSteps({ execution: [], execution_en: ["Lie down"] });
-    expect(reserva).toEqual({ passos: ["Lie down"], texto: null, idioma: "en" });
+    expect(reserva).toEqual({ passos: ["Lie down"], idioma: "en" });
     expect(idiomaDiferente(reserva.idioma)).toBe("em inglês");
     expect(idiomaDiferente("pt")).toBeNull();
   });
 
-  it("sem passos, usa o texto corrido original", () => {
-    expect(exerciseSteps({ execution: null, instructions: " Lie back. " })).toEqual({
-      passos: [],
-      texto: "Lie back.",
+  it("sem passos, divide o texto corrido original em passos", () => {
+    expect(
+      exerciseSteps({
+        execution: null,
+        instructions:
+          " Lie back on a bench. Lift 2.5 kg (a light load). Tip: Go slow. (Note: see the stance section). Repeat. ",
+      }),
+    ).toEqual({
+      passos: [
+        "Lie back on a bench.",
+        "Lift 2.5 kg (a light load).",
+        "Tip: Go slow.",
+        "(Note: see the stance section).",
+        "Repeat.",
+      ],
       idioma: "en",
     });
-    expect(exerciseSteps({})).toEqual({ passos: [], texto: null, idioma: null });
+    expect(exerciseSteps({})).toEqual({ passos: [], idioma: null });
+  });
+
+  it("passo com quebras de linha vira vários passos", () => {
+    expect(exerciseSteps({ execution: ["Deite.\nSegure a barra.", "  "] }).passos).toEqual([
+      "Deite.",
+      "Segure a barra.",
+    ]);
   });
 });

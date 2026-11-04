@@ -13,10 +13,11 @@
     },
     "android": {
       "package": "com.habitualfit.myapp",
-      "versionCode": 5,
+      "versionCode": 6,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#020306"
+        "backgroundImage": "./assets/adaptive-icon-background.png",
+        "backgroundColor": "#16191D"
       },
       "permissions": ["android.permission.CAMERA"]
     },

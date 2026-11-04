@@ -48,6 +48,7 @@ import { RoutineIcon } from "@/ui/routine-icon";
 import { Text } from "@/ui/text";
 import { LOCALE } from "@forja/app-core/i18n";
 import { t } from "@forja/app-core/i18n";
+import { Skeleton } from "@/ui/skeleton";
 
 /**
  * Onde o plano é montado — e depois apresentado. O `routes/preparando.tsx` do
@@ -397,7 +398,7 @@ function PlanReady({
 
         <Secao titulo={t("Sua semana de treino")} i={3}>
           {semana.isPending ? (
-            <View className="h-64 rounded-3xl bg-muted" />
+            <Skeleton className="h-64 rounded-3xl" />
           ) : splits.length === 0 ? (
             <Vazio
               texto={t(
@@ -484,7 +485,7 @@ function PlanReady({
 
         <Secao titulo={t("Suas refeições")} i={4}>
           {cardapio.isPending ? (
-            <View className="h-40 rounded-3xl bg-muted" />
+            <Skeleton className="h-40 rounded-3xl" />
           ) : !cardapio.data || cardapio.data.meals.length === 0 ? (
             <Vazio
               texto={t("Suas refeições aparecem na tela Dieta, prontas para você preencher.")}

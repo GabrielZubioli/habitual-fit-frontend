@@ -15,6 +15,7 @@ import { useColor } from "@/theme/theme";
 import { Icon } from "./icon";
 import { Text } from "./text";
 import { t } from "@forja/app-core/i18n";
+import { Skeleton } from "./skeleton";
 
 /**
  * O diálogo de busca do web (`pickers/search-dialog.tsx`): cartão de até 88%
@@ -169,7 +170,7 @@ export function ResultsLoading() {
   return (
     <View className="gap-2" accessibilityLabel={t("Carregando")}>
       {[0, 1, 2, 3, 4].map((i) => (
-        <View key={i} className="h-[72px] w-full rounded-2xl bg-muted" />
+        <Skeleton key={i} className="h-[72px] w-full rounded-2xl" />
       ))}
     </View>
   );

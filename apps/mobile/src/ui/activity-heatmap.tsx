@@ -10,6 +10,7 @@ import { useColor } from "@/theme/theme";
 import { ErrorState } from "./card";
 import { Text } from "./text";
 import { t } from "@forja/app-core/i18n";
+import { Skeleton } from "./skeleton";
 
 const WEEKS = 53;
 
@@ -27,7 +28,7 @@ export function ActivityHeatmap() {
     queryFn: () => fetchCompletedWorkouts(de, ate),
   });
 
-  if (treinos.isPending) return <View className="h-32 w-full rounded-xl bg-muted" />;
+  if (treinos.isPending) return <Skeleton className="h-32 w-full rounded-xl" />;
   if (treinos.isError) {
     return (
       <ErrorState

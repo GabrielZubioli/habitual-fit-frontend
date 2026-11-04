@@ -14,6 +14,7 @@ import { __iconNode as chevronDown } from "lucide-react/dist/esm/icons/chevron-d
 import { __iconNode as chevronLeft } from "lucide-react/dist/esm/icons/chevron-left.js";
 import { __iconNode as chevronRight } from "lucide-react/dist/esm/icons/chevron-right.js";
 import { formatDate, fromISODate, toISODate, todayISO } from "@forja/app-core/lib/date";
+import { WEEKDAY_SHORT } from "@forja/app-core/lib/labels";
 import { cn } from "@/lib/cn";
 import { useColor } from "@/theme/theme";
 import { Icon } from "./icon";
@@ -95,7 +96,7 @@ function rotulo(iso: string): string {
 }
 
 /** Dom → sáb, abreviados no idioma do app (7/1/2024 foi domingo). */
-const DIAS = Array.from({ length: 7 }, (_, i) => formatDate(new Date(2024, 0, 7 + i), "EEE"));
+const DIAS = Object.values(WEEKDAY_SHORT);
 
 function Calendario({
   value,

@@ -62,6 +62,7 @@ import { CalorieRing } from "@/ui/macro-rings";
 import { Text } from "@/ui/text";
 import { LOCALE } from "@forja/app-core/i18n";
 import { t } from "@forja/app-core/i18n";
+import { Skeleton } from "@/ui/skeleton";
 
 /**
  * Início — o `dashboard.tsx` do web: a sequência, a semana com o treino de
@@ -83,7 +84,7 @@ export default function Home() {
   return (
     <PageScroll
       className="flex-1 bg-background"
-      contentContainerClassName="px-4 pb-28 pt-3"
+      contentContainerClassName="px-4 pb-28"
       header={
         <View className="items-center pb-3" style={{ paddingTop: Math.max(24, insets.top) }}>
           <BrandLogo height={48} />
@@ -114,7 +115,7 @@ export default function Home() {
         />
         <WaterCard
           date={today}
-          targetMl={num(profile.data?.water_ml_target, 2500)}
+          targetMl={profile.isPending ? undefined : num(profile.data?.water_ml_target, 2500)}
           onError={falhou}
         />
       </View>
@@ -162,7 +163,7 @@ function SemanaCard({ onError }: { onError: (e: unknown) => void }) {
     return Array.from({ length: 7 }, (_, i) => toISODate(addDays(inicio, i)));
   }, [today, offset]);
 
-  if (routine.isPending) return <View className="h-64 w-full rounded-3xl bg-muted" />;
+  if (routine.isPending) return <Skeleton className="h-64 w-full rounded-3xl" />;
   // Sem rotina ou com o plano em branco: convite a montar, não "Descanso".
   if (!routine.data || routine.data.templates.length === 0) return <NoRoutineCard />;
 
@@ -222,7 +223,9 @@ function SemanaCard({ onError }: { onError: (e: unknown) => void }) {
               accessibilityState={{ selected: dia === selecionado }}
               className="flex-1 items-center gap-1"
             >
-              <Text className="text-sm text-muted-foreground">{INICIAIS[weekdayOf(dia)]}</Text>
+              <Text numberOfLines={1} className="text-sm text-muted-foreground">
+                {INICIAIS[weekdayOf(dia)]}
+              </Text>
               <View
                 className={cn(
                   "h-11 w-11 items-center justify-center rounded-full",
@@ -391,7 +394,7 @@ function DietaCard({
       className="flex-row items-center gap-4 rounded-3xl bg-card p-4 active:bg-elevated"
     >
       {diario.isPending || loadingProfile ? (
-        <View className="h-[88px] w-[88px] rounded-full bg-muted" />
+        <Skeleton className="h-[88px] w-[88px] rounded-full" />
       ) : (
         <CalorieRing
           consumed={totais.kcal}
@@ -498,7 +501,7 @@ function PesoCard() {
       </View>
 
       {pesos.isPending ? (
-        <View className="mt-3 h-40 w-full rounded-md bg-muted" />
+        <Skeleton className="mt-3 h-40 w-full rounded-md" />
       ) : !atual ? (
         <Text className="mt-3 text-muted-foreground">
           {t("Registre seu peso para acompanhar a tendência.")}
@@ -553,7 +556,7 @@ function PesoCard() {
 /** Dias seguidos de treino e a semana atual. Toca e vai ao calendário. */
 function SequenciaCard() {
   const today = todayISO();
-  const { dias, treinou } = useStreak();
+  const { dias, treinou, isPending } = useStreak();
   const apagada = useColor("muted-foreground");
   const muted = useColor("muted");
   const aceso = dias > 0;
@@ -582,7 +585,11 @@ function SequenciaCard() {
           fill={aceso ? "#FFB01F" : muted}
         />
         <View className="min-w-0">
-          <Text className="text-6xl font-extrabold leading-none">{dias}</Text>
+          {isPending ? (
+            <Skeleton className="h-[60px] w-16" />
+          ) : (
+            <Text className="text-6xl font-extrabold leading-none">{dias}</Text>
+          )}
           <Text className="text-lg font-semibold">
             {dias === 1 ? t("dia seguido") : t("dias seguidos")}
           </Text>

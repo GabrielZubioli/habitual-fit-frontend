@@ -79,8 +79,6 @@ export const formatWeekday = (v: string | Date) => formatDate(v, t("EEEE',' dd '
 /** `quarta, 29 de julho` — cabeçalho da tela inicial, sem o "-feira" que ocupa linha */
 export const formatLongDate = (v: string | Date) =>
   formatDate(v, t("EEEE',' d 'de' MMMM")).replace("-feira", "");
-/** `qua` — faixa compacta da semana */
-export const formatWeekdayShort = (v: string | Date) => formatDate(v, "EEEEEE");
 
 /** Duração em segundos → `1h 12min` / `45min` / `30s`. */
 export function formatDuration(seconds: number | null | undefined): string {

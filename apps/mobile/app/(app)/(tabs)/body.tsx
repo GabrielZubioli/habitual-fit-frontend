@@ -45,6 +45,7 @@ import { PageHeader, PageScroll } from "@/ui/page-header";
 import { Text } from "@/ui/text";
 import { LOCALE } from "@forja/app-core/i18n";
 import { t } from "@forja/app-core/i18n";
+import { Skeleton } from "@/ui/skeleton";
 
 /**
  * Progresso corporal — o `body.tsx` do web: o Resumo (a leitura: "estou indo
@@ -289,7 +290,7 @@ function WeightPanel({ avisar }: { avisar: (item: string, erro?: boolean) => voi
             ) : null}
           </View>
           {weights.isPending ? (
-            <View className="h-72 rounded-md bg-muted" />
+            <Skeleton className="h-72 rounded-md" />
           ) : chart.length === 0 ? (
             <View className="h-72 items-center justify-center">
               <Text className="text-sm text-muted-foreground">
@@ -411,7 +412,7 @@ function MeasurementsPanel({ avisar }: { avisar: (item: string, erro?: boolean) 
           {measurements.isPending ? (
             <View className="gap-3">
               {[0, 1].map((i) => (
-                <View key={i} className="h-28 w-full rounded-lg bg-muted" />
+                <Skeleton key={i} className="h-28 w-full rounded-lg" />
               ))}
             </View>
           ) : linhas.length === 0 ? (
@@ -453,7 +454,7 @@ function MeasurementsPanel({ avisar }: { avisar: (item: string, erro?: boolean) 
         {measurements.isPending ? (
           <View className="gap-2 p-4">
             {[0, 1, 2].map((i) => (
-              <View key={i} className="h-10 rounded-md bg-muted" />
+              <Skeleton key={i} className="h-10 rounded-md" />
             ))}
           </View>
         ) : linhas.length === 0 ? (
@@ -533,10 +534,10 @@ function ProgressOverview() {
       <View className="gap-4">
         <View className="flex-row flex-wrap gap-3">
           {[0, 1, 2, 3].map((i) => (
-            <View key={i} className="h-24 w-[48%] rounded-xl bg-muted" />
+            <Skeleton key={i} className="h-24 w-[48%] rounded-xl" />
           ))}
         </View>
-        <View className="h-32 rounded-xl bg-muted" />
+        <Skeleton className="h-32 rounded-xl" />
       </View>
     );
   }

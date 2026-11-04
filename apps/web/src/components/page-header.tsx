@@ -39,11 +39,11 @@ export function PageHeader({
   return (
     // Fixo no topo, em vidro fosco: o conteúdo passa por trás, desfocado, e o
     // título e as ações continuam à mão durante a rolagem.
-    <div className="sticky top-0 z-20 px-4 pb-3 pt-[max(1.5rem,env(safe-area-inset-top))] md:px-8 md:pt-8">
+    <div className="sticky top-0 z-20 px-4 pb-2 pt-[max(1rem,env(safe-area-inset-top))] md:px-8 md:pt-8">
       {/* O vidro passa um pouco da borda de baixo e some em degradê: o
           conteúdo entra embaixo do cabeçalho sem uma linha de corte. */}
       <div
-        className="pointer-events-none absolute inset-x-0 -bottom-8 top-0 -z-10 bg-background/55 backdrop-blur-xl backdrop-saturate-150 [mask-image:linear-gradient(to_bottom,#000_calc(100%-3rem),transparent)]"
+        className="pointer-events-none absolute inset-x-0 -bottom-4 top-0 -z-10 bg-background/55 backdrop-blur-xl backdrop-saturate-150 [mask-image:linear-gradient(to_bottom,#000_calc(100%-2rem),transparent)]"
         aria-hidden
       />
       {topo && (
@@ -79,7 +79,7 @@ export const headerIconClass =
 
 export function PageBody({ children, wide = false }: { children: ReactNode; wide?: boolean }) {
   return (
-    <div className="px-4 py-4 md:px-8 md:py-8">
+    <div className="px-4 pb-4 pt-2 md:px-8 md:py-8">
       <div className={cn("mx-auto w-full", LARGURA[wide ? "wide" : "default"])}>{children}</div>
     </div>
   );

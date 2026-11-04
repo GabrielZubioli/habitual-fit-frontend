@@ -31,23 +31,11 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
   const texto = useColor("foreground");
   const branco = useColor("primary-foreground");
   // No idioma do app; na falta dele, no mais próximo que houver, com selo.
-  const { passos, texto: textoCorrido, idioma } = exerciseSteps(exercise);
+  const { passos, idioma } = exerciseSteps(exercise);
   const selo = idiomaDiferente(idioma);
-  const mostrarTextoCorrido = passos.length === 0 && !!textoCorrido;
 
   return (
     <View className="gap-3">
-      {mostrarTextoCorrido ? (
-        <Bloco
-          titulo={t("Execução")}
-          icone={listOrdered}
-          cor={texto}
-          extra={selo ? <OutroIdioma texto={selo} /> : null}
-        >
-          <Text className="text-[15px] leading-relaxed">{textoCorrido}</Text>
-        </Bloco>
-      ) : null}
-
       {passos.length > 0 ? (
         <Bloco
           titulo={t("Passo a passo")}
@@ -59,7 +47,7 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
           <View className="gap-4">
             <View className="absolute bottom-3 left-[13px] top-3 w-px bg-border" />
             {passos.map((passo, i) => (
-              <View key={passo} className="flex-row gap-3.5">
+              <View key={i} className="flex-row gap-3.5">
                 <View className="h-7 w-7 items-center justify-center rounded-full bg-primary">
                   <Text className="text-xs font-extrabold" style={{ color: branco }}>
                     {i + 1}
@@ -106,7 +94,7 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
         />
       ) : null}
 
-      {passos.length === 0 && !mostrarTextoCorrido ? (
+      {passos.length === 0 ? (
         <View className="rounded-[20px] border border-dashed border-border p-4">
           <Text className="text-sm text-muted-foreground">
             {t(
@@ -119,7 +107,8 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
   );
 }
 
-function OutroIdioma({ texto }: { texto: string }) {
+/** Selo de conteúdo em outro idioma (passo a passo, receitas). */
+export function OutroIdioma({ texto }: { texto: string }) {
   const cor = useColor("warning");
   return (
     <View className="flex-row items-center gap-1 rounded-md bg-warning-soft px-2 py-0.5">

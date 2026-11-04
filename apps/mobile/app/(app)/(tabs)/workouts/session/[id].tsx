@@ -63,6 +63,7 @@ import { RestTimerBar } from "@/ui/rest-timer-bar";
 import { Text } from "@/ui/text";
 import { LOCALE } from "@forja/app-core/i18n";
 import { t } from "@forja/app-core/i18n";
+import { Skeleton } from "@/ui/skeleton";
 
 /**
  * A execução do treino, um exercício por vez — o `workouts_.session.$id.tsx`
@@ -1105,10 +1106,10 @@ function BoardSkeleton() {
   const insets = useSafeAreaInsets();
   return (
     <View className="flex-1 bg-background px-4" style={{ paddingTop: insets.top + 20 }}>
-      <View className="mb-4 h-14 w-full rounded-2xl bg-muted" />
-      <View className="mb-4 aspect-square w-full rounded-3xl bg-muted" />
-      <View className="mb-3 h-9 w-2/3 rounded-lg bg-muted" />
-      <View className="h-48 w-full rounded-3xl bg-muted" />
+      <Skeleton className="mb-4 h-14 w-full rounded-2xl" />
+      <Skeleton className="mb-4 aspect-square w-full rounded-3xl" />
+      <Skeleton className="mb-3 h-9 w-2/3 rounded-lg" />
+      <Skeleton className="h-48 w-full rounded-3xl" />
     </View>
   );
 }

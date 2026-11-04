@@ -1,5 +1,5 @@
 import { exerciseName } from "@forja/app-core/data/exercise-library";
-import { useMemo, useState, type ReactElement } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactElement } from "react";
 import { ActivityIndicator, FlatList, Image, Pressable, TextInput, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -43,10 +43,14 @@ import { CreateExerciseDialog } from "@/ui/create-exercise-dialog";
 import { MenuSheet } from "@/ui/dialog";
 import { FavoriteButton } from "@/ui/favorite-button";
 import { Icon } from "@/ui/icon";
-import { HeaderFrame, HeaderSpacer, PageHeader, PageScroll } from "@/ui/page-header";
+import { HeaderFrame, HeaderSpacer, PageHeader, PageScroll, useTopoAoSair } from "@/ui/page-header";
 import { Text } from "@/ui/text";
 import { LOCALE } from "@forja/app-core/i18n";
 import { t } from "@forja/app-core/i18n";
+import { Skeleton } from "@/ui/skeleton";
+
+/** Erro ao montar a tela: tela de erro com "Tentar novamente", nunca em branco. */
+export { RouteError as ErrorBoundary } from "@/ui/route-error";
 
 /**
  * Exercícios — o `exercises.tsx` do web: busca, as abas Músculos /
@@ -198,6 +202,14 @@ function Busca({ term, setTerm }: { term: string; setTerm: (item2: string) => vo
 function AbaMusculos({ porMusculo }: { porMusculo?: Map<string, number> }) {
   const [criando, setCriando] = useState(false);
   const primaria = useColor("primary");
+  // Os mapas são centenas de `Path` nativos: montados juntos com a tela, ela
+  // ficava vazia até todos ficarem prontos. Os cards saem no primeiro quadro,
+  // com o skeleton no lugar do desenho, e os mapas entram no quadro seguinte.
+  const [mapas, setMapas] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setMapas(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
   return (
     <>
       <View className="flex-row flex-wrap gap-2.5">
@@ -219,12 +231,16 @@ function AbaMusculos({ porMusculo }: { porMusculo?: Map<string, number> }) {
                   pointerEvents="none"
                   className="aspect-[4/3] w-full overflow-hidden rounded-xl bg-elevated"
                 >
-                  <BodyMap
-                    muscles={g.musculos.map((m) => ({ muscle: m, intensity: 1 }))}
-                    showLegend={false}
-                    showToggle={false}
-                    recorte={"recorte" in g ? g.recorte : undefined}
-                  />
+                  {mapas ? (
+                    <BodyMap
+                      muscles={g.musculos.map((m) => ({ muscle: m, intensity: 1 }))}
+                      showLegend={false}
+                      showToggle={false}
+                      recorte={"recorte" in g ? g.recorte : undefined}
+                    />
+                  ) : (
+                    <Skeleton className="h-full w-full" />
+                  )}
                 </View>
                 <Text className="mt-2 text-center font-bold leading-tight">{g.nome}</Text>
                 <Text className="text-xs text-muted-foreground">
@@ -513,6 +529,8 @@ function ListaExercicios({
   rotina: ActiveRoutine | null;
 }) {
   const apagada = useColor("muted-foreground");
+  const rolagem = useRef<FlatList<ExerciseRow>>(null);
+  useTopoAoSair(rolagem);
   const lista = useInfiniteQuery({
     queryKey: [
       ...queryKeys.exercises.all,
@@ -553,6 +571,7 @@ function ListaExercicios({
   return (
     <HeaderFrame header={topo}>
       <FlatList
+        ref={rolagem}
         className="flex-1 bg-background"
         data={vazio ? [] : exercicios}
         keyExtractor={(ex) => ex.id}
@@ -710,7 +729,7 @@ function CardsSkeleton({ count }: { count: number }) {
   return (
     <View className="gap-2.5">
       {Array.from({ length: count }, (_, i) => (
-        <View key={i} className="h-[88px] w-full rounded-[20px] bg-muted" />
+        <Skeleton key={i} className="h-[88px] w-full rounded-[20px]" />
       ))}
     </View>
   );

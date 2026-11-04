@@ -23,11 +23,17 @@ const FUNDO = "#020306";
 const VERDE = "#01D798";
 /** A logo da tela nativa ocupa ~90% dos 120 dp da imagem. */
 const LOGO = 108;
+/** A luz ambiente: bem maior que a logo, para a borda sumir longe dela. */
+const BRILHO = 420;
 
 /**
  * A abertura: assume a tela nativa com a logo no mesmo lugar, a logo recua,
- * um brilho verde pulsa atrás e o nome aparece; depois a logo cresce e a
- * camada some, revelando o app que já carregou por baixo.
+ * uma luz ambiente verde, bem fraca, se acende devagar atrás dela e o nome
+ * aparece; depois a logo cresce e a camada some, revelando o app que já
+ * carregou por baixo.
+ *
+ * A luz é só profundidade: larga, de opacidade baixa e quase sem crescer —
+ * nada de pulso ou clarão, a logo é a protagonista.
  */
 export function Abertura() {
   const [fim, setFim] = useState(false);
@@ -45,8 +51,8 @@ export function Abertura() {
       withDelay(380, withTiming(7, { duration: 520, easing: Easing.in(Easing.cubic) })),
     );
     brilho.value = withSequence(
-      withDelay(200, withTiming(1, { duration: 500, easing: suave })),
-      withDelay(300, withTiming(0, { duration: 300 })),
+      withDelay(150, withTiming(1, { duration: 700, easing: suave })),
+      withDelay(200, withTiming(0, { duration: 400, easing: Easing.inOut(Easing.quad) })),
     );
     nome.value = withSequence(
       withDelay(380, withTiming(1, { duration: 420, easing: suave })),
@@ -64,7 +70,7 @@ export function Abertura() {
   const estiloLogo = useAnimatedStyle(() => ({ transform: [{ scale: logo.value }] }));
   const estiloBrilho = useAnimatedStyle(() => ({
     opacity: brilho.value,
-    transform: [{ scale: 0.6 + brilho.value * 0.5 }],
+    transform: [{ scale: 0.92 + brilho.value * 0.08 }],
   }));
   const estiloNome = useAnimatedStyle(() => ({
     opacity: nome.value,
@@ -80,7 +86,7 @@ export function Abertura() {
       style={[StyleSheet.absoluteFill, styles.camada, estiloCamada]}
     >
       <Animated.View style={[styles.centro, estiloBrilho]}>
-        <Glow size={320} color={VERDE} opacity={0.35} />
+        <Glow size={BRILHO} color={VERDE} opacity={0.12} />
       </Animated.View>
       <Animated.View style={estiloLogo}>
         <BrandSymbol width={LOGO} />
@@ -100,8 +106,8 @@ const styles = StyleSheet.create({
   },
   centro: {
     position: "absolute",
-    width: 320,
-    height: 320,
+    width: BRILHO,
+    height: BRILHO,
     alignItems: "center",
     justifyContent: "center",
   },

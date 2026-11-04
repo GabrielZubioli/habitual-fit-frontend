@@ -48,39 +48,14 @@ export type ExerciseHowToData = {
 };
 
 export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
-  /*
-   * Ordem de preferência: `execution` (passo a passo em português) e, só na
-   * falta dele, o original em inglês — em passos (`execution_en`) ou corrido
-   * (`instructions`), sempre com o rótulo "em inglês".
-   */
   // No idioma do app; na falta dele, no mais próximo que houver, com selo.
-  const { passos, texto: textoCorrido, idioma } = exerciseSteps(exercise);
+  const { passos, idioma } = exerciseSteps(exercise);
   const selo = idiomaDiferente(idioma);
   const lang =
     idioma === "en" ? "en" : idioma === "es" ? "es" : idioma === "pt" ? "pt-BR" : undefined;
-  const mostrarTextoCorrido = passos.length === 0 && !!textoCorrido;
 
   return (
     <div className="space-y-3">
-      {mostrarTextoCorrido && (
-        <Bloco
-          titulo={t("Execução")}
-          icone={<ListOrdered className="size-4" aria-hidden />}
-          extra={
-            selo ? (
-              <Badge variant="warning" className="normal-case tracking-normal">
-                <Languages aria-hidden />
-                {selo}
-              </Badge>
-            ) : null
-          }
-        >
-          <p className="whitespace-pre-line text-[15px] leading-relaxed" lang={lang}>
-            {textoCorrido}
-          </p>
-        </Bloco>
-      )}
-
       {passos.length > 0 && (
         <Bloco
           titulo={t("Passo a passo")}
@@ -98,7 +73,7 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
           <ol className="relative space-y-4">
             <span className="absolute bottom-3 left-[13px] top-3 w-px bg-border" aria-hidden />
             {passos.map((passo, i) => (
-              <li key={passo} className="relative flex gap-3.5 text-[15px] leading-relaxed">
+              <li key={i} className="relative flex gap-3.5 text-[15px] leading-relaxed">
                 <span
                   className="grid size-7 shrink-0 place-items-center rounded-full bg-primary text-xs font-extrabold text-primary-foreground"
                   aria-hidden
@@ -150,7 +125,7 @@ export function ExerciseHowTo({ exercise }: { exercise: ExerciseHowToData }) {
         />
       )}
 
-      {passos.length === 0 && !mostrarTextoCorrido && (
+      {passos.length === 0 && (
         <p className="rounded-[1.25rem] border border-dashed border-border p-4 text-sm text-muted-foreground">
           {t(
             "Este exercício ainda não tem passo a passo cadastrado. A demonstração acima mostra o movimento completo.",

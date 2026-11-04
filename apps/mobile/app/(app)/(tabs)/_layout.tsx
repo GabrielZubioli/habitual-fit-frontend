@@ -1,6 +1,9 @@
 import { Tabs } from "expo-router/tabs";
 import { TabBar } from "@/ui/tab-bar";
 
+/** Último recurso para qualquer tela sem um `ErrorBoundary` próprio. */
+export { RouteError as ErrorBoundary } from "@/ui/route-error";
+
 /**
  * Todas as telas de quem tem conta ficam aqui, como no `_authenticated` do
  * web: a barra de baixo aparece em todas. Só quatro viram abas; as outras

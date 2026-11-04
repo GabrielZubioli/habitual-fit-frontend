@@ -27,7 +27,14 @@ import { t } from "@forja/app-core/i18n";
  * erro mais comum aqui — e o motivo de o banco guardar um registro por gole em
  * vez de um total por dia.
  */
-export function WaterCard({ date, targetMl }: { date: string; targetMl: number }) {
+export function WaterCard({
+  date,
+  targetMl,
+}: {
+  date: string;
+  /** `undefined` enquanto o perfil carrega: sem isso a meta padrão pisca antes da real. */
+  targetMl: number | undefined;
+}) {
   const qc = useQueryClient();
   const userId = useCurrentUserId();
 
@@ -74,7 +81,7 @@ export function WaterCard({ date, targetMl }: { date: string; targetMl: number }
             </span>
             <div>
               <p className="text-sm font-semibold leading-tight">{t("Água")}</p>
-              {water.isPending ? (
+              {water.isPending || targetMl === undefined ? (
                 <Skeleton className="mt-1 h-3 w-20" />
               ) : (
                 <p className="text-xs tabular-nums text-muted-foreground">

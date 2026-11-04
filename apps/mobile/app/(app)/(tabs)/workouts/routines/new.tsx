@@ -36,6 +36,7 @@ import { Icon } from "@/ui/icon";
 import { PageHeader, PageScroll } from "@/ui/page-header";
 import { Text } from "@/ui/text";
 import { t } from "@forja/app-core/i18n";
+import { Skeleton } from "@/ui/skeleton";
 
 /**
  * Assistente de criação do plano — o `workouts_.routines.new.tsx` do web.
@@ -400,7 +401,7 @@ function PlanPreview({
     return (
       <View className="gap-3">
         {[0, 1, 2].map((i) => (
-          <View key={i} className="h-40 w-full rounded-xl bg-muted" />
+          <Skeleton key={i} className="h-40 w-full rounded-xl" />
         ))}
       </View>
     );

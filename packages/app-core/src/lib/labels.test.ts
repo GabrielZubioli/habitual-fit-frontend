@@ -5,6 +5,7 @@ import {
   MEALS,
   MUSCLE_LABELS,
   SET_TYPE_LABELS,
+  WEEKDAY_SHORT,
   label,
 } from "./labels";
 
@@ -112,5 +113,11 @@ describe("MEALS", () => {
       expect(meal.label).toBeTruthy();
       expect(meal.label).not.toBe(meal.key);
     }
+  });
+});
+
+describe("WEEKDAY_SHORT", () => {
+  it("é a sigla de três letras, não o nome do dia", () => {
+    expect(Object.values(WEEKDAY_SHORT)).toEqual(["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"]);
   });
 });

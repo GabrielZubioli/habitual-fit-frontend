@@ -1,8 +1,17 @@
-import { createContext, useContext, useRef, useState, type ReactNode, type Ref } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from "react";
 import { Pressable, ScrollView, StyleSheet, View, type ScrollViewProps } from "react-native";
 import { BlurTargetView, BlurView } from "expo-blur";
+import MaskedView from "@react-native-masked-view/masked-view";
 import { Defs, LinearGradient, Rect, Stop, Svg } from "react-native-svg";
-import { router, type Href } from "expo-router";
+import { router, useFocusEffect, type Href } from "expo-router";
 import { __iconNode as arrowLeft } from "lucide-react/dist/esm/icons/arrow-left.js";
 import { useColor, useTheme } from "@/theme/theme";
 import { Icon } from "./icon";
@@ -29,7 +38,7 @@ export function PageHeader({
 }) {
   const insets = useSafeAreaInsets();
   return (
-    <View className="px-4 pb-3" style={{ paddingTop: Math.max(24, insets.top) }}>
+    <View className="px-4 pb-2" style={{ paddingTop: Math.max(16, insets.top + 4) }}>
       {topo ? <View className="mb-2 flex-row justify-end">{topo}</View> : null}
       <View className="flex-row items-start justify-between gap-3">
         <View className="min-w-0 flex-1">
@@ -46,8 +55,10 @@ export function PageHeader({
   );
 }
 
-/** Quanto o vidro passa da borda de baixo do cabeçalho, sumindo em degradê (o `-bottom-8` do web). */
-const ESMAECER = 32;
+/** Quanto o vidro passa da borda de baixo do cabeçalho (o `-bottom-4` do web). */
+const ESMAECER = 16;
+/** Altura do degradê em que o vidro some (o `calc(100%-2rem)` do web). */
+const DEGRADE = 32;
 
 const AlturaCabecalho = createContext(0);
 
@@ -60,26 +71,20 @@ const AlturaCabecalho = createContext(0);
  * vidro não pode estar dentro dele — por isso o cabeçalho sai da rolagem e
  * fica por cima dela. O conteúdo abre espaço com `HeaderSpacer`.
  */
-export function HeaderFrame({
-  header,
-  tint,
-  children,
-}: {
-  header: ReactNode;
-  /** Cor do fundo da tela, se não for a do tema (a Treinar é verde). */
-  tint?: string;
-  children: ReactNode;
-}) {
-  const fundo = useColor("background");
+export function HeaderFrame({ header, children }: { header: ReactNode; children: ReactNode }) {
+  const cor = useColor("background");
   const { scheme } = useTheme();
-  const cor = tint ?? fundo;
   const alvo = useRef<View | null>(null);
   const [altura, setAltura] = useState(0);
-  const fim = altura / (altura + ESMAECER);
+  const inicioFade = Math.max(0, (altura + ESMAECER - DEGRADE) / (altura + ESMAECER || 1));
   return (
     <AlturaCabecalho.Provider value={altura}>
       <View style={{ flex: 1, backgroundColor: cor }}>
         <BlurTargetView ref={alvo} style={{ flex: 1, backgroundColor: cor }}>
+          {/* O fundo como filho: o desfoque do Android não lê o fundo do
+              próprio alvo, e numa tela de rolagem transparente desfocava um
+              vazio que saía cinza. */}
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: cor }]} />
           {children}
         </BlurTargetView>
         <View
@@ -87,31 +92,38 @@ export function HeaderFrame({
           style={{ position: "absolute", top: 0, left: 0, right: 0 }}
           onLayout={(e) => setAltura(Math.round(e.nativeEvent.layout.height))}
         >
-          <View
+          {/* O `mask-image` do web: uma máscara só para desfoque e véu, que
+              ficam inteiros até 32 px antes do fim e somem num degradê
+              contínuo — sem faixas nem linha de corte. */}
+          <MaskedView
             pointerEvents="none"
-            style={[StyleSheet.absoluteFill, { bottom: -ESMAECER, overflow: "hidden" }]}
+            style={[StyleSheet.absoluteFill, { bottom: -ESMAECER }]}
+            maskElement={
+              <Svg style={StyleSheet.absoluteFill}>
+                <Defs>
+                  <LinearGradient id="vidro" x1="0" y1="0" x2="0" y2="1">
+                    <Stop offset="0" stopColor="#000" stopOpacity={1} />
+                    <Stop offset={inicioFade} stopColor="#000" stopOpacity={1} />
+                    <Stop offset="1" stopColor="#000" stopOpacity={0} />
+                  </LinearGradient>
+                </Defs>
+                <Rect width="100%" height="100%" fill="url(#vidro)" />
+              </Svg>
+            }
           >
+            {/* O tint do expo-blur no Android pinta uma cor por cima do
+                desfoque: o `dark` é um cinza (25,25,25); o
+                `systemChromeMaterialDark` é preto e some sob o véu. */}
             <BlurView
               blurTarget={alvo}
-              intensity={45}
-              tint={tint || scheme === "light" ? "light" : "dark"}
+              intensity={60}
+              tint={scheme === "light" ? "light" : "systemChromeMaterialDark"}
               blurMethod="dimezisBlurViewSdk31Plus"
-              style={[StyleSheet.absoluteFill, { bottom: ESMAECER / 2 }]}
+              style={StyleSheet.absoluteFill}
             />
-            {/* O `bg-background/55` por cima do vidro, engrossando até a borda e
-                sumindo depois dela — o `mask-image` do web. */}
-            <Svg style={StyleSheet.absoluteFill}>
-              <Defs>
-                <LinearGradient id="vidro" x1="0" y1="0" x2="0" y2="1">
-                  <Stop offset="0" stopColor={cor} stopOpacity={0.55} />
-                  <Stop offset={fim * 0.7} stopColor={cor} stopOpacity={0.6} />
-                  <Stop offset={fim} stopColor={cor} stopOpacity={0.85} />
-                  <Stop offset="1" stopColor={cor} stopOpacity={0} />
-                </LinearGradient>
-              </Defs>
-              <Rect width="100%" height="100%" fill="url(#vidro)" />
-            </Svg>
-          </View>
+            {/* O `bg-background/55` por cima do vidro. */}
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: cor, opacity: 0.55 }]} />
+          </MaskedView>
           {header}
         </View>
       </View>
@@ -119,22 +131,52 @@ export function HeaderFrame({
   );
 }
 
-/** O espaço do cabeçalho fixo no começo da rolagem. */
+/** Respiro entre o cabeçalho e o conteúdo (o `pt-2` do `PageBody` do web). */
+const RESPIRO = 8;
+
+/**
+ * O espaço do cabeçalho fixo no começo da rolagem, mais o respiro: sem ele o
+ * conteúdo começa onde o vidro ainda está quase opaco e fica por baixo dele.
+ */
 export function HeaderSpacer() {
-  return <View style={{ height: useContext(AlturaCabecalho) }} />;
+  return <View style={{ height: useContext(AlturaCabecalho) + RESPIRO }} />;
+}
+
+type Rolavel = {
+  scrollTo?: (o: { y: number; animated: boolean }) => void;
+  scrollToOffset?: (o: { offset: number; animated: boolean }) => void;
+};
+
+/**
+ * Toda entrada numa tela começa no topo. As telas das abas ficam montadas
+ * entre uma visita e outra e guardavam a rolagem; agora ela volta ao topo ao
+ * sair — sem animação e fora da vista, então a próxima entrada não pula depois
+ * de carregar. Atualizações com a tela aberta não mexem na rolagem.
+ */
+export function useTopoAoSair(ref: RefObject<Rolavel | null>) {
+  useFocusEffect(
+    useCallback(
+      () => () => {
+        const r = ref.current;
+        if (r?.scrollToOffset) r.scrollToOffset({ offset: 0, animated: false });
+        else r?.scrollTo?.({ y: 0, animated: false });
+      },
+      [ref],
+    ),
+  );
 }
 
 /** Um `ScrollView` com o cabeçalho fixo por cima — o par de quase toda tela. */
 export function PageScroll({
   header,
-  tint,
-  ref,
   children,
   ...props
-}: ScrollViewProps & { header: ReactNode; tint?: string; ref?: Ref<ScrollView> }) {
+}: ScrollViewProps & { header: ReactNode }) {
+  const rolagem = useRef<ScrollView>(null);
+  useTopoAoSair(rolagem);
   return (
-    <HeaderFrame header={header} tint={tint}>
-      <ScrollView ref={ref} {...props}>
+    <HeaderFrame header={header}>
+      <ScrollView ref={rolagem} {...props}>
         <HeaderSpacer />
         {children}
       </ScrollView>

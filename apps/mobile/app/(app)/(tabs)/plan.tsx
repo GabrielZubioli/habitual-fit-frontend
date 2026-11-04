@@ -53,6 +53,7 @@ import { RoutineExerciseRow, estimarDuracao } from "@/ui/routine-exercise-row";
 import { RoutineIconPicker } from "@/ui/routine-icon";
 import { Text } from "@/ui/text";
 import { t } from "@forja/app-core/i18n";
+import { Skeleton } from "@/ui/skeleton";
 
 /**
  * O Plano — o `plan.tsx` do web: a semana e as rotinas, em duas abas. Agenda
@@ -1028,10 +1029,10 @@ function PlanSkeleton() {
     <View className="flex-1 bg-background">
       <PageHeader title={t("Plano")} description={t("Sua rotina semanal")} />
       <View className="px-4 py-4">
-        <View className="mb-6 h-24 w-full rounded-3xl bg-muted" />
+        <Skeleton className="mb-6 h-24 w-full rounded-3xl" />
         <View className="gap-3">
           {Array.from({ length: 5 }, (_, i) => (
-            <View key={i} className="h-20 w-full rounded-[20px] bg-muted" />
+            <Skeleton key={i} className="h-20 w-full rounded-[20px]" />
           ))}
         </View>
       </View>

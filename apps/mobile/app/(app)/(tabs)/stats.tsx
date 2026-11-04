@@ -39,6 +39,7 @@ import { HeaderIconButton, PageHeader, PageScroll } from "@/ui/page-header";
 import { Text } from "@/ui/text";
 import { LOCALE } from "@forja/app-core/i18n";
 import { t } from "@forja/app-core/i18n";
+import { Skeleton } from "@/ui/skeleton";
 
 /**
  * Estatísticas — o `stats.tsx` do web: a semana contra a meta, os números, a
@@ -131,7 +132,7 @@ export default function StatsPage() {
               {t("Esta semana")}
             </Text>
             {recentes.isPending ? (
-              <View className="mt-2 h-12 w-24 rounded-md bg-muted" />
+              <Skeleton className="mt-2 h-12 w-24 rounded-md" />
             ) : (
               <View className="mt-1 flex-row items-baseline gap-1.5">
                 <Text className="text-6xl font-extrabold leading-none">{estaSemana}</Text>
@@ -173,7 +174,7 @@ export default function StatsPage() {
         ) : null}
         <View className="mt-4">
           {recentes.isPending ? (
-            <View className="h-40 w-full rounded-md bg-muted" />
+            <Skeleton className="h-40 w-full rounded-md" />
           ) : (
             <WeeklyChart data={semanas} goal={meta} height={160} />
           )}
@@ -239,7 +240,7 @@ function Numero({
   return (
     <View className={cn("flex-1 items-center px-2", borda && "border-l border-border")}>
       {valor === undefined ? (
-        <View className="h-8 w-12 rounded-md bg-muted" />
+        <Skeleton className="h-8 w-12 rounded-md" />
       ) : (
         <Text className={cn("text-3xl font-extrabold leading-none", solido && "text-primary")}>
           {valor}
@@ -313,7 +314,7 @@ function MusculosCard() {
             options={PERIODOS.map((p) => ({ value: p.value, label: p.label }))}
           />
           {series.isPending ? (
-            <View className="mt-4 h-64 w-full rounded-md bg-muted" />
+            <Skeleton className="mt-4 h-64 w-full rounded-md" />
           ) : series.isError ? (
             <ErrorState
               message={errorMessage(series.error)}
@@ -341,7 +342,7 @@ function MusculosCard() {
       {aba === "forca" ? (
         <View className="mt-4">
           {recordes.isPending ? (
-            <View className="h-40 w-full rounded-md bg-muted" />
+            <Skeleton className="h-40 w-full rounded-md" />
           ) : (recordes.data ?? []).length === 0 ? (
             <Text className="py-6 text-center text-muted-foreground">
               {t("Seus recordes aparecem aqui depois do primeiro treino com carga.")}
@@ -410,7 +411,7 @@ function RecoveryCard() {
     enabled: Boolean(userId),
   });
 
-  if (recovery.isPending) return <View className="h-48 w-full rounded-xl bg-muted" />;
+  if (recovery.isPending) return <Skeleton className="h-48 w-full rounded-xl" />;
   if (recovery.isError) {
     return (
       <ErrorState
@@ -488,7 +489,7 @@ function Historico() {
     <View>
       <Titulo>{t("Últimos treinos")}</Titulo>
       {historico.isPending ? (
-        <View className="h-32 w-full rounded-[20px] bg-muted" />
+        <Skeleton className="h-32 w-full rounded-[20px]" />
       ) : lista.length === 0 ? (
         <Text className="px-1 text-muted-foreground">{t("Nenhum treino concluído ainda.")}</Text>
       ) : (

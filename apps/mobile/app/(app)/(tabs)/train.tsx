@@ -1,5 +1,5 @@
-import { useCallback, useEffect, type ReactNode } from "react";
-import { ActivityIndicator, Pressable, View } from "react-native";
+import { useCallback, useEffect, useRef, type ReactNode } from "react";
+import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import { setStatusBarStyle } from "expo-status-bar";
 import { useTheme } from "@/theme/theme";
@@ -25,9 +25,9 @@ import { formatLongDate, todayISO } from "@forja/app-core/lib/date";
 import { useCurrentUserId } from "@/lib/session";
 import { ErrorState, NoRoutineCard } from "@/ui/card";
 import { Icon } from "@/ui/icon";
-import { PageScroll } from "@/ui/page-header";
 import { routineIconOf } from "@/ui/routine-icon";
 import { Text } from "@/ui/text";
+import { useTopoAoSair } from "@/ui/page-header";
 import { t } from "@forja/app-core/i18n";
 
 /**
@@ -282,25 +282,27 @@ function TelaVerde({ children }: { children: ReactNode }) {
       return () => setStatusBarStyle(scheme === "dark" ? "light" : "dark");
     }, [scheme]),
   );
+  const rolagem = useRef<ScrollView>(null);
+  useTopoAoSair(rolagem);
   const data = formatLongDate(todayISO()).toLowerCase();
   return (
-    <PageScroll
-      tint="#01D798"
+    // Sem cabeçalho fixo: como no web, o título faz parte da tela e rola junto.
+    <ScrollView
+      ref={rolagem}
       className="flex-1 bg-[#01D798]"
-      contentContainerClassName="px-4 pb-36 pt-3"
-      header={
-        <View className="px-4 pb-3" style={{ paddingTop: Math.max(24, insets.top + 8) }}>
-          <Text className="text-[44px] font-extrabold leading-[44px] tracking-tight text-[#020306]">
-            {t("Treinar")}
-          </Text>
-          <Text className="mt-2 text-lg font-medium text-[#020306]/65">
-            {data.charAt(0).toUpperCase() + data.slice(1)}
-          </Text>
-        </View>
-      }
+      contentContainerClassName="px-4 pb-36"
+      contentContainerStyle={{ paddingTop: Math.max(16, insets.top + 8) }}
     >
+      <View className="mb-5">
+        <Text className="text-[44px] font-extrabold leading-[44px] tracking-tight text-[#020306]">
+          {t("Treinar")}
+        </Text>
+        <Text className="mt-1.5 text-lg font-medium text-[#020306]/65">
+          {data.charAt(0).toUpperCase() + data.slice(1)}
+        </Text>
+      </View>
       {children}
-    </PageScroll>
+    </ScrollView>
   );
 }
 

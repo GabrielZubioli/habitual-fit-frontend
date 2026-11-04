@@ -47,6 +47,7 @@ import {
   WeekdayPicker,
 } from "@/ui/onboarding";
 import { t } from "@forja/app-core/i18n";
+import { Skeleton } from "@/ui/skeleton";
 
 /**
  * A raiz do app: boas-vindas e, para quem já tem conta, o questionário —
@@ -671,11 +672,11 @@ function QuizSkeleton() {
   const insets = useSafeAreaInsets();
   return (
     <View className="flex-1 gap-6 bg-background px-5" style={{ paddingTop: insets.top + 20 }}>
-      <View className="h-10 rounded-full bg-muted" />
-      <View className="h-9 w-3/4 rounded-lg bg-muted" />
+      <Skeleton className="h-10 rounded-full" />
+      <Skeleton className="h-9 w-3/4 rounded-lg" />
       <View className="gap-2.5">
         {[0, 1, 2, 3].map((i) => (
-          <View key={i} className="h-14 rounded-2xl bg-muted" />
+          <Skeleton key={i} className="h-14 rounded-2xl" />
         ))}
       </View>
     </View>

@@ -57,7 +57,8 @@ import { useColor } from "@/theme/theme";
 import { AvisoProfissional } from "@/ui/aviso-profissional";
 import { Button } from "@/ui/button";
 import { Card, ErrorState } from "@/ui/card";
-import { Dialog } from "@/ui/dialog";
+import { AlertDialog, Dialog } from "@/ui/dialog";
+import { reloadAppAsync } from "expo";
 import { Icon, type IconNode } from "@/ui/icon";
 import { PageHeader, PageScroll } from "@/ui/page-header";
 import { Text } from "@/ui/text";
@@ -73,6 +74,7 @@ import {
   t,
   type Language,
 } from "@forja/app-core/i18n";
+import { Skeleton } from "@/ui/skeleton";
 
 /**
  * Configurações — o `settings.tsx` do web. Cada seção é uma opção do Menu e
@@ -173,7 +175,7 @@ export default function SettingsPage() {
           ) : profile.isPending ? (
             <View className="gap-3">
               {[0, 1, 2, 3].map((i) => (
-                <View key={i} className="h-24 w-full rounded-[20px] bg-muted" />
+                <Skeleton key={i} className="h-24 w-full rounded-[20px]" />
               ))}
             </View>
           ) : (
@@ -648,13 +650,16 @@ function ManualNutritionTargets({
  * Idioma do app, numa caixa de seleção: o campo mostra a escolha e abre a
  * lista num painel de baixo (o RN não tem `<select>`). "Automático" segue o
  * país (ver `resolveLanguage`). A escolha vai para o SecureStore e vale ao
- * reabrir: o `index.js` a lê antes do i18n, que decide o idioma uma vez.
+ * reabrir: o `index.js` a lê antes do i18n, que decide o idioma uma vez (e
+ * `LOCALE`, `dateFnsLocale` são constantes de módulo) — por isso o app
+ * reinicia sozinho, depois de 5 s de aviso.
  */
 function LanguageCard({ avisar }: { avisar: (item: string, erro?: boolean) => void }) {
   const [escolha, setEscolha] = useState<string>(
     () => SecureStore.getItem(LANGUAGE_PREF_KEY) ?? "auto",
   );
   const [aberto, setAberto] = useState(false);
+  const [reinicio, setReinicio] = useState<number | null>(null);
   const texto = useColor("foreground");
   const primaria = useColor("primary");
   const opcoes = [
@@ -670,14 +675,34 @@ function LanguageCard({ avisar }: { avisar: (item: string, erro?: boolean) => vo
       if (v === "auto") void SecureStore.deleteItemAsync(LANGUAGE_PREF_KEY);
       else SecureStore.setItem(LANGUAGE_PREF_KEY, v);
       setEscolha(v);
-      avisar(t("Idioma salvo. Feche e abra o app para aplicar."));
+      setReinicio(5);
     } catch (e) {
       avisar(errorMessage(e), true);
     }
   };
 
+  useEffect(() => {
+    if (reinicio === null) return;
+    if (reinicio === 0) {
+      void reloadAppAsync();
+      return;
+    }
+    const id = setTimeout(() => setReinicio(reinicio - 1), 1000);
+    return () => clearTimeout(id);
+  }, [reinicio]);
+
   return (
     <Cartao titulo={t("Idioma")} icone={languages}>
+      <AlertDialog
+        open={reinicio !== null}
+        onClose={() => undefined}
+        title={t("O app vai reiniciar")}
+        description={t("Para aplicar o novo idioma, o app reinicia em {{n}} s.", {
+          n: reinicio ?? 0,
+        })}
+        acoes={[{ label: t("Reiniciar agora"), onPress: () => setReinicio(0), fecha: false }]}
+        cancelar={null}
+      />
       <Pressable
         onPress={() => setAberto(true)}
         accessibilityRole="combobox"

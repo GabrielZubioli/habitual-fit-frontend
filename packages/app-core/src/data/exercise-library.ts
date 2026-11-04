@@ -159,29 +159,52 @@ export function exerciseName(ex: {
  * es → espanhol, português, inglês; en → inglês (passos, ou o texto corrido
  * original), português; pt → português, inglês. `idioma` diz de onde veio,
  * para a tela avisar quando não é o do app.
+ *
+ * Sempre em passos, qualquer que seja a fonte: a tela tem um formato só.
  */
 export function exerciseSteps(ex: {
   execution?: string[] | null;
   execution_en?: string[] | null;
   execution_es?: string[] | null;
   instructions?: string | null;
-}): { passos: string[]; texto: string | null; idioma: Idioma | null } {
+}): { passos: string[]; idioma: Idioma | null } {
+  // O inglês da base de origem muitas vezes só existe como texto corrido
+  // (`instructions`, os passos originais colados num parágrafo).
+  const en = limpos(ex.execution_en);
   const fontes: Record<Idioma, string[]> = {
-    pt: ex.execution ?? [],
-    en: ex.execution_en ?? [],
-    es: ex.execution_es ?? [],
+    pt: limpos(ex.execution),
+    en: en.length ? en : passosDoTexto(ex.instructions),
+    es: limpos(ex.execution_es),
   };
   const ordem: Idioma[] =
     language === "es" ? ["es", "pt", "en"] : language === "en" ? ["en", "pt"] : ["pt", "en"];
   for (const idioma of ordem) {
-    if (fontes[idioma].length) return { passos: fontes[idioma], texto: null, idioma };
-    // O inglês da base de origem às vezes só existe como texto corrido.
-    if (idioma === "en" && ex.instructions?.trim()) {
-      return { passos: [], texto: ex.instructions.trim(), idioma: "en" };
-    }
+    if (fontes[idioma].length) return { passos: fontes[idioma], idioma };
   }
-  if (ex.instructions?.trim()) return { passos: [], texto: ex.instructions.trim(), idioma: "en" };
-  return { passos: [], texto: null, idioma: null };
+  return { passos: [], idioma: null };
+}
+
+/**
+ * Um passo por item: quebra o que veio com linhas dentro e tira os vazios. A
+ * coluna vem do SQLite como JSON: o que não for lista de textos é descartado,
+ * em vez de derrubar a tela.
+ */
+function limpos(passos: unknown): string[] {
+  if (!Array.isArray(passos)) return [];
+  return passos
+    .filter((p): p is string => typeof p === "string")
+    .flatMap((p) => p.split(/\n+/))
+    .map((p) => p.trim())
+    .filter(Boolean);
+}
+
+/**
+ * Texto corrido → um passo por frase. Só corta em ". " seguido de maiúscula ou
+ * parêntese, então "2.5 kg" e "(Note: ...)." ficam inteiros.
+ */
+function passosDoTexto(texto: string | null | undefined): string[] {
+  if (typeof texto !== "string" || !texto.trim()) return [];
+  return limpos([texto.replace(/([.!?][)"']?)\s+(?=[A-Z(¿¡])/g, "$1\n")]);
 }
 
 /** Selo de "texto em outro idioma", quando o passo a passo não é o do app. */

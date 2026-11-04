@@ -1,7 +1,18 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { BookOpen, Clock, Copy, Loader2, Pencil, Plus, Search, Trash2, Zap } from "lucide-react";
+import {
+  BookOpen,
+  Clock,
+  Copy,
+  Languages,
+  Loader2,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
+  Zap,
+} from "lucide-react";
 import { toast } from "sonner";
 import { queryKeys } from "@forja/app-core/data/query-keys";
 import { errorMessage } from "@forja/app-core/data/supabase-helpers";
@@ -12,6 +23,7 @@ import {
   deleteRecipe,
   fetchRecipes,
   recipeCategoryOf,
+  recipeLanguageBadge,
   type RecipeSummary,
 } from "@forja/app-core/data/recipes";
 import { useCurrentUserId } from "@/hooks/use-current-user";
@@ -31,7 +43,8 @@ import { ConfirmButton } from "@/components/confirm-button";
 import { ErrorState } from "@/components/query-boundary";
 import { cn } from "@/lib/utils";
 import { LOCALE } from "@forja/app-core/i18n";
-import { t } from "@forja/app-core/i18n";
+import { t, tRich } from "@forja/app-core/i18n";
+import { Badge } from "@/components/ui/badge";
 
 /**
  * Receitas: as prontas do app, por categoria, e as da pessoa.
@@ -134,7 +147,7 @@ function RecipesPage() {
             className="rounded-full"
           >
             <Plus className="mr-1 size-4" />
-            Nova
+            {t("Nova")}
           </Button>
         }
       />
@@ -306,14 +319,21 @@ function RecipesPage() {
                   {aberta.imageUrl ? "" : `${recipeCategoryOf(aberta.category)?.emoji ?? ""} `}
                   {aberta.name}
                 </DialogTitle>
-                <DialogDescription className="flex items-center gap-1">
-                  Rende {aberta.servings} {aberta.servings === 1 ? t("porção") : t("porções")}
+                <DialogDescription className="flex flex-wrap items-center gap-1">
+                  {t("Rende {{servings}}", { servings: aberta.servings })}{" "}
+                  {aberta.servings === 1 ? t("porção") : t("porções")}
                   {aberta.prepMinutes && (
                     <>
                       {" "}
                       · <Clock className="size-3.5" aria-hidden />{" "}
                       {t("{{prepMinutes}} min", { prepMinutes: aberta.prepMinutes })}
                     </>
+                  )}
+                  {recipeLanguageBadge(aberta) && (
+                    <Badge variant="warning" className="ml-1 normal-case tracking-normal">
+                      <Languages aria-hidden />
+                      {recipeLanguageBadge(aberta)}
+                    </Badge>
                   )}
                 </DialogDescription>
               </DialogHeader>
@@ -352,7 +372,7 @@ function RecipesPage() {
                 </div>
                 <div>
                   <p className="mb-2 flex items-baseline justify-between text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">
-                    Ingredientes
+                    {t("Ingredientes")}
                     <span className="font-normal normal-case tracking-normal">
                       {t("receita inteira")}
                     </span>
@@ -379,8 +399,17 @@ function RecipesPage() {
                     <p className="text-sm leading-relaxed">{aberta.instructions}</p>
                   </div>
                 )}
+                {recipeLanguageBadge(aberta) && (
+                  <p className="text-xs text-muted-foreground">
+                    {t(
+                      "Esta receita ainda não tem versão neste idioma e aparece no original, em português. Ingredientes, quantidades e macros não mudam.",
+                    )}
+                  </p>
+                )}
                 <p className="text-sm text-muted-foreground">
-                  Para comer, use <b>{t("Dieta → Adicionar → Receitas")}</b> na refeição.
+                  {tRich("Para comer, use <0>Dieta → Adicionar → Receitas</0> na refeição.", [
+                    (s) => <b>{s}</b>,
+                  ])}
                 </p>
                 <Button
                   variant="outline"
@@ -393,7 +422,7 @@ function RecipesPage() {
                   ) : (
                     <Copy className="mr-2 size-4" />
                   )}
-                  Copiar para minhas receitas
+                  {t("Copiar para minhas receitas")}
                 </Button>
               </div>
             </div>

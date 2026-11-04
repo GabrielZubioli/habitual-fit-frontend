@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Image, Pressable, TextInput, View } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { addDays, startOfWeek } from "date-fns";
@@ -39,7 +39,6 @@ import { CATEGORY_EMOJI } from "@forja/app-core/lib/food-emoji";
 import { cn } from "@/lib/cn";
 import { useCurrentUserId } from "@/lib/session";
 import { useColor } from "@/theme/theme";
-import { AvisoProfissional } from "@/ui/aviso-profissional";
 import { Button } from "@/ui/button";
 import { Card, ErrorState } from "@/ui/card";
 import { DatePicker } from "@/ui/date-picker";
@@ -52,6 +51,13 @@ import { Text } from "@/ui/text";
 import { WeeklyMenu } from "@/ui/weekly-menu";
 import { LOCALE } from "@forja/app-core/i18n";
 import { t } from "@forja/app-core/i18n";
+import { Skeleton } from "@/ui/skeleton";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withTiming,
+} from "react-native-reanimated";
 
 /**
  * A dieta — o `diet.tsx` do web: o Diário (o plano executável do dia: marcar o
@@ -178,33 +184,14 @@ export default function DietPage() {
       keyboardShouldPersistTaps="handled"
     >
       <View className="px-4">
-        <View accessibilityRole="tablist" className="mb-6 flex-row rounded-full bg-card p-1">
-          {(
-            [
-              ["diario", t("Diário")],
-              ["cardapio", t("Cardápio da semana")],
-            ] as const
-          ).map(([v, rotulo]) => (
-            <Pressable
-              key={v}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: aba === v }}
-              onPress={() => setAba(v)}
-              className={cn("flex-1 items-center rounded-full py-2.5", aba === v && "bg-primary")}
-            >
-              <Text
-                className={cn(
-                  "text-[15px]",
-                  aba === v
-                    ? "font-bold text-primary-foreground"
-                    : "font-medium text-muted-foreground",
-                )}
-              >
-                {rotulo}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
+        <Segmentado
+          valor={aba}
+          onChange={setAba}
+          opcoes={[
+            ["diario", t("Diário")],
+            ["cardapio", t("Cardápio da semana")],
+          ]}
+        />
 
         {erro ? (
           <Pressable
@@ -223,10 +210,10 @@ export default function DietPage() {
             <View className="mb-6">
               {entries.isPending || profile.isPending ? (
                 <>
-                  <View className="h-[230px] w-[230px] self-center rounded-full bg-muted" />
+                  <Skeleton className="h-[230px] w-[230px] self-center rounded-full" />
                   <View className="mt-6 flex-row gap-2">
                     {[0, 1, 2, 3].map((i) => (
-                      <View key={i} className="h-24 flex-1 rounded-xl bg-muted" />
+                      <Skeleton key={i} className="h-24 flex-1 rounded-xl" />
                     ))}
                   </View>
                 </>
@@ -290,19 +277,13 @@ export default function DietPage() {
             </View>
 
             {rows.length === 0 && !entries.isPending && !entries.isError ? (
-              <View className="mb-4 rounded-[20px] border border-dashed border-primary/40 bg-primary/5 p-5">
-                <Text className="text-lg font-bold">{t("Monte suas refeições")}</Text>
-                <Text className="mt-1 text-sm text-muted-foreground">
-                  Suas refeições estão vazias. Os alimentos de cada refeição são montados no{" "}
-                  <Text className="text-sm font-bold">{t("Cardápio da semana")}</Text> e aparecem
-                  aqui, no dia, para você marcar o que comeu. Monte por conta própria ou siga a
-                  orientação do seu nutricionista.
+              <View className="mb-4 flex-row items-center gap-3 rounded-2xl border border-dashed border-primary/40 bg-primary/5 py-2.5 pl-4 pr-2.5">
+                <Text className="flex-1 text-sm text-muted-foreground">
+                  {t("Suas refeições estão vazias.")}
                 </Text>
-                <View className="mt-4 flex-row">
-                  <Button className="h-11 rounded-xl" onPress={() => setAba("cardapio")}>
-                    {t("Abrir o Cardápio da semana")}
-                  </Button>
-                </View>
+                <Button size="sm" className="rounded-xl" onPress={() => setAba("cardapio")}>
+                  {t("Montar cardápio")}
+                </Button>
               </View>
             ) : null}
 
@@ -343,8 +324,6 @@ export default function DietPage() {
                 <Text className="text-sm font-medium">{t("Copiar o dia anterior")}</Text>
               </Button>
             ) : null}
-
-            <AvisoProfissional tipos={["dieta"]} className="mt-6" />
           </>
         )}
       </View>
@@ -484,8 +463,8 @@ function MealCard({
 
         {fechada ? null : isPending ? (
           <View className="gap-2 py-1">
-            <View className="h-10 w-full rounded-md bg-muted" />
-            <View className="h-10 w-full rounded-md bg-muted" />
+            <Skeleton className="h-10 w-full rounded-md" />
+            <Skeleton className="h-10 w-full rounded-md" />
           </View>
         ) : items.length === 0 ? (
           <Text className="py-3 text-center text-sm text-muted-foreground">
@@ -836,6 +815,83 @@ function SemanaDias({
           </Pressable>
         );
       })}
+    </View>
+  );
+}
+
+/**
+ * Diário / Cardápio da semana: a pílula verde desliza até a aba escolhida (o
+ * `transition-colors` do web, com movimento).
+ *
+ * Quem posiciona a pílula é o React (`left`, pela aba de `valor`); a animação
+ * só desliza da aba anterior até ali. Com a posição só no `translateX`
+ * animado, um re-render da tela (adicionar alimento) reaplicava o estilo
+ * inicial e a pílula voltava para o Diário com o Cardápio aberto.
+ */
+function Segmentado<T extends string>({
+  valor,
+  opcoes,
+  onChange,
+}: {
+  valor: T;
+  opcoes: readonly (readonly [T, string])[];
+  onChange: (v: T) => void;
+}) {
+  const verde = useColor("primary");
+  const [largura, setLargura] = useState(0);
+  const parte = (largura - 8) / opcoes.length;
+  const indice = Math.max(
+    0,
+    opcoes.findIndex(([v]) => v === valor),
+  );
+  /** Distância até a posição de repouso; 0 parado. */
+  const desvio = useSharedValue(0);
+  const pilula = useAnimatedStyle(() => ({ transform: [{ translateX: desvio.value }] }));
+  // Depois do commit que já moveu o `left`: parte da aba anterior e desliza.
+  const anterior = useRef(indice);
+  useLayoutEffect(() => {
+    if (anterior.current === indice) return;
+    desvio.value = withSequence(
+      withTiming((anterior.current - indice) * parte, { duration: 0 }),
+      withTiming(0, { duration: 220 }),
+    );
+    anterior.current = indice;
+  }, [indice, parte, desvio]);
+  return (
+    <View
+      accessibilityRole="tablist"
+      className="mb-6 flex-row rounded-full bg-card p-1"
+      onLayout={(e) => setLargura(e.nativeEvent.layout.width)}
+    >
+      {largura > 0 ? (
+        <Animated.View
+          style={[
+            { position: "absolute", top: 4, bottom: 4, left: 4 + indice * parte, width: parte },
+            { borderRadius: 999, backgroundColor: verde },
+            pilula,
+          ]}
+        />
+      ) : null}
+      {opcoes.map(([v, rotulo]) => (
+        <Pressable
+          key={v}
+          accessibilityRole="tab"
+          accessibilityState={{ selected: valor === v }}
+          onPress={() => onChange(v)}
+          className="flex-1 items-center rounded-full py-2.5"
+        >
+          <Text
+            className={cn(
+              "text-[15px]",
+              valor === v
+                ? "font-bold text-primary-foreground"
+                : "font-medium text-muted-foreground",
+            )}
+          >
+            {rotulo}
+          </Text>
+        </Pressable>
+      ))}
     </View>
   );
 }

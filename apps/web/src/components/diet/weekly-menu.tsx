@@ -242,11 +242,6 @@ export function WeeklyMenu() {
             ))}
           </ul>
         )}
-        <p className="mt-3 text-[11px] text-muted-foreground">
-          {t(
-            "O app não prescreve dietas: monte o cardápio por conta própria ou com a orientação de um nutricionista.",
-          )}
-        </p>
       </section>
 
       {/* Refeições do dia. */}

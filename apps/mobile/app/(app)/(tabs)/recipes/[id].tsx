@@ -37,6 +37,7 @@ import { MACRO_COLORS, MacroTiles } from "@/ui/macro-rings";
 import { PageScroll } from "@/ui/page-header";
 import { Text } from "@/ui/text";
 import { t } from "@forja/app-core/i18n";
+import { Skeleton } from "@/ui/skeleton";
 
 /**
  * Editor de receita — o `recipes_.$id.tsx` do web: nome, porções, notas,
@@ -257,7 +258,7 @@ function RecipeEditor({ id }: { id: string }) {
                 {items.isPending ? (
                   <View className="gap-3 py-2">
                     {[0, 1, 2].map((i) => (
-                      <View key={i} className="h-9 rounded-md bg-muted" />
+                      <Skeleton key={i} className="h-9 rounded-md" />
                     ))}
                   </View>
                 ) : items.isError ? (
