@@ -9,11 +9,20 @@
  * ponytail: acento em maiúscula no meio do nome ("SUCO DE AÇAÍ") escapa; um
  * nome normalizado gravado no catálogo resolve, se aparecer.
  */
-export function localSearch(term: string, column = "name"): { where: string; params: string[] } {
+export function localSearch(
+  term: string,
+  column: string | readonly string[] = "name",
+): { where: string; params: string[] } {
   const words = searchWords(term);
+  const colunas = typeof column === "string" ? [column] : column;
   return {
-    where: words.map(() => `(${column} LIKE ? OR ${column} LIKE ?)`).join(" AND ") || "1",
-    params: words.flatMap((w) => [`%${w}%`, `%${w.charAt(0).toUpperCase()}${w.slice(1)}%`]),
+    where:
+      words
+        .map(() => `(${colunas.map((c) => `${c} LIKE ? OR ${c} LIKE ?`).join(" OR ")})`)
+        .join(" AND ") || "1",
+    params: words.flatMap((w) =>
+      colunas.flatMap(() => [`%${w}%`, `%${w.charAt(0).toUpperCase()}${w.slice(1)}%`]),
+    ),
   };
 }
 

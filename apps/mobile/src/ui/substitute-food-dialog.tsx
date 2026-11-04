@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { useQuery } from "@tanstack/react-query";
-import { fetchCuratedFoods, fetchDietaryRestrictions } from "@forja/app-core/data/meal-plans";
+import {
+  curatedFoodName,
+  fetchCuratedFoods,
+  fetchDietaryRestrictions,
+} from "@forja/app-core/data/meal-plans";
 import { queryKeys } from "@forja/app-core/data/query-keys";
 import {
   describeSubstitution,
@@ -88,7 +92,7 @@ export function SubstituteFoodDialog({
           {opcoes.map((sub) => (
             <ResultRow
               key={sub.food.id}
-              title={sub.food.name}
+              title={curatedFoodName(sub.food)}
               detail={describeSubstitution(sub)}
               highlight={sub.distance < 0.25}
               disabled={applying !== null}

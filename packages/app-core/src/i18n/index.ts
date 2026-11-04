@@ -121,6 +121,21 @@ function detect(): Language {
 
 export const language: Language = detect();
 
+/**
+ * Texto do banco no idioma do app: en → `en`, es → `es`, caindo no português
+ * quando a tradução falta (coluna nula ou vazia).
+ */
+export function porIdioma(pt: string, en?: string | null, es?: string | null): string {
+  if (language === "en") return en || pt;
+  if (language === "es") return es || pt;
+  return pt;
+}
+
+/** A coluna traduzida do idioma do app (`name` → `name_en`), ou null em pt. */
+export function colunaDoIdioma(coluna: string): string | null {
+  return language === "pt-BR" ? null : `${coluna}_${language}`;
+}
+
 /** Nome de cada idioma nele mesmo, para o seletor. */
 export const LANGUAGE_NAMES: Record<Language, string> = {
   "pt-BR": "Português",

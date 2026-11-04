@@ -1,7 +1,11 @@
 import { useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { fetchCuratedFoods, fetchDietaryRestrictions } from "@forja/app-core/data/meal-plans";
+import {
+  curatedFoodName,
+  fetchCuratedFoods,
+  fetchDietaryRestrictions,
+} from "@forja/app-core/data/meal-plans";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import {
   ResultList,
@@ -93,13 +97,10 @@ export function SubstituteFoodDialog({
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <SearchDialogContent
         title={t("Substituir alimento")}
-        description={
-          <>
-            Trocando <b className="font-semibold text-foreground">{food.name}</b> (
-            {Math.round(grams)} g). As quantidades já vêm ajustadas para manter o valor nutricional
-            da refeição.
-          </>
-        }
+        description={t(
+          "Trocando {{name}} ({{v1}} g). As quantidades já vêm ajustadas para manter o valor nutricional da refeição.",
+          { name: food.name, v1: Math.round(grams) },
+        )}
       >
         {pool.isPending ? (
           <ResultsLoading />
@@ -112,7 +113,7 @@ export function SubstituteFoodDialog({
             {opcoes.map((sub) => (
               <li key={sub.food.id}>
                 <ResultRow
-                  title={sub.food.name}
+                  title={curatedFoodName(sub.food)}
                   detail={describeSubstitution(sub)}
                   highlight={sub.distance < 0.25}
                   disabled={applying !== null}

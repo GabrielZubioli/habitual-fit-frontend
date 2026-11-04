@@ -13,6 +13,7 @@
  *    consultados com debounce só quando há termo digitado.
  */
 import { exerciseName } from "@forja/app-core/data/exercise-library";
+import { foodName } from "@forja/app-core/data/foods";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -46,7 +47,7 @@ import {
 import { MUSCLE_LABELS, label } from "@forja/app-core/lib/labels";
 import { formatShortDate } from "@forja/app-core/lib/date";
 import { toast } from "sonner";
-import { t } from "@forja/app-core/i18n";
+import { colunaDoIdioma, porIdioma, t } from "@forja/app-core/i18n";
 
 const NAV_ITEMS = [
   { to: "/dashboard", label: t("Início"), icon: LayoutDashboard },
@@ -111,28 +112,35 @@ export function CommandPalette() {
     staleTime: 30_000,
     queryFn: async () => {
       const like = `%${debouncedTerm}%`;
+      // Fora do pt, procura também no nome traduzido ("chicken" acha "Frango").
+      // Vírgula e parênteses quebrariam o filtro `or` do PostgREST.
+      const termo = `%${debouncedTerm.replace(/[,()]/g, " ")}%`;
+      const traduzida = colunaDoIdioma("name");
+      const nome = traduzida
+        ? `name.ilike.${termo},${traduzida}.ilike.${termo}`
+        : `name.ilike.${termo}`;
       const [exercises, foods, recipes, sessions] = await Promise.all([
         supabase
           .from("exercises")
-          .select("id, name, primary_muscle")
+          .select("id, name, name_en, name_es, primary_muscle")
           .is("deleted_at", null)
-          .ilike("name", like)
+          .or(nome)
           .order("name")
           .limit(5)
           .then((r) => unwrapList("buscar exercícios", r)),
         supabase
           .from("foods")
-          .select("id, name, brand")
+          .select("id, name, name_en, name_es, brand")
           .is("deleted_at", null)
-          .ilike("name", like)
+          .or(nome)
           .order("name")
           .limit(5)
           .then((r) => unwrapList("buscar alimentos", r)),
         supabase
           .from("recipes")
-          .select("id, name")
+          .select("id, name, name_en, name_es")
           .is("deleted_at", null)
-          .ilike("name", like)
+          .or(nome)
           .order("name")
           .limit(5)
           .then((r) => unwrapList("buscar receitas", r)),
@@ -225,7 +233,7 @@ export function CommandPalette() {
               {data.exercises.map((ex) => (
                 <CommandItem
                   key={ex.id}
-                  value={`exercicio-${ex.id}-${ex.name}`}
+                  value={`exercicio-${ex.id}-${exerciseName(ex)}`}
                   onSelect={() =>
                     run(() => navigate({ to: "/exercises/$id", params: { id: ex.id } }))
                   }
@@ -246,11 +254,11 @@ export function CommandPalette() {
               {data.foods.map((food) => (
                 <CommandItem
                   key={food.id}
-                  value={`alimento-${food.id}-${food.name}`}
+                  value={`alimento-${food.id}-${foodName(food)}`}
                   onSelect={() => run(() => navigate({ to: "/diet" }))}
                 >
                   <Utensils className="mr-2 size-4" />
-                  {food.name}
+                  {foodName(food)}
                   {food.brand && <CommandShortcut>{food.brand}</CommandShortcut>}
                 </CommandItem>
               ))}
@@ -265,13 +273,13 @@ export function CommandPalette() {
               {data.recipes.map((recipe) => (
                 <CommandItem
                   key={recipe.id}
-                  value={`receita-${recipe.id}-${recipe.name}`}
+                  value={`receita-${recipe.id}-${porIdioma(recipe.name, recipe.name_en, recipe.name_es)}`}
                   onSelect={() =>
                     run(() => navigate({ to: "/recipes/$id", params: { id: recipe.id } }))
                   }
                 >
                   <BookOpen className="mr-2 size-4" />
-                  {recipe.name}
+                  {porIdioma(recipe.name, recipe.name_en, recipe.name_es)}
                 </CommandItem>
               ))}
             </CommandGroup>

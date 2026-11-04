@@ -6,6 +6,7 @@ import { addDays } from "date-fns";
 import { weekdayOf, type FoodCandidate, type MealSlot } from "@forja/domain";
 import { fromISODate, toISODate } from "../lib/date";
 import { t } from "../i18n";
+import { foodMeasure, foodName } from "./foods";
 
 /**
  * O dia do diário.
@@ -264,6 +265,8 @@ export async function fetchDayEntries(date: string): Promise<DayEntry[]> {
           plan_item_id: string | null;
           source: string;
           name: string | null;
+          name_en: string | null;
+          name_es: string | null;
           serving_size_g: number | null;
           kcal: number | null;
           protein_g: number | null;
@@ -273,11 +276,14 @@ export async function fetchDayEntries(date: string): Promise<DayEntry[]> {
           image_url: string | null;
           category: string | null;
           household_measure: string | null;
+          household_measure_en: string | null;
+          household_measure_es: string | null;
           household_grams: number | null;
         }>(
           `SELECT l.id, l.meal_slot, l.food_id, l.grams, l.servings, l.consumed, l.plan_item_id, l.source,
-                  f.name, f.serving_size_g, f.kcal, f.protein_g, f.carbs_g, f.fat_g, f.fiber_g,
-                  f.image_url, f.category, f.household_measure, f.household_grams
+                  f.name, f.name_en, f.name_es, f.serving_size_g, f.kcal, f.protein_g, f.carbs_g,
+                  f.fat_g, f.fiber_g, f.image_url, f.category, f.household_measure,
+                  f.household_measure_en, f.household_measure_es, f.household_grams
              FROM food_log_entries l LEFT JOIN foods f ON f.id = l.food_id
             WHERE l.log_date = ? ORDER BY l.created_at`,
           [date],
@@ -285,6 +291,8 @@ export async function fetchDayEntries(date: string): Promise<DayEntry[]> {
       ).map(
         ({
           name,
+          name_en,
+          name_es,
           serving_size_g,
           kcal,
           protein_g,
@@ -294,6 +302,8 @@ export async function fetchDayEntries(date: string): Promise<DayEntry[]> {
           image_url,
           category,
           household_measure,
+          household_measure_en,
+          household_measure_es,
           household_grams,
           ...r
         }) => ({
@@ -304,6 +314,8 @@ export async function fetchDayEntries(date: string): Promise<DayEntry[]> {
               ? null
               : {
                   name,
+                  name_en,
+                  name_es,
                   serving_size_g,
                   kcal,
                   protein_g,
@@ -313,6 +325,8 @@ export async function fetchDayEntries(date: string): Promise<DayEntry[]> {
                   image_url,
                   category,
                   household_measure,
+                  household_measure_en,
+                  household_measure_es,
                   household_grams,
                 },
         }),
@@ -325,7 +339,7 @@ export async function fetchDayEntries(date: string): Promise<DayEntry[]> {
           // partir do texto do `select`, e uma concatenação com `+` produz `string`
           // genérica — todo o resultado colapsa para `GenericStringError`.
           .select(
-            "id, meal_slot, food_id, grams, servings, consumed, plan_item_id, source, foods(name, serving_size_g, kcal, protein_g, carbs_g, fat_g, fiber_g, image_url, category, household_measure, household_grams)",
+            "id, meal_slot, food_id, grams, servings, consumed, plan_item_id, source, foods(name, name_en, name_es, serving_size_g, kcal, protein_g, carbs_g, fat_g, fiber_g, image_url, category, household_measure, household_measure_en, household_measure_es, household_grams)",
           )
           .eq("log_date", date)
           .order("created_at"),
@@ -335,7 +349,7 @@ export async function fetchDayEntries(date: string): Promise<DayEntry[]> {
     id: r.id,
     slot: r.meal_slot as MealSlot,
     foodId: r.food_id,
-    name: r.foods?.name ?? t("Alimento removido"),
+    name: r.foods ? foodName(r.foods) : t("Alimento removido"),
     // `grams` é nulo quando o registro veio por porções; converter aqui evita
     // espalhar a regra `grams ?? servings * serving_size` por toda a UI.
     grams: r.grams !== null ? num(r.grams) : num(r.servings, 1) * num(r.foods?.serving_size_g, 100),
@@ -351,7 +365,7 @@ export async function fetchDayEntries(date: string): Promise<DayEntry[]> {
       fiberG: num(r.foods?.fiber_g),
       imageUrl: r.foods?.image_url ?? null,
       category: r.foods?.category ?? null,
-      measure: r.foods?.household_measure ?? null,
+      measure: r.foods ? foodMeasure(r.foods) : null,
       measureG:
         r.foods?.household_grams !== undefined ? num(r.foods.household_grams, 0) || null : null,
     },

@@ -16,6 +16,7 @@ import {
   type ToleranceStatus,
 } from "@forja/domain";
 import { t } from "../i18n";
+import { foodName } from "./foods";
 
 /**
  * Plano alimentar — a estrutura que a pessoa preenche, sem geração automática.
@@ -25,11 +26,13 @@ import { t } from "../i18n";
  */
 
 const FOOD_COLUMNS =
-  "id, name, category, kcal, protein_g, carbs_g, fat_g, fiber_g, popularity, serving_size_g, external_id, owner_id" as const;
+  "id, name, name_en, name_es, category, kcal, protein_g, carbs_g, fat_g, fiber_g, popularity, serving_size_g, external_id, owner_id" as const;
 
 interface FoodRow {
   id: string;
   name: string;
+  name_en?: string | null;
+  name_es?: string | null;
   category: string | null;
   kcal: unknown;
   protein_g: unknown;
@@ -72,6 +75,21 @@ export function toCatalogRow(r: FoodRow): CatalogRow {
  * válidos. Biscoito recheado, arroz cru e itens com dados zerados não entram,
  * mesmo marcados como `is_staple`.
  */
+/**
+ * O catálogo do domínio fica em português — os filtros de dieta e a curadoria
+ * casam pelo nome —; a tela mostra o nome traduzido, guardado aqui por id.
+ */
+const nomesDoCatalogo = new Map<string, string>();
+
+/** Nome de um alimento do catálogo curado no idioma do app. */
+export function curatedFoodName(food: { id: string; name: string }): string {
+  return nomesDoCatalogo.get(food.id) ?? food.name;
+}
+
+function lembrarNomes(rows: readonly FoodRow[]) {
+  for (const r of rows) nomesDoCatalogo.set(r.id, foodName(r));
+}
+
 export async function fetchCuratedFoods(): Promise<CatalogFood[]> {
   const db = localDb();
   if (db) {
@@ -83,6 +101,7 @@ export async function fetchCuratedFoods(): Promise<CatalogFood[]> {
          OR (external_id IS NULL AND owner_id IS NULL AND name IN (${marcadores(nomes.length)})))`,
       [...codigos, ...nomes],
     );
+    lembrarNomes(rows);
     return buildCatalog(rows.map(toCatalogRow)).foods;
   }
   const [porCodigo, porNome] = await Promise.all([
@@ -103,6 +122,7 @@ export async function fetchCuratedFoods(): Promise<CatalogFood[]> {
     ...unwrapList("carregar catálogo curado", porCodigo),
     ...unwrapList("carregar catálogo curado", porNome),
   ];
+  lembrarNomes(rows);
   const { foods, rejected } = buildCatalog(rows.map(toCatalogRow));
   if (rejected.length > 0) {
     console.warn("[dieta] alimentos curados com dados inválidos ficaram de fora:", rejected);
@@ -309,7 +329,7 @@ export async function fetchActiveMealPlan(): Promise<ActiveMealPlan | null> {
     await supabase
       .from("meal_plan_meals")
       .select(
-        "id, slot, position, label, target_time, kcal_target, meal_plan_items(id, food_id, grams, position, prep_notes, weekday, foods(name, serving_size_g, kcal, protein_g, carbs_g, fat_g, fiber_g, category))",
+        "id, slot, position, label, target_time, kcal_target, meal_plan_items(id, food_id, grams, position, prep_notes, weekday, foods(name, name_en, name_es, serving_size_g, kcal, protein_g, carbs_g, fat_g, fiber_g, category))",
       )
       .eq("plan_id", plan.id)
       .order("position"),
@@ -337,7 +357,7 @@ export async function fetchActiveMealPlan(): Promise<ActiveMealPlan | null> {
         .map((i) => ({
           id: i.id,
           foodId: i.food_id,
-          name: i.foods?.name ?? t("Alimento"),
+          name: i.foods ? foodName(i.foods) : t("Alimento"),
           grams: num(i.grams),
           position: i.position,
           prepNotes: i.prep_notes,
@@ -394,6 +414,8 @@ async function planoAtivoLocal(): Promise<ActiveMealPlan | null> {
         prep_notes: string | null;
         weekday: number | null;
         name: string | null;
+        name_en: string | null;
+        name_es: string | null;
         serving_size_g: number | null;
         kcal: number | null;
         protein_g: number | null;
@@ -403,7 +425,7 @@ async function planoAtivoLocal(): Promise<ActiveMealPlan | null> {
         category: string | null;
       }>(
         `SELECT i.id, i.meal_id, i.food_id, i.grams, i.position, i.prep_notes, i.weekday, f.name,
-                f.serving_size_g, f.kcal, f.protein_g, f.carbs_g, f.fat_g, f.fiber_g, f.category
+                f.name_en, f.name_es, f.serving_size_g, f.kcal, f.protein_g, f.carbs_g, f.fat_g, f.fiber_g, f.category
            FROM meal_plan_items i LEFT JOIN foods f ON f.id = i.food_id
           WHERE i.meal_id IN (${marcadores(meals.length)}) ORDER BY i.position`,
         meals.map((m) => m.id),
@@ -431,7 +453,7 @@ async function planoAtivoLocal(): Promise<ActiveMealPlan | null> {
         .map((i) => ({
           id: i.id,
           foodId: i.food_id,
-          name: i.name ?? t("Alimento"),
+          name: i.name === null ? t("Alimento") : foodName({ ...i, name: i.name }),
           grams: num(i.grams),
           position: i.position,
           prepNotes: i.prep_notes,

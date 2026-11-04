@@ -5,7 +5,8 @@ import { localDb, marcadores } from "../local";
 import { deleteById, insertRow, insertRows, updateById } from "./rows";
 import type { MealValue } from "../lib/labels";
 import { recipeNutrition, type Portion } from "@forja/domain";
-import { language, t } from "../i18n";
+import { language, porIdioma, t } from "../i18n";
+import { foodName } from "./foods";
 
 /**
  * Receitas: as prontas (do sistema, `user_id` nulo — todos leem, ninguém
@@ -31,12 +32,31 @@ export function recipeCategoryOf(key: string | null) {
 }
 
 /**
- * As receitas prontas (e os nomes dos alimentos da TACO) só existem em
- * português no banco. Fora do pt, a tela avisa com este selo em vez de
- * misturar idiomas calada. As da pessoa estão no idioma em que ela escreveu.
+ * Receita pronta sem tradução no idioma do app aparece no original, em
+ * português, e a tela avisa com este selo em vez de misturar idiomas calada.
+ * As da pessoa estão no idioma em que ela escreveu.
  */
-export function recipeLanguageBadge(r: { isSystem: boolean }): string | null {
-  return r.isSystem && language !== "pt-BR" ? t("em português") : null;
+export function recipeLanguageBadge(r: { isSystem: boolean; translated: boolean }): string | null {
+  return r.isSystem && !r.translated && language !== "pt-BR" ? t("em português") : null;
+}
+
+/** As colunas traduzidas de uma receita, no idioma do app. */
+function traduzida(r: {
+  name: string;
+  name_en: string | null;
+  name_es: string | null;
+  instructions: string | null;
+  instructions_en: string | null;
+  instructions_es: string | null;
+}) {
+  const nome = porIdioma(r.name, r.name_en, r.name_es);
+  return {
+    name: nome,
+    instructions: r.instructions
+      ? porIdioma(r.instructions, r.instructions_en, r.instructions_es)
+      : null,
+    translated: language === "pt-BR" || nome !== r.name,
+  };
 }
 
 export interface RecipeSummary {
@@ -49,6 +69,8 @@ export interface RecipeSummary {
   prepMinutes: number | null;
   instructions: string | null;
   isSystem: boolean;
+  /** Nome e preparo estão no idioma do app (em pt, sempre). */
+  translated: boolean;
   items: { foodId: string; name: string; grams: number }[];
   /** Macros de uma porção. */
   perServing: { kcal: number; proteinG: number; carbsG: number; fatG: number };
@@ -64,7 +86,7 @@ export async function fetchRecipes(): Promise<RecipeSummary[]> {
         await supabase
           .from("recipes")
           .select(
-            "id, name, category, image_url, servings, prep_minutes, instructions, user_id, recipe_items(food_id, grams, foods(name, serving_size_g, kcal, protein_g, carbs_g, fat_g))",
+            "id, name, name_en, name_es, category, image_url, servings, prep_minutes, instructions, instructions_en, instructions_es, user_id, recipe_items(food_id, grams, foods(name, name_en, name_es, serving_size_g, kcal, protein_g, carbs_g, fat_g))",
           )
           .is("deleted_at", null)
           .order("name"),
@@ -89,17 +111,16 @@ export async function fetchRecipes(): Promise<RecipeSummary[]> {
     );
     const items = itens.map((i) => ({
       foodId: i.food_id,
-      name: i.foods?.name ?? t("Alimento"),
+      name: i.foods ? foodName(i.foods) : t("Alimento"),
       grams: num(i.grams),
     }));
     return {
       id: r.id,
-      name: r.name,
+      ...traduzida(r),
       category: r.category,
       imageUrl: r.image_url,
       servings: porcoes,
       prepMinutes: r.prep_minutes,
-      instructions: r.instructions,
       isSystem: r.user_id === null,
       items,
       perServing: {
@@ -118,14 +139,19 @@ async function receitasLocais() {
   const receitas = await db.getAll<{
     id: string;
     name: string;
+    name_en: string | null;
+    name_es: string | null;
     category: string | null;
     image_url: string | null;
     servings: number | null;
     prep_minutes: number | null;
     instructions: string | null;
+    instructions_en: string | null;
+    instructions_es: string | null;
     user_id: string | null;
   }>(
-    `SELECT id, name, category, image_url, servings, prep_minutes, instructions, user_id
+    `SELECT id, name, name_en, name_es, category, image_url, servings, prep_minutes, instructions,
+            instructions_en, instructions_es, user_id
        FROM recipes WHERE deleted_at IS NULL ORDER BY name`,
   );
   const itens = receitas.length
@@ -134,13 +160,15 @@ async function receitasLocais() {
         food_id: string;
         grams: number | null;
         name: string | null;
+        name_en: string | null;
+        name_es: string | null;
         serving_size_g: number | null;
         kcal: number | null;
         protein_g: number | null;
         carbs_g: number | null;
         fat_g: number | null;
       }>(
-        `SELECT i.recipe_id, i.food_id, i.grams, f.name, f.serving_size_g, f.kcal, f.protein_g,
+        `SELECT i.recipe_id, i.food_id, i.grams, f.name, f.name_en, f.name_es, f.serving_size_g, f.kcal, f.protein_g,
                 f.carbs_g, f.fat_g
            FROM recipe_items i LEFT JOIN foods f ON f.id = i.food_id
           WHERE i.recipe_id IN (${marcadores(receitas.length)})`,
@@ -267,6 +295,8 @@ export async function fetchRecipeItems(id: string): Promise<RecipeItem[]> {
         grams: number;
         food_id: string;
         name: string | null;
+        name_en: string | null;
+        name_es: string | null;
         kcal: number;
         protein_g: number;
         carbs_g: number;
@@ -274,16 +304,17 @@ export async function fetchRecipeItems(id: string): Promise<RecipeItem[]> {
         fiber_g: number;
         serving_size_g: number;
       }>(
-        `SELECT i.id, i.grams, i.food_id, f.name, f.kcal, f.protein_g, f.carbs_g, f.fat_g, f.fiber_g,
+        `SELECT i.id, i.grams, i.food_id, f.name, f.name_en, f.name_es, f.kcal, f.protein_g, f.carbs_g, f.fat_g, f.fiber_g,
                 f.serving_size_g
            FROM recipe_items i LEFT JOIN foods f ON f.id = i.food_id
           WHERE i.recipe_id = ? ORDER BY i.created_at`,
         [id],
       )
-    ).map(({ id: itemId, grams, food_id, name, ...f }) => ({
+    ).map(({ id: itemId, grams, food_id, name, name_en, name_es, ...f }) => ({
       id: itemId,
       grams,
-      foods: name === null ? null : { id: food_id, name, ...f },
+      foods:
+        name === null ? null : { id: food_id, name: foodName({ name, name_en, name_es }), ...f },
     }));
   }
   return unwrapList(
@@ -291,11 +322,14 @@ export async function fetchRecipeItems(id: string): Promise<RecipeItem[]> {
     await supabase
       .from("recipe_items")
       .select(
-        "id, grams, foods(id, name, kcal, protein_g, carbs_g, fat_g, fiber_g, serving_size_g)",
+        "id, grams, foods(id, name, name_en, name_es, kcal, protein_g, carbs_g, fat_g, fiber_g, serving_size_g)",
       )
       .eq("recipe_id", id)
       .order("created_at"),
-  ) as RecipeItem[];
+  ).map(({ foods, ...i }) => ({
+    ...i,
+    foods: foods && { ...foods, name: foodName(foods) },
+  })) as RecipeItem[];
 }
 
 /** O ingrediente como porção, para `nutritionTotals`/`portionMacros`. */
